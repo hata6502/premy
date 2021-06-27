@@ -1,3 +1,3 @@
 # kanvas
 
-A portable sketching canvas.
+A sketching canvas written in Web Components.
