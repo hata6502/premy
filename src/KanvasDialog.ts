@@ -1,4 +1,15 @@
 import "@material/mwc-dialog";
+import "./KanvasCanvas";
+
+const dialogMaxWidth = 1280;
+
+// clear with color
+// undo/redo
+// 3 brushes
+// 8 color
+// 14 tone
+// text
+// I/O interface
 
 class KanvasDialog extends HTMLElement {
   constructor() {
@@ -9,12 +20,12 @@ class KanvasDialog extends HTMLElement {
     shadow.innerHTML = `
       <style>
         #dialog {
-          --mdc-dialog-max-width: 1280px;
+          --mdc-dialog-max-width: ${dialogMaxWidth}px;
         }
       </style>
 
       <mwc-dialog id="dialog" open>
-        Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog Dialog 
+        <kanvas-canvas></kanvas-canvas>
       </mwc-dialog>
     `;
   }
@@ -22,4 +33,4 @@ class KanvasDialog extends HTMLElement {
 
 customElements.define("kanvas-dialog", KanvasDialog);
 
-export { KanvasDialog };
+export { KanvasDialog, dialogMaxWidth };
