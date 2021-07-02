@@ -14,11 +14,18 @@
 
   <body>
     <h1>kanvas</h1>
-
-    <kanvas-dialog></kanvas-dialog>
+    <button id="open-button">Open</button>
+    <kanvas-dialog id="dialog"></kanvas-dialog>
 
     <script type="module">
-      import "/dist/index.js";
+      import "./dist/index.js";
+
+      const dialog = document.querySelector("#dialog");
+      const openButton = document.querySelector("#open-button");
+
+      openButton.addEventListener("click", () =>
+        dialog.setAttribute("open", "")
+      );
     </script>
   </body>
 </html>

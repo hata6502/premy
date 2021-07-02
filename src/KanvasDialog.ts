@@ -1,4 +1,4 @@
-import "@material/mwc-dialog";
+import { Dialog } from "@material/mwc-dialog";
 import "./KanvasCanvas";
 
 const dialogMaxWidth = 1280;
@@ -12,6 +12,12 @@ const dialogMaxWidth = 1280;
 // I/O interface
 
 class KanvasDialog extends HTMLElement {
+  static get observedAttributes() {
+    return ["open"];
+  }
+
+  private dialog;
+
   constructor() {
     super();
 
@@ -24,11 +30,41 @@ class KanvasDialog extends HTMLElement {
         }
       </style>
 
-      <mwc-dialog id="dialog" open>
+      <mwc-dialog id="dialog">
         <kanvas-canvas></kanvas-canvas>
       </mwc-dialog>
     `;
+
+    const dialog = shadow.querySelector("#dialog");
+
+    if (!(dialog instanceof Dialog)) {
+      throw new Error("Element is not a canvas");
+    }
+
+    this.dialog = dialog;
+    this.dialog.addEventListener("closed", this.handleClosed);
+    this.dialog.addEventListener("opening", this.handleOpening);
   }
+
+  attributeChangedCallback() {
+    this.handleAttributeChange();
+  }
+
+  connectedCallback() {
+    this.handleAttributeChange();
+  }
+
+  private handleAttributeChange() {
+    this.dialog.open = this.getAttribute("open") !== null;
+  }
+
+  private handleClosed = () => {
+    this.removeAttribute("open");
+  };
+
+  private handleOpening = () => {
+    this.setAttribute("open", "");
+  };
 }
 
 customElements.define("kanvas-dialog", KanvasDialog);

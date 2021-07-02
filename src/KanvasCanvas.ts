@@ -195,10 +195,6 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas = canvas;
 
-    document.addEventListener("pointerdown", this.handlePointerDown);
-    document.addEventListener("pointermove", this.handlePointerMove);
-    document.addEventListener("pointerup", this.handlePointerMove);
-
     const heightZoom = Math.floor((window.innerHeight * 0.875) / canvasHeight);
     const widthZoom = Math.floor(
       (Math.min(window.innerWidth, dialogMaxWidth) * 0.875) / canvasWidth
@@ -223,6 +219,19 @@ class KanvasCanvas extends HTMLElement {
       x: Math.round(pixelX / this.zoom),
       y: Math.round(pixelY / this.zoom),
     };
+  }
+
+  adoptedCallback(oldDocument: Document, newDocument: Document) {
+    this.handleDisconnected({ document: oldDocument });
+    this.handleConnected({ document: newDocument });
+  }
+
+  connectedCallback() {
+    this.handleConnected({ document });
+  }
+
+  disconnectedCallback() {
+    this.handleDisconnected({ document });
   }
 
   private drawLine({
@@ -256,8 +265,20 @@ class KanvasCanvas extends HTMLElement {
     });
   }
 
+  private handleConnected({ document }: { document: Document }) {
+    document.addEventListener("pointerdown", this.handlePointerDown);
+    document.addEventListener("pointermove", this.handlePointerMove);
+    document.addEventListener("pointerup", this.handlePointerMove);
+  }
+
+  private handleDisconnected({ document }: { document: Document }) {
+    document.removeEventListener("pointerdown", this.handlePointerDown);
+    document.removeEventListener("pointermove", this.handlePointerMove);
+    document.removeEventListener("pointerup", this.handlePointerMove);
+  }
+
   private handlePointerDown = (event: PointerEvent) => {
-    if (event.pressure < 0.5) {
+    if (this.canvas.offsetParent === null || event.pressure < 0.5) {
       return;
     }
 
@@ -272,7 +293,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerMove = (event: PointerEvent) => {
-    if (event.pressure < 0.5) {
+    if (this.canvas.offsetParent === null || event.pressure < 0.5) {
       return;
     }
 
