@@ -203,6 +203,19 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas.height = canvasHeight * this.zoom;
     this.canvas.width = canvasWidth * this.zoom;
+
+    this.clear();
+  }
+
+  clear() {
+    const context = this.canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   private getCanvasPosition(clientPosition: Position): Position {

@@ -1,5 +1,6 @@
 import { Dialog } from "@material/mwc-dialog";
-import "./KanvasCanvas";
+import { IconButton } from "@material/mwc-icon-button";
+import { KanvasCanvas } from "./KanvasCanvas";
 
 const dialogMaxWidth = 1280;
 
@@ -10,12 +11,15 @@ const dialogMaxWidth = 1280;
 // 14 tone
 // text
 // I/O interface
+//   load
+//   save
 
 class KanvasDialog extends HTMLElement {
   static get observedAttributes() {
     return ["open"];
   }
 
+  private canvas;
   private dialog;
 
   constructor() {
@@ -31,17 +35,41 @@ class KanvasDialog extends HTMLElement {
       </style>
 
       <mwc-dialog id="dialog">
-        <kanvas-canvas></kanvas-canvas>
+        <kanvas-canvas id="canvas"></kanvas-canvas>
+
+        <div slot="primaryAction">
+          <mwc-icon-button id="clear-button">
+            <span style="font-size: 20px;">📄</span>
+          </mwc-icon-button>
+
+          <mwc-icon-button>
+            <span style="font-size: 20px;">↩</span>
+          </mwc-icon-button>
+
+          <mwc-icon-button>
+            <span style="font-size: 20px;">↪</span>
+          </mwc-icon-button>
+        </div>
       </mwc-dialog>
     `;
 
+    const canvas = shadow.querySelector("#canvas");
+    const clearButton = shadow.querySelector("#clear-button");
     const dialog = shadow.querySelector("#dialog");
 
-    if (!(dialog instanceof Dialog)) {
-      throw new Error("Element is not a canvas");
+    if (
+      !(canvas instanceof KanvasCanvas) ||
+      !(clearButton instanceof IconButton) ||
+      !(dialog instanceof Dialog)
+    ) {
+      throw new Error("Could not find dialog or icon button");
     }
 
+    this.canvas = canvas;
     this.dialog = dialog;
+
+    clearButton.addEventListener("click", this.handleClearButtonClick);
+
     this.dialog.addEventListener("closed", this.handleClosed);
     this.dialog.addEventListener("opening", this.handleOpening);
   }
@@ -57,6 +85,10 @@ class KanvasDialog extends HTMLElement {
   private handleAttributeChange() {
     this.dialog.open = this.getAttribute("open") !== null;
   }
+
+  private handleClearButtonClick = () => {
+    this.canvas.clear();
+  };
 
   private handleClosed = () => {
     this.removeAttribute("open");
