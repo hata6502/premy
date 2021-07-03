@@ -11,6 +11,9 @@ export default {
       {
         test: /\.tsx?$/,
         loader: "ts-loader",
+        options: {
+          transpileOnly: true,
+        },
       },
     ],
   },
