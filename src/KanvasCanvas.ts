@@ -4,6 +4,8 @@ import { dialogMaxWidth } from "./KanvasDialog";
 const canvasHeight = 180;
 const canvasWidth = 320;
 
+const historyMaxLength = 30;
+
 const brush = {
   light: [[1]],
   medium: [
@@ -163,6 +165,17 @@ const tone = {
   ],
 };
 
+declare global {
+  interface HTMLElementEventMap {
+    kanvasHistoryChange: KanvasHistoryChangeEvent;
+  }
+}
+
+type KanvasHistoryChangeEvent = CustomEvent<{
+  isRedoable: boolean;
+  isUndoable: boolean;
+}>;
+
 interface Position {
   x: number;
   y: number;
@@ -170,12 +183,17 @@ interface Position {
 
 class KanvasCanvas extends HTMLElement {
   private canvas;
-  private prevCanvasPosition: Position;
   private zoom;
+
+  private history: string[];
+  private historyIndex: number;
+  private prevCanvasPosition: Position;
 
   constructor() {
     super();
 
+    this.history = [];
+    this.historyIndex = -1;
     this.prevCanvasPosition = { x: 0, y: 0 };
 
     const shadow = this.attachShadow({ mode: "open" });
@@ -203,7 +221,6 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas.height = canvasHeight * this.zoom;
     this.canvas.width = canvasWidth * this.zoom;
-
     this.clear();
   }
 
@@ -216,6 +233,27 @@ class KanvasCanvas extends HTMLElement {
 
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.pushHistory();
+  }
+
+  undo() {
+    if (this.historyIndex < 1) {
+      return;
+    }
+
+    this.historyIndex--;
+    this.putHistory();
+    this.dispatchChangeHistoryEvent();
+  }
+
+  redo() {
+    if (this.historyIndex >= this.history.length - 1) {
+      return;
+    }
+
+    this.historyIndex++;
+    this.putHistory();
+    this.dispatchChangeHistoryEvent();
   }
 
   private getCanvasPosition(clientPosition: Position): Position {
@@ -240,6 +278,20 @@ class KanvasCanvas extends HTMLElement {
 
   disconnectedCallback() {
     this.handleDisconnected({ document });
+  }
+
+  private dispatchChangeHistoryEvent() {
+    const event: KanvasHistoryChangeEvent = new CustomEvent(
+      "kanvasHistoryChange",
+      {
+        detail: {
+          isRedoable: this.historyIndex < this.history.length - 1,
+          isUndoable: this.historyIndex >= 1,
+        },
+      }
+    );
+
+    this.dispatchEvent(event);
   }
 
   private drawLine({ from, to }: { from: Position; to: Position }) {
@@ -267,24 +319,55 @@ class KanvasCanvas extends HTMLElement {
     });
   }
 
+  private pushHistory() {
+    const dataURL = this.canvas.toDataURL();
+
+    if (this.historyIndex >= 0 && this.history[this.historyIndex] === dataURL) {
+      return;
+    }
+
+    this.history = [
+      ...this.history.slice(
+        Math.max(this.historyIndex - historyMaxLength, 0),
+        this.historyIndex + 1
+      ),
+      dataURL,
+    ];
+
+    this.historyIndex = this.history.length - 1;
+    this.dispatchChangeHistoryEvent();
+  }
+
+  private putHistory() {
+    const context = this.canvas.getContext("2d");
+    const image = new Image();
+
+    if (!context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    image.onload = () => context.drawImage(image, 0, 0);
+    image.src = this.history[this.historyIndex];
+  }
+
   private handleConnected({ document }: { document: Document }) {
     document.addEventListener("mousedown", this.handleMouseDown);
     document.addEventListener("mousemove", this.handleMouseMove);
-    document.addEventListener("mouseup", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
 
     document.addEventListener("touchstart", this.handleTouchStart);
     document.addEventListener("touchmove", this.handleTouchMove);
-    document.addEventListener("touchend", this.handleTouchMove);
+    document.addEventListener("touchend", this.handleTouchEnd);
   }
 
   private handleDisconnected({ document }: { document: Document }) {
     document.removeEventListener("mousedown", this.handleMouseDown);
     document.removeEventListener("mousemove", this.handleMouseMove);
-    document.removeEventListener("mouseup", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
 
     document.removeEventListener("touchstart", this.handleTouchStart);
     document.removeEventListener("touchmove", this.handleTouchMove);
-    document.removeEventListener("touchend", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
   }
 
   private handleDown(clientPosition: Position) {
@@ -317,6 +400,21 @@ class KanvasCanvas extends HTMLElement {
     this.prevCanvasPosition = canvasPosition;
   }
 
+  private handleUp(clientPosition: Position) {
+    if (this.canvas.offsetParent === null) {
+      return;
+    }
+
+    const canvasPosition = this.getCanvasPosition(clientPosition);
+
+    this.drawLine({
+      from: this.prevCanvasPosition,
+      to: canvasPosition,
+    });
+
+    this.pushHistory();
+  }
+
   private handleMouseDown = (event: MouseEvent) =>
     this.handleDown({ x: event.clientX, y: event.clientY });
 
@@ -327,6 +425,9 @@ class KanvasCanvas extends HTMLElement {
 
     this.handleMove({ x: event.clientX, y: event.clientY });
   };
+
+  private handleMouseUp = (event: MouseEvent) =>
+    this.handleUp({ x: event.clientX, y: event.clientY });
 
   private handleTouchStart = (event: TouchEvent) => {
     if (event.touches.length < 1) {
@@ -349,8 +450,20 @@ class KanvasCanvas extends HTMLElement {
       y: event.touches[0].clientY,
     });
   };
+
+  private handleTouchEnd = (event: TouchEvent) => {
+    if (event.touches.length < 1) {
+      return;
+    }
+
+    this.handleUp({
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+    });
+  };
 }
 
 customElements.define("kanvas-canvas", KanvasCanvas);
 
 export { KanvasCanvas };
+export type { KanvasHistoryChangeEvent };
