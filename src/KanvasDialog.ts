@@ -34,7 +34,9 @@ class KanvasDialog extends HTMLElement {
     shadow.innerHTML = `
       <style>
         #dialog {
+          user-select: none;
           --mdc-dialog-max-width: ${dialogMaxWidth}px;
+          --mdc-dialog-z-index: 2147483647;
         }
 
         #redo-button[disabled], #undo-button[disabled] {
