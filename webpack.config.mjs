@@ -15,6 +15,10 @@ export default {
           transpileOnly: true,
         },
       },
+      {
+        test: /\.svg$/,
+        type: "asset/inline",
+      },
     ],
   },
   output: {

@@ -2,6 +2,9 @@ import { Dialog } from "@material/mwc-dialog";
 import { IconButton } from "@material/mwc-icon-button";
 import { KanvasCanvas } from "./KanvasCanvas";
 import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
+import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
+import redoSVG from "./redo_black_24dp.svg";
+import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
 
@@ -33,22 +36,26 @@ class KanvasDialog extends HTMLElement {
         #dialog {
           --mdc-dialog-max-width: ${dialogMaxWidth}px;
         }
+
+        #redo-button[disabled], #undo-button[disabled] {
+          opacity: 0.4;
+        }
       </style>
 
-      <mwc-dialog id="dialog">
+      <mwc-dialog id="dialog" hideActions>
         <kanvas-canvas id="canvas"></kanvas-canvas>
 
-        <div slot="primaryAction">
+        <div>
           <mwc-icon-button id="clear-button">
-            <span style="font-size: 20px;">📄</span>
+            <img src="${insertDriveFileSVG}" />
           </mwc-icon-button>
 
           <mwc-icon-button id="undo-button" disabled>
-            <span style="font-size: 20px;">↩</span>
+            <img src="${undoSVG}" />
           </mwc-icon-button>
 
           <mwc-icon-button id="redo-button" disabled>
-            <span style="font-size: 20px;">↪</span>
+            <img src="${redoSVG}" />
           </mwc-icon-button>
         </div>
       </mwc-dialog>
