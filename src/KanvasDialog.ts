@@ -1,14 +1,17 @@
 import { Dialog } from "@material/mwc-dialog";
 import { IconButton } from "@material/mwc-icon-button";
+import { IconButtonToggle } from "@material/mwc-icon-button-toggle";
 import { KanvasCanvas } from "./KanvasCanvas";
 import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
+import { brushes } from "./brushes";
+import type { BrushType } from "./brushes";
+import editSVG from "./edit_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
 import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
 
-// 3 brushes
 // 8 color
 // 14 tone
 // text
@@ -21,6 +24,7 @@ class KanvasDialog extends HTMLElement {
     return ["open"];
   }
 
+  private brushButton: Record<BrushType, IconButtonToggle>;
   private canvas;
   private dialog;
   private redoButton;
@@ -59,6 +63,28 @@ class KanvasDialog extends HTMLElement {
           <mwc-icon-button id="redo-button" disabled>
             <img src="${redoSVG}" />
           </mwc-icon-button>
+
+          ${Object.values(brushes)
+            .map(
+              (brush) => `
+            <style>
+              #${brush.button.id} {
+                opacity: 0.4;
+                --mdc-icon-size: ${brush.button.size}px;
+              }
+
+              #${brush.button.id}[on] {
+                opacity: 1;
+              }
+            </style>
+
+            <mwc-icon-button-toggle id="${brush.button.id}">
+              <img slot="onIcon" src="${editSVG}" />
+              <img slot="offIcon" src="${editSVG}" />
+            </mwc-icon-button-toggle>
+          `
+            )
+            .join("")}
         </div>
       </mwc-dialog>
     `;
@@ -95,6 +121,24 @@ class KanvasDialog extends HTMLElement {
     clearButton.addEventListener("click", this.handleClearButtonClick);
     this.undoButton.addEventListener("click", this.handleUndoButtonClick);
     this.redoButton.addEventListener("click", this.handleRedoButtonClick);
+
+    this.brushButton = {
+      light: this.initializeBrushButton({
+        brushType: "light",
+        on: true,
+        shadow,
+      }),
+      medium: this.initializeBrushButton({
+        brushType: "medium",
+        on: false,
+        shadow,
+      }),
+      bold: this.initializeBrushButton({
+        brushType: "bold",
+        on: false,
+        shadow,
+      }),
+    };
   }
 
   attributeChangedCallback() {
@@ -105,8 +149,38 @@ class KanvasDialog extends HTMLElement {
     this.handleAttributeChange();
   }
 
+  private initializeBrushButton({
+    brushType,
+    on,
+    shadow,
+  }: {
+    brushType: BrushType;
+    on: boolean;
+    shadow: ShadowRoot;
+  }) {
+    const brush = brushes[brushType];
+    const button = shadow.querySelector(`#${brush.button.id}`);
+
+    if (!(button instanceof IconButtonToggle)) {
+      throw new Error(`${brush.button.id} is not a valid child`);
+    }
+
+    button.on = on;
+    button.addEventListener("click", () =>
+      this.handleBrushButtonClick({ brushType })
+    );
+
+    return button;
+  }
+
   private handleAttributeChange() {
     this.dialog.open = this.getAttribute("open") !== null;
+  }
+
+  private handleBrushButtonClick({ brushType }: { brushType: BrushType }) {
+    Object.values(this.brushButton).forEach((value) => (value.on = false));
+    this.brushButton[brushType].on = true;
+    this.canvas.setBrushType({ brushType });
   }
 
   private handleClosed = () => this.removeAttribute("open");

@@ -1,4 +1,6 @@
 import "@material/mwc-dialog";
+import { brushes } from "../brushes";
+import type { BrushType } from "../brushes";
 import { dialogMaxWidth } from "../KanvasDialog";
 import { KanvasPointerListener } from "./KanvasPointerListener";
 import type {
@@ -26,15 +28,17 @@ type KanvasHistoryChangeEvent = CustomEvent<{
 
 class KanvasCanvas extends HTMLElement {
   private canvas;
-  private zoom;
 
+  private brushType: BrushType;
   private history: string[];
   private historyIndex: number;
   private prevCanvasPosition: KanvasPosition;
+  private zoom;
 
   constructor() {
     super();
 
+    this.brushType = "light";
     this.history = [];
     this.historyIndex = -1;
     this.prevCanvasPosition = { x: 0, y: 0 };
@@ -76,11 +80,17 @@ class KanvasCanvas extends HTMLElement {
       "kanvasPointerDown",
       this.handlePointerDown
     );
+
     pointerListener.addEventListener(
       "kanvasPointerMove",
       this.handlePointerMove
     );
+
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
+  }
+
+  setBrushType({ brushType }: { brushType: BrushType }) {
+    this.brushType = brushType;
   }
 
   clear() {
@@ -141,28 +151,42 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private drawLine({ from, to }: { from: KanvasPosition; to: KanvasPosition }) {
+    const stepLength = Math.round(
+      Math.sqrt(Math.pow(to.x - from.x, 2.0) + Math.pow(to.y - from.y, 2.0))
+    );
+
+    [...Array(stepLength).keys()].forEach((step) => {
+      const distance = step / stepLength;
+
+      this.drawPoint({
+        x: from.x + Math.round((to.x - from.x) * distance),
+        y: from.y + Math.round((to.y - from.y) * distance),
+      });
+    });
+  }
+
+  private drawPoint(centerPosition: KanvasPosition) {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
       throw new Error("Canvas is not a 2D context");
     }
 
-    const stepLength = Math.max(
-      Math.round(
-        Math.sqrt(Math.pow(to.x - from.x, 2.0) + Math.pow(to.y - from.y, 2.0))
-      ),
-      1
-    );
+    const brush = brushes[this.brushType];
+    const beginX = centerPosition.x - (brush.bitmap[0].length - 1) / 2;
+    const beginY = centerPosition.y - (brush.bitmap.length - 1) / 2;
 
     context.fillStyle = "#000000";
 
-    [...Array(stepLength).keys()].forEach((step) => {
-      const distance = step / stepLength;
-      const x = from.x + Math.round((to.x - from.x) * distance);
-      const y = from.y + Math.round((to.y - from.y) * distance);
+    for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
+      for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
+        if (brush.bitmap[y - beginY][x - beginX] === 0) {
+          continue;
+        }
 
-      context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
-    });
+        context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
+      }
+    }
   }
 
   private pushHistory() {
@@ -201,14 +225,10 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
-    const canvasPosition = this.getCanvasPosition(event.detail);
+    const position = this.getCanvasPosition(event.detail);
 
-    this.drawLine({
-      from: canvasPosition,
-      to: canvasPosition,
-    });
-
-    this.prevCanvasPosition = canvasPosition;
+    this.drawPoint(position);
+    this.prevCanvasPosition = position;
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
