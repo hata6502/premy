@@ -26,6 +26,8 @@ type KanvasHistoryChangeEvent = CustomEvent<{
   isUndoable: boolean;
 }>;
 
+type Mode = "shape" | "text";
+
 class KanvasCanvas extends HTMLElement {
   private canvas;
 
@@ -33,7 +35,9 @@ class KanvasCanvas extends HTMLElement {
   private color: string;
   private history: string[];
   private historyIndex: number;
+  private mode: Mode;
   private prevCanvasPosition: KanvasPosition;
+  private text;
   private zoom;
 
   constructor() {
@@ -43,6 +47,8 @@ class KanvasCanvas extends HTMLElement {
     this.color = "#000000";
     this.history = [];
     this.historyIndex = -1;
+    this.mode = "shape";
+    this.text = "";
     this.prevCanvasPosition = { x: 0, y: 0 };
 
     const shadow = this.attachShadow({ mode: "open" });
@@ -101,6 +107,14 @@ class KanvasCanvas extends HTMLElement {
 
   setColor({ color }: { color: string }): void {
     this.color = color;
+  }
+
+  setMode({ mode }: { mode: Mode }): void {
+    this.mode = mode;
+  }
+
+  setText({ text }: { text: string }): void {
+    this.text = text;
   }
 
   clear({ color }: { color: string }): void {
@@ -175,7 +189,7 @@ class KanvasCanvas extends HTMLElement {
     });
   }
 
-  private drawPoint(centerPosition: KanvasPosition) {
+  private drawPoint(position: KanvasPosition) {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
@@ -183,18 +197,58 @@ class KanvasCanvas extends HTMLElement {
     }
 
     const brush = brushes[this.brushType];
-    const beginX = centerPosition.x - (brush.bitmap[0].length - 1) / 2;
-    const beginY = centerPosition.y - (brush.bitmap.length - 1) / 2;
 
     context.fillStyle = this.color;
 
-    for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
-      for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
-        if (brush.bitmap[y - beginY][x - beginX] === 0) {
-          continue;
+    switch (this.mode) {
+      case "shape": {
+        const beginX = position.x - (brush.bitmap[0].length - 1) / 2;
+        const beginY = position.y - (brush.bitmap.length - 1) / 2;
+
+        for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
+          for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
+            if (brush.bitmap[y - beginY][x - beginX] === 0) {
+              continue;
+            }
+
+            context.fillRect(
+              x * this.zoom,
+              y * this.zoom,
+              this.zoom + 1,
+              this.zoom + 1
+            );
+          }
         }
 
-        context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
+        break;
+      }
+
+      case "text": {
+        if (
+          position.x < 0 ||
+          position.x >= canvasWidth ||
+          position.y < 0 ||
+          position.y >= canvasHeight
+        ) {
+          break;
+        }
+
+        context.font = `${brush.font.size * this.zoom}px sans-serif`;
+
+        context.fillText(
+          this.text,
+          position.x * this.zoom,
+          position.y * this.zoom
+        );
+
+        break;
+      }
+
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = this.mode;
+
+        throw new Error("Unknown mode");
       }
     }
   }
@@ -246,14 +300,31 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
-    const canvasPosition = this.getCanvasPosition(event.detail);
+    switch (this.mode) {
+      case "shape": {
+        const canvasPosition = this.getCanvasPosition(event.detail);
 
-    this.drawLine({
-      from: this.prevCanvasPosition,
-      to: canvasPosition,
-    });
+        this.drawLine({
+          from: this.prevCanvasPosition,
+          to: canvasPosition,
+        });
 
-    this.prevCanvasPosition = canvasPosition;
+        this.prevCanvasPosition = canvasPosition;
+
+        break;
+      }
+
+      case "text": {
+        break;
+      }
+
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = this.mode;
+
+        throw new Error("Unknown mode");
+      }
+    }
   };
 
   private handlePointerUp = (event: KanvasPointerUpEvent) => {
@@ -261,12 +332,29 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
-    const canvasPosition = this.getCanvasPosition(event.detail);
+    switch (this.mode) {
+      case "shape": {
+        const canvasPosition = this.getCanvasPosition(event.detail);
 
-    this.drawLine({
-      from: this.prevCanvasPosition,
-      to: canvasPosition,
-    });
+        this.drawLine({
+          from: this.prevCanvasPosition,
+          to: canvasPosition,
+        });
+
+        break;
+      }
+
+      case "text": {
+        break;
+      }
+
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = this.mode;
+
+        throw new Error("Unknown mode");
+      }
+    }
 
     this.pushHistory();
   };

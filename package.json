@@ -14,6 +14,7 @@
   },
   "license": "MIT",
   "author": "Tomoyuki Hata <hato6502@gmail.com>",
+  "type": "module",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -24,11 +25,11 @@
     "serve": "http-server",
     "test": "prettier --check . && eslint --max-warnings 0 . && tsc --noEmit"
   },
-  "type": "module",
   "devDependencies": {
     "@material/mwc-dialog": "^0.21.0",
     "@material/mwc-icon-button": "^0.21.0",
     "@material/mwc-icon-button-toggle": "^0.21.0",
+    "@material/mwc-textfield": "^0.22.1",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "eslint": "^7.31.0",
