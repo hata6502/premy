@@ -91,19 +91,19 @@ class KanvasCanvas extends HTMLElement {
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
   }
 
-  setBrushType({ brushType }: { brushType: BrushType }) {
+  setBrushType({ brushType }: { brushType: BrushType }): void {
     this.brushType = brushType;
   }
 
-  getColor() {
+  getColor(): string {
     return this.color;
   }
 
-  setColor({ color }: { color: string }) {
+  setColor({ color }: { color: string }): void {
     this.color = color;
   }
 
-  clear({ color }: { color: string }) {
+  clear({ color }: { color: string }): void {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
@@ -115,7 +115,7 @@ class KanvasCanvas extends HTMLElement {
     this.pushHistory();
   }
 
-  undo() {
+  undo(): void {
     if (this.historyIndex < 1) {
       return;
     }
@@ -125,7 +125,7 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchChangeHistoryEvent();
   }
 
-  redo() {
+  redo(): void {
     if (this.historyIndex >= this.history.length - 1) {
       return;
     }

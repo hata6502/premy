@@ -20,19 +20,23 @@
   ],
   "scripts": {
     "build": "webpack",
-    "fix": "prettier --write .",
+    "fix": "prettier --write . && eslint --fix --max-warnings 0 .",
     "serve": "http-server",
-    "test": "prettier --check . && tsc --noEmit"
+    "test": "prettier --check . && eslint --max-warnings 0 . && tsc --noEmit"
   },
+  "type": "module",
   "devDependencies": {
     "@material/mwc-dialog": "^0.21.0",
     "@material/mwc-icon-button": "^0.21.0",
     "@material/mwc-icon-button-toggle": "^0.21.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
+    "eslint": "^7.31.0",
     "http-server": "^0.12.3",
     "prettier": "^2.3.2",
     "semantic-release": "^17.4.4",
     "ts-loader": "^9.2.3",
-    "typescript": "^4.3.4",
+    "typescript": "^4.3.5",
     "webpack": "^5.40.0",
     "webpack-cli": "^4.7.2"
   },

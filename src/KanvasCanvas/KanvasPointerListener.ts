@@ -16,16 +16,16 @@ type KanvasPointerMoveEvent = CustomEvent<KanvasPosition>;
 type KanvasPointerUpEvent = CustomEvent<KanvasPosition>;
 
 class KanvasPointerListener extends HTMLElement {
-  adoptedCallback(oldDocument: Document, newDocument: Document) {
+  adoptedCallback(oldDocument: Document, newDocument: Document): void {
     this.handleDisconnected({ document: oldDocument });
     this.handleConnected({ document: newDocument });
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.handleConnected({ document });
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this.handleDisconnected({ document });
   }
 

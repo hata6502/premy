@@ -25,7 +25,7 @@ const dialogMaxWidth = 1280;
 // publish to npm
 
 class KanvasDialog extends HTMLElement {
-  static get observedAttributes() {
+  static get observedAttributes(): string[] {
     return ["open"];
   }
 
@@ -208,11 +208,11 @@ class KanvasDialog extends HTMLElement {
     };
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     this.handleAttributeChange();
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.handleAttributeChange();
   }
 
