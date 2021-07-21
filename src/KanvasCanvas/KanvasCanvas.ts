@@ -30,6 +30,7 @@ class KanvasCanvas extends HTMLElement {
   private canvas;
 
   private brushType: BrushType;
+  private color: string;
   private history: string[];
   private historyIndex: number;
   private prevCanvasPosition: KanvasPosition;
@@ -39,6 +40,7 @@ class KanvasCanvas extends HTMLElement {
     super();
 
     this.brushType = "light";
+    this.color = "#000000";
     this.history = [];
     this.historyIndex = -1;
     this.prevCanvasPosition = { x: 0, y: 0 };
@@ -74,7 +76,7 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas.height = canvasHeight * this.zoom;
     this.canvas.width = canvasWidth * this.zoom;
-    this.clear();
+    this.clear({ color: "#ffffff" });
 
     pointerListener.addEventListener(
       "kanvasPointerDown",
@@ -93,14 +95,22 @@ class KanvasCanvas extends HTMLElement {
     this.brushType = brushType;
   }
 
-  clear() {
+  getColor() {
+    return this.color;
+  }
+
+  setColor({ color }: { color: string }) {
+    this.color = color;
+  }
+
+  clear({ color }: { color: string }) {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
       throw new Error("Canvas is not a 2D context");
     }
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = color;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.pushHistory();
   }
@@ -176,7 +186,7 @@ class KanvasCanvas extends HTMLElement {
     const beginX = centerPosition.x - (brush.bitmap[0].length - 1) / 2;
     const beginY = centerPosition.y - (brush.bitmap.length - 1) / 2;
 
-    context.fillStyle = "#000000";
+    context.fillStyle = this.color;
 
     for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
       for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {

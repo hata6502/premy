@@ -16,7 +16,7 @@ export default {
         },
       },
       {
-        test: /\.svg$/,
+        test: /\.(png|svg)$/,
         type: "asset/inline",
       },
     ],

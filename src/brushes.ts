@@ -1,15 +1,4 @@
-type BrushType = "light" | "medium" | "bold";
-
-const brushes: Record<
-  BrushType,
-  {
-    bitmap: number[][];
-    button: {
-      id: string;
-      size: number;
-    };
-  }
-> = {
+const brushes = {
   light: {
     bitmap: [[1]],
     button: {
@@ -42,6 +31,8 @@ const brushes: Record<
     },
   },
 };
+
+type BrushType = keyof typeof brushes;
 
 export { brushes };
 export type { BrushType };

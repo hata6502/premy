@@ -5,6 +5,8 @@ import { KanvasCanvas } from "./KanvasCanvas";
 import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
 import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
+import { colors } from "./colors";
+import type { ColorType } from "./colors";
 import editSVG from "./edit_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
@@ -12,19 +14,23 @@ import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
 
-// 8 color
-// 14 tone
 // text
-// I/O interface
-//   load
-//   save
+// 14 tone
+// copy to clipboard
+// paste from clipboard
+// load
+// save
+// through history event
+// dialog event
+// publish to npm
 
 class KanvasDialog extends HTMLElement {
   static get observedAttributes() {
     return ["open"];
   }
 
-  private brushButton: Record<BrushType, IconButtonToggle>;
+  private brushButtons: Record<BrushType, IconButtonToggle>;
+  private colorButtons: Record<ColorType, IconButtonToggle>;
   private canvas;
   private dialog;
   private redoButton;
@@ -67,25 +73,43 @@ class KanvasDialog extends HTMLElement {
           ${Object.values(brushes)
             .map(
               (brush) => `
-            <style>
-              #${brush.button.id} {
-                opacity: 0.4;
-                --mdc-icon-size: ${brush.button.size}px;
-              }
+                <style>
+                  #${brush.button.id} {
+                    --mdc-icon-size: ${brush.button.size}px;
+                  }
 
-              #${brush.button.id}[on] {
-                opacity: 1;
-              }
-            </style>
+                  #${brush.button.id}[on] {
+                    background-color: rgba(0, 0, 0, 0.07);
+                    border-radius: 50%;
+                  }
+                </style>
 
-            <mwc-icon-button-toggle id="${brush.button.id}">
-              <img slot="onIcon" src="${editSVG}" />
-              <img slot="offIcon" src="${editSVG}" />
-            </mwc-icon-button-toggle>
-          `
+                <mwc-icon-button-toggle id="${brush.button.id}">
+                  <img slot="onIcon" src="${editSVG}" />
+                  <img slot="offIcon" src="${editSVG}" />
+                </mwc-icon-button-toggle>
+              `
             )
             .join("")}
-        </div>
+
+            ${Object.values(colors)
+              .map(
+                (color) => `
+                  <style>
+                    #${color.button.id}[on] {
+                      background-color: rgba(0, 0, 0, 0.07);
+                      border-radius: 50%;
+                    }
+                  </style>
+
+                  <mwc-icon-button-toggle id="${color.button.id}">
+                    <img slot="onIcon" src="${color.button.image}" />
+                    <img slot="offIcon" src="${color.button.image}" />
+                  </mwc-icon-button-toggle>
+                `
+              )
+              .join("")}
+          </div>
       </mwc-dialog>
     `;
 
@@ -122,7 +146,7 @@ class KanvasDialog extends HTMLElement {
     this.undoButton.addEventListener("click", this.handleUndoButtonClick);
     this.redoButton.addEventListener("click", this.handleRedoButtonClick);
 
-    this.brushButton = {
+    this.brushButtons = {
       light: this.initializeBrushButton({
         brushType: "light",
         on: true,
@@ -135,6 +159,49 @@ class KanvasDialog extends HTMLElement {
       }),
       bold: this.initializeBrushButton({
         brushType: "bold",
+        on: false,
+        shadow,
+      }),
+    };
+
+    this.colorButtons = {
+      "#000000": this.initializeColorButton({
+        colorType: "#000000",
+        on: true,
+        shadow,
+      }),
+      "#ff0000": this.initializeColorButton({
+        colorType: "#ff0000",
+        on: false,
+        shadow,
+      }),
+      "#00ff00": this.initializeColorButton({
+        colorType: "#00ff00",
+        on: false,
+        shadow,
+      }),
+      "#0000ff": this.initializeColorButton({
+        colorType: "#0000ff",
+        on: false,
+        shadow,
+      }),
+      "#ffff00": this.initializeColorButton({
+        colorType: "#ffff00",
+        on: false,
+        shadow,
+      }),
+      "#ff00ff": this.initializeColorButton({
+        colorType: "#ff00ff",
+        on: false,
+        shadow,
+      }),
+      "#00ffff": this.initializeColorButton({
+        colorType: "#00ffff",
+        on: false,
+        shadow,
+      }),
+      "#ffffff": this.initializeColorButton({
+        colorType: "#ffffff",
         on: false,
         shadow,
       }),
@@ -166,8 +233,34 @@ class KanvasDialog extends HTMLElement {
     }
 
     button.on = on;
+
     button.addEventListener("click", () =>
       this.handleBrushButtonClick({ brushType })
+    );
+
+    return button;
+  }
+
+  private initializeColorButton({
+    colorType,
+    on,
+    shadow,
+  }: {
+    colorType: ColorType;
+    on: boolean;
+    shadow: ShadowRoot;
+  }) {
+    const color = colors[colorType];
+    const button = shadow.querySelector(`#${color.button.id}`);
+
+    if (!(button instanceof IconButtonToggle)) {
+      throw new Error(`${color.button.id} is not a valid child`);
+    }
+
+    button.on = on;
+
+    button.addEventListener("click", () =>
+      this.handleColorButtonClick({ colorType })
     );
 
     return button;
@@ -178,9 +271,21 @@ class KanvasDialog extends HTMLElement {
   }
 
   private handleBrushButtonClick({ brushType }: { brushType: BrushType }) {
-    Object.values(this.brushButton).forEach((value) => (value.on = false));
-    this.brushButton[brushType].on = true;
+    Object.values(this.brushButtons).forEach(
+      (brushButton) => (brushButton.on = false)
+    );
+
+    this.brushButtons[brushType].on = true;
     this.canvas.setBrushType({ brushType });
+  }
+
+  private handleColorButtonClick({ colorType }: { colorType: ColorType }) {
+    Object.values(this.colorButtons).forEach(
+      (colorButton) => (colorButton.on = false)
+    );
+
+    this.colorButtons[colorType].on = true;
+    this.canvas.setColor({ color: colorType });
   }
 
   private handleClosed = () => this.removeAttribute("open");
@@ -191,7 +296,9 @@ class KanvasDialog extends HTMLElement {
     this.redoButton.disabled = !event.detail.isRedoable;
   };
 
-  private handleClearButtonClick = () => this.canvas.clear();
+  private handleClearButtonClick = () =>
+    this.canvas.clear({ color: this.canvas.getColor() });
+
   private handleUndoButtonClick = () => this.canvas.undo();
   private handleRedoButtonClick = () => this.canvas.redo();
 }
