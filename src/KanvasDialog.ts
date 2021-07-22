@@ -17,13 +17,10 @@ const dialogMaxWidth = 1280;
 
 // 14 tone
 // copy to clipboard
-// paste from clipboard
 // load
 // save
-// through history event
-// dialog event
 // text preview
-// theme color
+// window width change
 // publish to npm
 
 class KanvasDialog extends HTMLElement {
@@ -42,16 +39,27 @@ class KanvasDialog extends HTMLElement {
   constructor() {
     super();
 
-    const shadow = this.attachShadow({ mode: "open" });
+    const shadow = this.attachShadow({ mode: "closed" });
 
     shadow.innerHTML = `
       <style>
+        :host {
+          --mdc-theme-primary: #ffc107;
+          --mdc-theme-secondary: #651fff;
+        }
+
         #action-container {
           display: flex;
           align-items: center;
           overflow: auto;
           padding-top: 8px;
           width: calc(min(var(--mdc-dialog-max-width), 100vw) - 96px);
+        }
+
+        #container {
+          display: flex;
+          align-items: center;
+          flex-direction: column;
         }
 
         #dialog {
@@ -64,63 +72,80 @@ class KanvasDialog extends HTMLElement {
         #redo-button[disabled], #undo-button[disabled] {
           opacity: 0.4;
         }
+
+        #text-input {
+          min-width: 212px;
+        }
+
+        .divider {
+          min-width: 16px;
+        }
       </style>
 
       <mwc-dialog id="dialog" hideActions>
-        <kanvas-canvas id="canvas"></kanvas-canvas>
+        <div id="container">
+          <kanvas-canvas id="canvas"></kanvas-canvas>
 
-        <div id="action-container">
-          <mwc-icon-button id="clear-button">
-            <img src="${insertDriveFileSVG}" />
-          </mwc-icon-button>
+          <div id="action-container">
+            <mwc-icon-button id="clear-button">
+              <img src="${insertDriveFileSVG}" />
+            </mwc-icon-button>
 
-          <mwc-icon-button id="undo-button" disabled>
-            <img src="${undoSVG}" />
-          </mwc-icon-button>
+            <div class="divider"></div>
 
-          <mwc-icon-button id="redo-button" disabled>
-            <img src="${redoSVG}" />
-          </mwc-icon-button>
+            <mwc-icon-button id="undo-button" disabled>
+              <img src="${undoSVG}" />
+            </mwc-icon-button>
 
-          ${Object.values(brushes)
-            .map(
-              (brush) => `
-                <style>
-                  #${brush.button.id} {
-                    --mdc-icon-size: ${brush.button.size}px;
-                  }
+            <mwc-icon-button id="redo-button" disabled>
+              <img src="${redoSVG}" />
+            </mwc-icon-button>
 
-                  #${brush.button.id}[on] {
-                    background-color: rgba(0, 0, 0, 0.07);
-                    border-radius: 50%;
-                  }
-                </style>
+            <div class="divider"></div>
 
-                <mwc-icon-button-toggle id="${brush.button.id}">
-                  <img slot="onIcon" src="${editSVG}" />
-                  <img slot="offIcon" src="${editSVG}" />
-                </mwc-icon-button-toggle>
-              `
-            )
-            .join("")}
-
-            ${Object.values(colors)
+            ${Object.values(brushes)
               .map(
-                (color) => `
+                (brush) => `
                   <style>
-                    #${color.button.id}[on] {
+                    #${brush.button.id} {
+                      --mdc-icon-size: ${brush.button.size}px;
+                    }
+
+                    #${brush.button.id}[on] {
                       background-color: rgba(0, 0, 0, 0.07);
                       border-radius: 50%;
                     }
                   </style>
 
-                  <mwc-icon-button-toggle id="${color.button.id}">
-                    <img slot="onIcon" src="${color.button.image}" />
-                    <img slot="offIcon" src="${color.button.image}" />
+                  <mwc-icon-button-toggle id="${brush.button.id}">
+                    <img slot="onIcon" src="${editSVG}" />
+                    <img slot="offIcon" src="${editSVG}" />
                   </mwc-icon-button-toggle>
                 `
               )
               .join("")}
+
+              <div class="divider"></div>
+
+              ${Object.values(colors)
+                .map(
+                  (color) => `
+                    <style>
+                      #${color.button.id}[on] {
+                        background-color: rgba(0, 0, 0, 0.07);
+                        border-radius: 50%;
+                      }
+                    </style>
+
+                    <mwc-icon-button-toggle id="${color.button.id}">
+                      <img slot="onIcon" src="${color.button.image}" />
+                      <img slot="offIcon" src="${color.button.image}" />
+                    </mwc-icon-button-toggle>
+                  `
+                )
+                .join("")}
+
+            <div class="divider"></div>
 
             <mwc-textfield
               id="text-input"
@@ -128,6 +153,7 @@ class KanvasDialog extends HTMLElement {
               label="Text"
             ></mwc-textfield>
           </div>
+        </div>
       </mwc-dialog>
     `;
 
@@ -313,12 +339,23 @@ class KanvasDialog extends HTMLElement {
     this.canvas.setColor({ color: colorType });
   }
 
-  private handleClosed = () => this.removeAttribute("open");
-  private handleOpening = () => this.setAttribute("open", "");
+  private handleClosed = (event: Event) => {
+    this.removeAttribute("open");
+    this.dispatchEvent(event);
+  };
+
+  private handleOpening = (event: Event) => {
+    this.setAttribute("open", "");
+    this.dispatchEvent(event);
+  };
 
   private handleCanvasHistoryChange = (event: KanvasHistoryChangeEvent) => {
-    this.undoButton.disabled = !event.detail.isUndoable;
-    this.redoButton.disabled = !event.detail.isRedoable;
+    this.redoButton.disabled =
+      event.detail.historyIndex >= event.detail.history.length - 1;
+
+    this.undoButton.disabled = event.detail.historyIndex < 1;
+
+    this.dispatchEvent(event);
   };
 
   private handleClearButtonClick = () =>

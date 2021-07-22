@@ -22,8 +22,8 @@ declare global {
 }
 
 type KanvasHistoryChangeEvent = CustomEvent<{
-  isRedoable: boolean;
-  isUndoable: boolean;
+  history: string[];
+  historyIndex: number;
 }>;
 
 type Mode = "shape" | "text";
@@ -74,7 +74,7 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas = canvas;
 
-    const heightZoom = (window.innerHeight - 128) / canvasHeight;
+    const heightZoom = (window.innerHeight - 144) / canvasHeight;
     const widthZoom =
       (Math.min(window.innerWidth, dialogMaxWidth) - 96) / canvasWidth;
 
@@ -165,8 +165,8 @@ class KanvasCanvas extends HTMLElement {
       "kanvasHistoryChange",
       {
         detail: {
-          isRedoable: this.historyIndex < this.history.length - 1,
-          isUndoable: this.historyIndex >= 1,
+          history: this.history,
+          historyIndex: this.historyIndex,
         },
       }
     );
@@ -214,8 +214,8 @@ class KanvasCanvas extends HTMLElement {
             context.fillRect(
               x * this.zoom,
               y * this.zoom,
-              this.zoom + 1,
-              this.zoom + 1
+              this.zoom,
+              this.zoom
             );
           }
         }
