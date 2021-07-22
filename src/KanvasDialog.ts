@@ -18,11 +18,6 @@ import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
 
-// 14 tone
-// save
-// text preview
-// publish to npm
-
 class KanvasDialog extends HTMLElement {
   static get observedAttributes(): string[] {
     return ["open"];
