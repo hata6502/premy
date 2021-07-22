@@ -11,6 +11,7 @@ import { colors } from "./colors";
 import type { ColorType } from "./colors";
 import contentPasteSVG from "./content_paste_black_24dp.svg";
 import editSVG from "./edit_black_24dp.svg";
+import folderOpenSVG from "./folder_open_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
 import undoSVG from "./undo_black_24dp.svg";
@@ -18,10 +19,8 @@ import undoSVG from "./undo_black_24dp.svg";
 const dialogMaxWidth = 1280;
 
 // 14 tone
-// load
 // save
 // text preview
-// window width change
 // publish to npm
 
 class KanvasDialog extends HTMLElement {
@@ -35,6 +34,7 @@ class KanvasDialog extends HTMLElement {
   private copiedToClipboardSnackbar;
   private colorButtons: Record<ColorType, IconButtonToggle>;
   private dialog;
+  private fileInput;
   private redoButton;
   private textInput;
   private undoButton;
@@ -72,6 +72,10 @@ class KanvasDialog extends HTMLElement {
           user-select: none;
         }
 
+        #file-input {
+          display: none;
+        }
+
         #redo-button[disabled], #undo-button[disabled] {
           opacity: 0.4;
         }
@@ -90,17 +94,17 @@ class KanvasDialog extends HTMLElement {
           <kanvas-canvas id="canvas"></kanvas-canvas>
 
           <div id="action-container">
-            <mwc-icon-button id="clear-button">
+            <mwc-icon-button id="clear-button" title="clear">
               <img src="${insertDriveFileSVG}" />
             </mwc-icon-button>
 
             <div class="divider"></div>
 
-            <mwc-icon-button id="undo-button" disabled>
+            <mwc-icon-button id="undo-button" disabled title="undo">
               <img src="${undoSVG}" />
             </mwc-icon-button>
 
-            <mwc-icon-button id="redo-button" disabled>
+            <mwc-icon-button id="redo-button" disabled title="redo">
               <img src="${redoSVG}" />
             </mwc-icon-button>
 
@@ -158,7 +162,16 @@ class KanvasDialog extends HTMLElement {
 
             <div class="divider"></div>
 
-            <mwc-icon-button id="copy-to-clipboard-button">
+            <mwc-icon-button id="open-button" title="open">
+              <img src="${folderOpenSVG}" />
+            </mwc-icon-button>
+
+            <input id="file-input" type="file" accept="image/*" />
+
+            <mwc-icon-button
+              id="copy-to-clipboard-button"
+              title="copy to clipboard"
+            >
               <img src="${contentPasteSVG}" />
             </mwc-icon-button>
           </div>
@@ -178,16 +191,22 @@ class KanvasDialog extends HTMLElement {
 
     const canvas = shadow.querySelector("#canvas");
     const clearButton = shadow.querySelector("#clear-button");
+
     const clipboardErrorSnackbar = shadow.querySelector(
       "#clipboard-error-snackbar"
     );
+
     const copiedToClipboardSnackbar = shadow.querySelector(
       "#copied-to-clipboard-snackbar"
     );
+
     const copyToClipboardButton = shadow.querySelector(
       "#copy-to-clipboard-button"
     );
+
     const dialog = shadow.querySelector("#dialog");
+    const fileInput = shadow.querySelector("#file-input");
+    const openButton = shadow.querySelector("#open-button");
     const redoButton = shadow.querySelector("#redo-button");
     const textInput = shadow.querySelector("#text-input");
     const undoButton = shadow.querySelector("#undo-button");
@@ -199,6 +218,8 @@ class KanvasDialog extends HTMLElement {
       !(copiedToClipboardSnackbar instanceof Snackbar) ||
       !(copyToClipboardButton instanceof IconButton) ||
       !(dialog instanceof Dialog) ||
+      !(fileInput instanceof HTMLInputElement) ||
+      !(openButton instanceof IconButton) ||
       !(redoButton instanceof IconButton) ||
       !(textInput instanceof TextField) ||
       !(undoButton instanceof IconButton)
@@ -210,6 +231,7 @@ class KanvasDialog extends HTMLElement {
     this.clipboardErrorSnackbar = clipboardErrorSnackbar;
     this.copiedToClipboardSnackbar = copiedToClipboardSnackbar;
     this.dialog = dialog;
+    this.fileInput = fileInput;
     this.redoButton = redoButton;
     this.textInput = textInput;
     this.undoButton = undoButton;
@@ -289,6 +311,9 @@ class KanvasDialog extends HTMLElement {
 
     this.textInput.addEventListener("focus", this.handleTextInputFocus);
     this.textInput.addEventListener("input", this.handleTextInputInput);
+
+    openButton.addEventListener("click", this.handleOpenButtonClick);
+    this.fileInput.addEventListener("change", this.handleFileInputChange);
 
     copyToClipboardButton.addEventListener(
       "click",
@@ -387,8 +412,7 @@ class KanvasDialog extends HTMLElement {
     this.undoButton.disabled = event.detail.historyIndex < 1;
   };
 
-  private handleClearButtonClick = () =>
-    this.canvas.clear({ color: this.canvas.getColor() });
+  private handleClearButtonClick = () => this.canvas.clear();
 
   private handleCopyToClipboardButtonClick = () =>
     this.canvas.toBlob(
@@ -415,6 +439,33 @@ class KanvasDialog extends HTMLElement {
         })()
     );
 
+  private handleFileInputChange = () => {
+    const file = this.fileInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const fileReader = new FileReader();
+
+    fileReader.addEventListener(
+      "load",
+      () =>
+        void (async () => {
+          const src = fileReader.result;
+
+          if (typeof src !== "string") {
+            throw new Error("Source is not a string");
+          }
+
+          await this.canvas.load({ src });
+        })()
+    );
+
+    fileReader.readAsDataURL(file);
+  };
+
+  private handleOpenButtonClick = () => this.fileInput.click();
   private handleRedoButtonClick = () => this.canvas.redo();
   private handleTextInputFocus = () => this.canvas.setMode({ mode: "text" });
 

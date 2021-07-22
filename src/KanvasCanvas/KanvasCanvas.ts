@@ -1,4 +1,5 @@
 import "@material/mwc-dialog";
+import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { dialogMaxWidth } from "../KanvasDialog";
@@ -9,9 +10,6 @@ import type {
   KanvasPointerUpEvent,
   KanvasPosition,
 } from "./KanvasPointerListener";
-
-const canvasHeight = 180;
-const canvasWidth = 320;
 
 const historyMaxLength = 30;
 
@@ -29,27 +27,31 @@ type KanvasHistoryChangeEvent = CustomEvent<{
 type Mode = "shape" | "text";
 
 class KanvasCanvas extends HTMLElement {
-  private canvas;
-
   private brushType: BrushType;
+  private canvas;
   private color: string;
+  private height: number;
   private history: string[];
   private historyIndex: number;
   private mode: Mode;
   private prevCanvasPosition: KanvasPosition;
   private text;
-  private zoom;
+  private width: number;
+  private zoom: number;
 
   constructor() {
     super();
 
     this.brushType = "light";
     this.color = "#000000";
+    this.height = 0;
     this.history = [];
     this.historyIndex = -1;
     this.mode = "shape";
     this.text = "";
     this.prevCanvasPosition = { x: 0, y: 0 };
+    this.width = 0;
+    this.zoom = 0;
 
     const shadow = this.attachShadow({ mode: "open" });
 
@@ -74,16 +76,6 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas = canvas;
 
-    const heightZoom = (window.innerHeight - 144) / canvasHeight;
-    const widthZoom =
-      (Math.min(window.innerWidth, dialogMaxWidth) - 96) / canvasWidth;
-
-    this.zoom = Math.min(heightZoom, widthZoom);
-
-    this.canvas.height = canvasHeight * this.zoom;
-    this.canvas.width = canvasWidth * this.zoom;
-    this.clear({ color: "#ffffff" });
-
     pointerListener.addEventListener(
       "kanvasPointerDown",
       this.handlePointerDown
@@ -95,14 +87,12 @@ class KanvasCanvas extends HTMLElement {
     );
 
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
+
+    void this.load({ src: blankPNG });
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
     this.brushType = brushType;
-  }
-
-  getColor(): string {
-    return this.color;
   }
 
   setColor({ color }: { color: string }): void {
@@ -125,16 +115,58 @@ class KanvasCanvas extends HTMLElement {
     this.canvas.toBlob(callback, type, quality);
   }
 
-  clear({ color }: { color: string }): void {
+  clear(): void {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
       throw new Error("Canvas is not a 2D context");
     }
 
-    context.fillStyle = color;
+    context.fillStyle = this.color;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.pushHistory();
+  }
+
+  async load({ src }: { src: string }): Promise<void> {
+    const context = this.canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    const imageElement = await new Promise<HTMLImageElement>(
+      (resolve, reject) => {
+        const imageElement = new Image();
+
+        imageElement.addEventListener("error", (event) => reject(event));
+        imageElement.addEventListener("load", () => resolve(imageElement));
+        imageElement.src = src;
+      }
+    );
+
+    const density = Math.sqrt(
+      (320 * 180) / imageElement.naturalWidth / imageElement.naturalHeight
+    );
+
+    this.height = Math.round(imageElement.naturalHeight * density);
+    this.width = Math.round(imageElement.naturalWidth * density);
+
+    const heightZoom = (window.innerHeight - 144) / this.height;
+
+    const widthZoom =
+      (Math.min(window.innerWidth, dialogMaxWidth) - 96) / this.width;
+
+    this.zoom = Math.min(heightZoom, widthZoom);
+    this.canvas.height = this.height * this.zoom;
+    this.canvas.width = this.width * this.zoom;
+
+    context.drawImage(
+      imageElement,
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    );
   }
 
   undo(): void {
@@ -236,9 +268,9 @@ class KanvasCanvas extends HTMLElement {
       case "text": {
         if (
           position.x < 0 ||
-          position.x >= canvasWidth ||
+          position.x >= this.width ||
           position.y < 0 ||
-          position.y >= canvasHeight
+          position.y >= this.height
         ) {
           break;
         }
