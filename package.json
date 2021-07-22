@@ -29,6 +29,7 @@
     "@material/mwc-dialog": "^0.21.0",
     "@material/mwc-icon-button": "^0.21.0",
     "@material/mwc-icon-button-toggle": "^0.21.0",
+    "@material/mwc-snackbar": "^0.22.1",
     "@material/mwc-textfield": "^0.22.1",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",

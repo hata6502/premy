@@ -117,6 +117,14 @@ class KanvasCanvas extends HTMLElement {
     this.text = text;
   }
 
+  toBlob(
+    callback: BlobCallback,
+    type?: string | undefined,
+    quality?: unknown
+  ): void {
+    this.canvas.toBlob(callback, type, quality);
+  }
+
   clear({ color }: { color: string }): void {
     const context = this.canvas.getContext("2d");
 
@@ -164,6 +172,8 @@ class KanvasCanvas extends HTMLElement {
     const event: KanvasHistoryChangeEvent = new CustomEvent(
       "kanvasHistoryChange",
       {
+        bubbles: true,
+        composed: true,
         detail: {
           history: this.history,
           historyIndex: this.historyIndex,

@@ -1,6 +1,7 @@
 import { Dialog } from "@material/mwc-dialog";
 import { IconButton } from "@material/mwc-icon-button";
 import { IconButtonToggle } from "@material/mwc-icon-button-toggle";
+import { Snackbar } from "@material/mwc-snackbar";
 import { TextField } from "@material/mwc-textfield";
 import { KanvasCanvas } from "./KanvasCanvas";
 import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
@@ -8,6 +9,7 @@ import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
 import { colors } from "./colors";
 import type { ColorType } from "./colors";
+import contentPasteSVG from "./content_paste_black_24dp.svg";
 import editSVG from "./edit_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
@@ -16,7 +18,6 @@ import undoSVG from "./undo_black_24dp.svg";
 const dialogMaxWidth = 1280;
 
 // 14 tone
-// copy to clipboard
 // load
 // save
 // text preview
@@ -29,8 +30,10 @@ class KanvasDialog extends HTMLElement {
   }
 
   private brushButtons: Record<BrushType, IconButtonToggle>;
-  private colorButtons: Record<ColorType, IconButtonToggle>;
   private canvas;
+  private clipboardErrorSnackbar;
+  private copiedToClipboardSnackbar;
+  private colorButtons: Record<ColorType, IconButtonToggle>;
   private dialog;
   private redoButton;
   private textInput;
@@ -39,7 +42,7 @@ class KanvasDialog extends HTMLElement {
   constructor() {
     super();
 
-    const shadow = this.attachShadow({ mode: "closed" });
+    const shadow = this.attachShadow({ mode: "open" });
 
     shadow.innerHTML = `
       <style>
@@ -152,13 +155,38 @@ class KanvasDialog extends HTMLElement {
               outlined
               label="Text"
             ></mwc-textfield>
+
+            <div class="divider"></div>
+
+            <mwc-icon-button id="copy-to-clipboard-button">
+              <img src="${contentPasteSVG}" />
+            </mwc-icon-button>
           </div>
         </div>
       </mwc-dialog>
+
+      <mwc-snackbar
+        id="copied-to-clipboard-snackbar"
+        labelText="Copied to clipboard."
+      ></mwc-snackbar>
+
+      <mwc-snackbar
+        id="clipboard-error-snackbar"
+        labelText="Failed to copy to clipboard."
+      ></mwc-snackbar>
     `;
 
     const canvas = shadow.querySelector("#canvas");
     const clearButton = shadow.querySelector("#clear-button");
+    const clipboardErrorSnackbar = shadow.querySelector(
+      "#clipboard-error-snackbar"
+    );
+    const copiedToClipboardSnackbar = shadow.querySelector(
+      "#copied-to-clipboard-snackbar"
+    );
+    const copyToClipboardButton = shadow.querySelector(
+      "#copy-to-clipboard-button"
+    );
     const dialog = shadow.querySelector("#dialog");
     const redoButton = shadow.querySelector("#redo-button");
     const textInput = shadow.querySelector("#text-input");
@@ -167,6 +195,9 @@ class KanvasDialog extends HTMLElement {
     if (
       !(canvas instanceof KanvasCanvas) ||
       !(clearButton instanceof IconButton) ||
+      !(clipboardErrorSnackbar instanceof Snackbar) ||
+      !(copiedToClipboardSnackbar instanceof Snackbar) ||
+      !(copyToClipboardButton instanceof IconButton) ||
       !(dialog instanceof Dialog) ||
       !(redoButton instanceof IconButton) ||
       !(textInput instanceof TextField) ||
@@ -176,6 +207,8 @@ class KanvasDialog extends HTMLElement {
     }
 
     this.canvas = canvas;
+    this.clipboardErrorSnackbar = clipboardErrorSnackbar;
+    this.copiedToClipboardSnackbar = copiedToClipboardSnackbar;
     this.dialog = dialog;
     this.redoButton = redoButton;
     this.textInput = textInput;
@@ -256,6 +289,11 @@ class KanvasDialog extends HTMLElement {
 
     this.textInput.addEventListener("focus", this.handleTextInputFocus);
     this.textInput.addEventListener("input", this.handleTextInputInput);
+
+    copyToClipboardButton.addEventListener(
+      "click",
+      this.handleCopyToClipboardButtonClick
+    );
   }
 
   attributeChangedCallback(): void {
@@ -339,27 +377,43 @@ class KanvasDialog extends HTMLElement {
     this.canvas.setColor({ color: colorType });
   }
 
-  private handleClosed = (event: Event) => {
-    this.removeAttribute("open");
-    this.dispatchEvent(event);
-  };
-
-  private handleOpening = (event: Event) => {
-    this.setAttribute("open", "");
-    this.dispatchEvent(event);
-  };
+  private handleClosed = () => this.removeAttribute("open");
+  private handleOpening = () => this.setAttribute("open", "");
 
   private handleCanvasHistoryChange = (event: KanvasHistoryChangeEvent) => {
     this.redoButton.disabled =
       event.detail.historyIndex >= event.detail.history.length - 1;
 
     this.undoButton.disabled = event.detail.historyIndex < 1;
-
-    this.dispatchEvent(event);
   };
 
   private handleClearButtonClick = () =>
     this.canvas.clear({ color: this.canvas.getColor() });
+
+  private handleCopyToClipboardButtonClick = () =>
+    this.canvas.toBlob(
+      (blob) =>
+        void (async () => {
+          try {
+            if (!blob) {
+              throw new Error("Blob is null");
+            }
+
+            // @ts-expect-error ClipboardItem is not defined.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const data = [new ClipboardItem({ [blob.type]: blob })];
+
+            // @ts-expect-error Clipboard.write() is not defined.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            await navigator.clipboard.write(data);
+            this.copiedToClipboardSnackbar.show();
+          } catch (exception: unknown) {
+            this.clipboardErrorSnackbar.show();
+
+            throw exception;
+          }
+        })()
+    );
 
   private handleRedoButtonClick = () => this.canvas.redo();
   private handleTextInputFocus = () => this.canvas.setMode({ mode: "text" });
