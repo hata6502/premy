@@ -263,8 +263,14 @@ class KanvasCanvas extends HTMLElement {
         const tone = tones[this.toneType];
 
         for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
+          if (y < 0 || y >= this.height) {
+            continue;
+          }
+
           for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
             if (
+              x < 0 ||
+              x >= this.width ||
               brush.bitmap[y - beginY][x - beginX] === 0 ||
               tone.bitmap[y % tone.bitmap.length][x % tone.bitmap[0].length] ===
                 0
