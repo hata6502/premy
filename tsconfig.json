@@ -2,14 +2,14 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["DOM", "ESNext"],
-    "module": "ESNext",
+    "lib": ["DOM", "ES2020"],
+    "module": "ES2020",
     "moduleResolution": "node",
     "noPropertyAccessFromIndexSignature": true,
     "outDir": "dist",
     "pretty": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ES2020"
   }
 }
