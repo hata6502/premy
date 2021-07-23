@@ -35,6 +35,7 @@ class KanvasCanvas extends HTMLElement {
   private height: number;
   private history: string[];
   private historyIndex: number;
+  private isEnabled;
   private mode: Mode;
   private prevCanvasPosition: KanvasPosition;
   private text;
@@ -50,6 +51,7 @@ class KanvasCanvas extends HTMLElement {
     this.height = 0;
     this.history = [];
     this.historyIndex = -1;
+    this.isEnabled = false;
     this.mode = "shape";
     this.prevCanvasPosition = { x: 0, y: 0 };
     this.text = "";
@@ -101,6 +103,10 @@ class KanvasCanvas extends HTMLElement {
 
   setColor({ color }: { color: string }): void {
     this.color = color;
+  }
+
+  setIsEnabled({ isEnabled }: { isEnabled: boolean }): void {
+    this.isEnabled = isEnabled;
   }
 
   setMode({ mode }: { mode: Mode }): void {
@@ -340,7 +346,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private handlePointerDown = (event: KanvasPointerDownEvent) => {
-    if (this.canvas.offsetParent === null) {
+    if (!this.isEnabled) {
       return;
     }
 
@@ -351,7 +357,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
-    if (this.canvas.offsetParent === null) {
+    if (!this.isEnabled) {
       return;
     }
 
@@ -383,7 +389,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerUp = (event: KanvasPointerUpEvent) => {
-    if (this.canvas.offsetParent === null) {
+    if (!this.isEnabled) {
       return;
     }
 

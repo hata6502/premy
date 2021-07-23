@@ -518,6 +518,11 @@ class KanvasDialog extends HTMLElement {
     this.canvas.setMode({ mode: "shape" });
   }
 
+  private handleClosed = () => {
+    this.canvas.setIsEnabled({ isEnabled: false });
+    this.removeAttribute("open");
+  };
+
   private handleColorButtonClick({ colorType }: { colorType: ColorType }) {
     Object.values(this.colorButtons).forEach(
       (colorButton) => (colorButton.on = false)
@@ -526,9 +531,6 @@ class KanvasDialog extends HTMLElement {
     this.colorButtons[colorType].on = true;
     this.canvas.setColor({ color: colorType });
   }
-
-  private handleClosed = () => this.removeAttribute("open");
-  private handleOpening = () => this.setAttribute("open", "");
 
   private handleCanvasHistoryChange = (event: KanvasHistoryChangeEvent) => {
     this.redoButton.disabled =
@@ -591,6 +593,12 @@ class KanvasDialog extends HTMLElement {
   };
 
   private handleOpenButtonClick = () => this.fileInput.click();
+
+  private handleOpening = () => {
+    this.canvas.setIsEnabled({ isEnabled: true });
+    this.setAttribute("open", "");
+  };
+
   private handleRedoButtonClick = () => this.canvas.redo();
 
   private handleSaveButtonClick = () => {

@@ -53,6 +53,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
       "kanvasPointerDown",
       {
+        bubbles: true,
+        composed: true,
         detail: { x: event.clientX, y: event.clientY },
       }
     );
@@ -68,6 +70,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerMoveEvent: KanvasPointerMoveEvent = new CustomEvent(
       "kanvasPointerMove",
       {
+        bubbles: true,
+        composed: true,
         detail: { x: event.clientX, y: event.clientY },
       }
     );
@@ -79,6 +83,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
       "kanvasPointerUp",
       {
+        bubbles: true,
+        composed: true,
         detail: { x: event.clientX, y: event.clientY },
       }
     );
@@ -94,6 +100,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
       "kanvasPointerDown",
       {
+        bubbles: true,
+        composed: true,
         detail: {
           x: event.touches[0].clientX,
           y: event.touches[0].clientY,
@@ -112,6 +120,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerMoveEvent: KanvasPointerMoveEvent = new CustomEvent(
       "kanvasPointerMove",
       {
+        bubbles: true,
+        composed: true,
         detail: {
           x: event.touches[0].clientX,
           y: event.touches[0].clientY,
@@ -130,6 +140,8 @@ class KanvasPointerListener extends HTMLElement {
     const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
       "kanvasPointerUp",
       {
+        bubbles: true,
+        composed: true,
         detail: {
           x: event.touches[0].clientX,
           y: event.touches[0].clientY,
