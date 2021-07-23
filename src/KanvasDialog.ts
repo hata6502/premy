@@ -14,6 +14,7 @@ import editSVG from "./edit_black_24dp.svg";
 import folderOpenSVG from "./folder_open_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
+import saveSVG from "./save_black_24dp.svg";
 import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
@@ -163,6 +164,10 @@ class KanvasDialog extends HTMLElement {
 
             <input id="file-input" type="file" accept="image/*" />
 
+            <mwc-icon-button id="save-button" title="save" >
+              <img src="${saveSVG}" />
+            </mwc-icon-button>
+
             <mwc-icon-button
               id="copy-to-clipboard-button"
               title="copy to clipboard"
@@ -203,6 +208,7 @@ class KanvasDialog extends HTMLElement {
     const fileInput = shadow.querySelector("#file-input");
     const openButton = shadow.querySelector("#open-button");
     const redoButton = shadow.querySelector("#redo-button");
+    const saveButton = shadow.querySelector("#save-button");
     const textInput = shadow.querySelector("#text-input");
     const undoButton = shadow.querySelector("#undo-button");
 
@@ -216,6 +222,7 @@ class KanvasDialog extends HTMLElement {
       !(fileInput instanceof HTMLInputElement) ||
       !(openButton instanceof IconButton) ||
       !(redoButton instanceof IconButton) ||
+      !(saveButton instanceof IconButton) ||
       !(textInput instanceof TextField) ||
       !(undoButton instanceof IconButton)
     ) {
@@ -309,6 +316,8 @@ class KanvasDialog extends HTMLElement {
 
     openButton.addEventListener("click", this.handleOpenButtonClick);
     this.fileInput.addEventListener("change", this.handleFileInputChange);
+
+    saveButton.addEventListener("click", this.handleSaveButtonClick);
 
     copyToClipboardButton.addEventListener(
       "click",
@@ -462,6 +471,20 @@ class KanvasDialog extends HTMLElement {
 
   private handleOpenButtonClick = () => this.fileInput.click();
   private handleRedoButtonClick = () => this.canvas.redo();
+
+  private handleSaveButtonClick = () => {
+    const anchorElement = document.createElement("a");
+
+    try {
+      anchorElement.download = "sketch.png";
+      anchorElement.href = this.canvas.toDataURL("image/png");
+      document.body.append(anchorElement);
+      anchorElement.click();
+    } finally {
+      anchorElement.remove();
+    }
+  };
+
   private handleTextInputFocus = () => this.canvas.setMode({ mode: "text" });
 
   private handleTextInputInput = () =>

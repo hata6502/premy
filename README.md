@@ -2,6 +2,12 @@
 
 A sketching canvas written in Web Components.
 
+## Install
+
+```bash
+npm i kanvas-dialog
+```
+
 ## Development
 
 ```bash

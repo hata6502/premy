@@ -107,14 +107,6 @@ class KanvasCanvas extends HTMLElement {
     this.text = text;
   }
 
-  toBlob(
-    callback: BlobCallback,
-    type?: string | undefined,
-    quality?: unknown
-  ): void {
-    this.canvas.toBlob(callback, type, quality);
-  }
-
   clear(): void {
     const context = this.canvas.getContext("2d");
 
@@ -169,22 +161,30 @@ class KanvasCanvas extends HTMLElement {
     );
   }
 
-  undo(): void {
-    if (this.historyIndex < 1) {
-      return;
-    }
-
-    this.historyIndex--;
-    this.putHistory();
-    this.dispatchChangeHistoryEvent();
-  }
-
   redo(): void {
     if (this.historyIndex >= this.history.length - 1) {
       return;
     }
 
     this.historyIndex++;
+    this.putHistory();
+    this.dispatchChangeHistoryEvent();
+  }
+
+  toBlob(callback: BlobCallback, type?: string, quality?: unknown): void {
+    return this.canvas.toBlob(callback, type, quality);
+  }
+
+  toDataURL(type?: string, quality?: unknown): string {
+    return this.canvas.toDataURL(type, quality);
+  }
+
+  undo(): void {
+    if (this.historyIndex < 1) {
+      return;
+    }
+
+    this.historyIndex--;
     this.putHistory();
     this.dispatchChangeHistoryEvent();
   }
