@@ -15,6 +15,8 @@ import folderOpenSVG from "./folder_open_black_24dp.svg";
 import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
 import redoSVG from "./redo_black_24dp.svg";
 import saveSVG from "./save_black_24dp.svg";
+import { tones } from "./tones";
+import type { ToneType } from "./tones";
 import undoSVG from "./undo_black_24dp.svg";
 
 const dialogMaxWidth = 1280;
@@ -33,6 +35,7 @@ class KanvasDialog extends HTMLElement {
   private fileInput;
   private redoButton;
   private textInput;
+  private toneButtons: Record<ToneType, IconButtonToggle>;
   private undoButton;
 
   constructor() {
@@ -128,25 +131,45 @@ class KanvasDialog extends HTMLElement {
               )
               .join("")}
 
-              <div class="divider"></div>
+            <div class="divider"></div>
 
-              ${Object.values(colors)
-                .map(
-                  (color) => `
-                    <style>
-                      #${color.button.id}[on] {
-                        background-color: rgba(0, 0, 0, 0.07);
-                        border-radius: 50%;
-                      }
-                    </style>
+            ${Object.values(colors)
+              .map(
+                (color) => `
+                  <style>
+                    #${color.button.id}[on] {
+                      background-color: rgba(0, 0, 0, 0.07);
+                      border-radius: 50%;
+                    }
+                  </style>
 
-                    <mwc-icon-button-toggle id="${color.button.id}">
-                      <img slot="onIcon" src="${color.button.image}" />
-                      <img slot="offIcon" src="${color.button.image}" />
-                    </mwc-icon-button-toggle>
-                  `
-                )
-                .join("")}
+                  <mwc-icon-button-toggle id="${color.button.id}">
+                    <img slot="onIcon" src="${color.button.image}" />
+                    <img slot="offIcon" src="${color.button.image}" />
+                  </mwc-icon-button-toggle>
+                `
+              )
+              .join("")}
+
+            <div class="divider"></div>
+
+            ${Object.values(tones)
+              .map(
+                (tone) => `
+                  <style>
+                    #${tone.button.id}[on] {
+                      background-color: rgba(0, 0, 0, 0.07);
+                      border-radius: 50%;
+                    }
+                  </style>
+
+                  <mwc-icon-button-toggle id="${tone.button.id}">
+                    <img slot="onIcon" src="${tone.button.image}" />
+                    <img slot="offIcon" src="${tone.button.image}" />
+                  </mwc-icon-button-toggle>
+                `
+              )
+              .join("")}
 
             <div class="divider"></div>
 
@@ -311,6 +334,79 @@ class KanvasDialog extends HTMLElement {
       }),
     };
 
+    this.toneButtons = {
+      fill: this.initializeToneButton({
+        toneType: "fill",
+        on: true,
+        shadow,
+      }),
+      dotLight: this.initializeToneButton({
+        toneType: "dotLight",
+        on: false,
+        shadow,
+      }),
+      dotMedium: this.initializeToneButton({
+        toneType: "dotMedium",
+        on: false,
+        shadow,
+      }),
+      dotBold: this.initializeToneButton({
+        toneType: "dotBold",
+        on: false,
+        shadow,
+      }),
+      horizontalLight: this.initializeToneButton({
+        toneType: "horizontalLight",
+        on: false,
+        shadow,
+      }),
+      horizontalMedium: this.initializeToneButton({
+        toneType: "horizontalMedium",
+        on: false,
+        shadow,
+      }),
+      horizontalBold: this.initializeToneButton({
+        toneType: "horizontalBold",
+        on: false,
+        shadow,
+      }),
+      verticalLight: this.initializeToneButton({
+        toneType: "verticalLight",
+        on: false,
+        shadow,
+      }),
+      verticalMedium: this.initializeToneButton({
+        toneType: "verticalMedium",
+        on: false,
+        shadow,
+      }),
+      verticalBold: this.initializeToneButton({
+        toneType: "verticalBold",
+        on: false,
+        shadow,
+      }),
+      slashLight: this.initializeToneButton({
+        toneType: "slashLight",
+        on: false,
+        shadow,
+      }),
+      slashBold: this.initializeToneButton({
+        toneType: "slashBold",
+        on: false,
+        shadow,
+      }),
+      backslashLight: this.initializeToneButton({
+        toneType: "backslashLight",
+        on: false,
+        shadow,
+      }),
+      backslashBold: this.initializeToneButton({
+        toneType: "backslashBold",
+        on: false,
+        shadow,
+      }),
+    };
+
     this.textInput.addEventListener("focus", this.handleTextInputFocus);
     this.textInput.addEventListener("input", this.handleTextInputInput);
 
@@ -378,6 +474,31 @@ class KanvasDialog extends HTMLElement {
 
     button.addEventListener("click", () =>
       this.handleColorButtonClick({ colorType })
+    );
+
+    return button;
+  }
+
+  private initializeToneButton({
+    toneType,
+    on,
+    shadow,
+  }: {
+    toneType: ToneType;
+    on: boolean;
+    shadow: ShadowRoot;
+  }) {
+    const tone = tones[toneType];
+    const button = shadow.querySelector(`#${tone.button.id}`);
+
+    if (!(button instanceof IconButtonToggle)) {
+      throw new Error(`${tone.button.id} is not a valid child`);
+    }
+
+    button.on = on;
+
+    button.addEventListener("click", () =>
+      this.handleToneButtonClick({ toneType })
     );
 
     return button;
@@ -489,6 +610,15 @@ class KanvasDialog extends HTMLElement {
 
   private handleTextInputInput = () =>
     this.canvas.setText({ text: this.textInput.value });
+
+  private handleToneButtonClick({ toneType }: { toneType: ToneType }) {
+    Object.values(this.toneButtons).forEach(
+      (toneButton) => (toneButton.on = false)
+    );
+
+    this.toneButtons[toneType].on = true;
+    this.canvas.setToneType({ toneType });
+  }
 
   private handleUndoButtonClick = () => this.canvas.undo();
 }

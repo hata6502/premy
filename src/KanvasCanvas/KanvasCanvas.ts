@@ -1,8 +1,10 @@
 import "@material/mwc-dialog";
+import { dialogMaxWidth } from "../KanvasDialog";
 import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
-import { dialogMaxWidth } from "../KanvasDialog";
+import { tones } from "../tones";
+import type { ToneType } from "../tones";
 import { KanvasPointerListener } from "./KanvasPointerListener";
 import type {
   KanvasPointerDownEvent,
@@ -36,6 +38,7 @@ class KanvasCanvas extends HTMLElement {
   private mode: Mode;
   private prevCanvasPosition: KanvasPosition;
   private text;
+  private toneType: ToneType;
   private width: number;
   private zoom: number;
 
@@ -48,8 +51,9 @@ class KanvasCanvas extends HTMLElement {
     this.history = [];
     this.historyIndex = -1;
     this.mode = "shape";
-    this.text = "";
     this.prevCanvasPosition = { x: 0, y: 0 };
+    this.text = "";
+    this.toneType = "fill";
     this.width = 0;
     this.zoom = 0;
 
@@ -105,6 +109,10 @@ class KanvasCanvas extends HTMLElement {
 
   setText({ text }: { text: string }): void {
     this.text = text;
+  }
+
+  setToneType({ toneType }: { toneType: ToneType }): void {
+    this.toneType = toneType;
   }
 
   clear(): void {
@@ -246,10 +254,15 @@ class KanvasCanvas extends HTMLElement {
       case "shape": {
         const beginX = position.x - (brush.bitmap[0].length - 1) / 2;
         const beginY = position.y - (brush.bitmap.length - 1) / 2;
+        const tone = tones[this.toneType];
 
         for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
           for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
-            if (brush.bitmap[y - beginY][x - beginX] === 0) {
+            if (
+              brush.bitmap[y - beginY][x - beginX] === 0 ||
+              tone.bitmap[y % tone.bitmap.length][x % tone.bitmap[0].length] ===
+                0
+            ) {
               continue;
             }
 
