@@ -279,10 +279,10 @@ class KanvasCanvas extends HTMLElement {
             }
 
             context.fillRect(
-              x * this.zoom,
-              y * this.zoom,
-              this.zoom,
-              this.zoom
+              Math.round(x * this.zoom),
+              Math.round(y * this.zoom),
+              Math.round(this.zoom),
+              Math.round(this.zoom)
             );
           }
         }
@@ -304,8 +304,8 @@ class KanvasCanvas extends HTMLElement {
 
         context.fillText(
           this.text,
-          position.x * this.zoom,
-          position.y * this.zoom
+          Math.round(position.x * this.zoom),
+          Math.round(position.y * this.zoom)
         );
 
         break;
