@@ -133,6 +133,14 @@ class KanvasDialog extends HTMLElement {
 
             <div class="divider"></div>
 
+            <mwc-textfield
+              id="text-input"
+              outlined
+              label="Text"
+            ></mwc-textfield>
+
+            <div class="divider"></div>
+
             ${Object.values(colors)
               .map(
                 (color) => `
@@ -170,14 +178,6 @@ class KanvasDialog extends HTMLElement {
                 `
               )
               .join("")}
-
-            <div class="divider"></div>
-
-            <mwc-textfield
-              id="text-input"
-              outlined
-              label="Text"
-            ></mwc-textfield>
 
             <div class="divider"></div>
 

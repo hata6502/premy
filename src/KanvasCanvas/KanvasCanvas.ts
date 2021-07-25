@@ -157,7 +157,7 @@ class KanvasCanvas extends HTMLElement {
     this.height = Math.round(imageElement.naturalHeight * density);
     this.width = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 144) / this.height;
+    const heightZoom = (window.innerHeight - 152) / this.height;
 
     const widthZoom =
       (Math.min(window.innerWidth, dialogMaxWidth) - 96) / this.width;
@@ -173,6 +173,8 @@ class KanvasCanvas extends HTMLElement {
       this.canvas.width,
       this.canvas.height
     );
+
+    this.pushHistory();
   }
 
   redo(): void {
@@ -253,69 +255,33 @@ class KanvasCanvas extends HTMLElement {
     }
 
     const brush = brushes[this.brushType];
+    const beginX = position.x - (brush.bitmap[0].length - 1) / 2;
+    const beginY = position.y - (brush.bitmap.length - 1) / 2;
+    const tone = tones[this.toneType];
 
     context.fillStyle = this.color;
 
-    switch (this.mode) {
-      case "shape": {
-        const beginX = position.x - (brush.bitmap[0].length - 1) / 2;
-        const beginY = position.y - (brush.bitmap.length - 1) / 2;
-        const tone = tones[this.toneType];
-
-        for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
-          if (y < 0 || y >= this.height) {
-            continue;
-          }
-
-          for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
-            if (
-              x < 0 ||
-              x >= this.width ||
-              brush.bitmap[y - beginY][x - beginX] === 0 ||
-              tone.bitmap[y % tone.bitmap.length][x % tone.bitmap[0].length] ===
-                0
-            ) {
-              continue;
-            }
-
-            context.fillRect(
-              Math.round(x * this.zoom),
-              Math.round(y * this.zoom),
-              Math.round(this.zoom),
-              Math.round(this.zoom)
-            );
-          }
-        }
-
-        break;
+    for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
+      if (y < 0 || y >= this.height) {
+        continue;
       }
 
-      case "text": {
+      for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
         if (
-          position.x < 0 ||
-          position.x >= this.width ||
-          position.y < 0 ||
-          position.y >= this.height
+          x < 0 ||
+          x >= this.width ||
+          brush.bitmap[y - beginY][x - beginX] === 0 ||
+          tone.bitmap[y % tone.bitmap.length][x % tone.bitmap[0].length] === 0
         ) {
-          break;
+          continue;
         }
 
-        context.font = `${brush.font.size * this.zoom}px sans-serif`;
-
-        context.fillText(
-          this.text,
-          Math.round(position.x * this.zoom),
-          Math.round(position.y * this.zoom)
+        context.fillRect(
+          Math.floor(x * this.zoom),
+          Math.floor(y * this.zoom),
+          Math.ceil(this.zoom),
+          Math.ceil(this.zoom)
         );
-
-        break;
-      }
-
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const exhaustiveCheck: never = this.mode;
-
-        throw new Error("Unknown mode");
       }
     }
   }
@@ -356,10 +322,27 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
-    const position = this.getCanvasPosition(event.detail);
+    switch (this.mode) {
+      case "shape": {
+        const position = this.getCanvasPosition(event.detail);
 
-    this.drawPoint(position);
-    this.prevCanvasPosition = position;
+        this.drawPoint(position);
+        this.prevCanvasPosition = position;
+
+        break;
+      }
+
+      case "text": {
+        break;
+      }
+
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = this.mode;
+
+        throw new Error("Unknown mode");
+      }
+    }
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
@@ -399,10 +382,10 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
+    const canvasPosition = this.getCanvasPosition(event.detail);
+
     switch (this.mode) {
       case "shape": {
-        const canvasPosition = this.getCanvasPosition(event.detail);
-
         this.drawLine({
           from: this.prevCanvasPosition,
           to: canvasPosition,
@@ -412,6 +395,33 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
+        if (
+          canvasPosition.x < 0 ||
+          canvasPosition.x >= this.width ||
+          canvasPosition.y < 0 ||
+          canvasPosition.y >= this.height
+        ) {
+          break;
+        }
+
+        const context = this.canvas.getContext("2d");
+
+        if (!context) {
+          throw new Error("Canvas is not a 2D context");
+        }
+
+        context.fillStyle = this.color;
+
+        context.font = `${
+          brushes[this.brushType].font.size * this.zoom
+        }px sans-serif`;
+
+        context.fillText(
+          this.text,
+          Math.round(canvasPosition.x * this.zoom),
+          Math.round(canvasPosition.y * this.zoom)
+        );
+
         break;
       }
 

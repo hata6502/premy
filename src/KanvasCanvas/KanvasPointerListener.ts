@@ -93,7 +93,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchStart = (event: TouchEvent) => {
-    if (event.touches.length < 1) {
+    if (event.changedTouches.length < 1) {
       return;
     }
 
@@ -103,8 +103,8 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
+          x: event.changedTouches[0].clientX,
+          y: event.changedTouches[0].clientY,
         },
       }
     );
@@ -113,7 +113,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchMove = (event: TouchEvent) => {
-    if (event.touches.length < 1) {
+    if (event.changedTouches.length < 1) {
       return;
     }
 
@@ -123,8 +123,8 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
+          x: event.changedTouches[0].clientX,
+          y: event.changedTouches[0].clientY,
         },
       }
     );
@@ -133,7 +133,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
-    if (event.touches.length < 1) {
+    if (event.changedTouches.length < 1) {
       return;
     }
 
@@ -143,8 +143,8 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
+          x: event.changedTouches[0].clientX,
+          y: event.changedTouches[0].clientY,
         },
       }
     );
