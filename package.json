@@ -22,7 +22,7 @@
   "scripts": {
     "build": "webpack",
     "fix": "prettier --write . && eslint --fix --max-warnings 0 .",
-    "serve": "http-server",
+    "serve": "http-server -c-1",
     "test": "prettier --check . && eslint --max-warnings 0 . && tsc --noEmit"
   },
   "devDependencies": {

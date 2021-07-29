@@ -62,9 +62,15 @@ class KanvasCanvas extends HTMLElement {
     const shadow = this.attachShadow({ mode: "open" });
 
     shadow.innerHTML = `
+      <style>
+        #canvas {
+          border: 1px solid #d3d3d3;
+          touch-action: pinch-zoom;
+        }
+      </style>
+
       <canvas
         id="canvas"
-        style="border: 1px solid #d3d3d3;"
       ></canvas>
 
       <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
@@ -276,11 +282,14 @@ class KanvasCanvas extends HTMLElement {
           continue;
         }
 
+        const rectLeft = Math.round(x * this.zoom);
+        const rectTop = Math.round(y * this.zoom);
+
         context.fillRect(
-          Math.floor(x * this.zoom),
-          Math.floor(y * this.zoom),
-          Math.ceil(this.zoom),
-          Math.ceil(this.zoom)
+          rectLeft,
+          rectTop,
+          Math.round((x + 1) * this.zoom) - rectLeft,
+          Math.round((y + 1) * this.zoom) - rectTop
         );
       }
     }

@@ -17,13 +17,12 @@ type KanvasPointerUpEvent = CustomEvent<KanvasPosition>;
 
 class KanvasPointerListener extends HTMLElement {
   private isMousePressing;
-  private isTouching;
+  private touchIdentifier?: number;
 
   constructor() {
     super();
 
     this.isMousePressing = false;
-    this.isTouching = false;
   }
 
   adoptedCallback(oldDocument: Document, newDocument: Document): void {
@@ -57,10 +56,11 @@ class KanvasPointerListener extends HTMLElement {
     document.removeEventListener("touchstart", this.handleTouchStart);
     document.removeEventListener("touchmove", this.handleTouchMove);
     document.removeEventListener("touchend", this.handleTouchEnd);
+    document.removeEventListener("touchcancel", this.handleTouchCancel);
   }
 
   private handleMouseDown = (event: MouseEvent) => {
-    if (this.isTouching || this.isMousePressing) {
+    if (this.touchIdentifier !== undefined || this.isMousePressing) {
       return;
     }
 
@@ -79,7 +79,11 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleMouseMove = (event: MouseEvent) => {
-    if (this.isTouching || !this.isMousePressing || event.buttons === 0) {
+    if (
+      this.touchIdentifier !== undefined ||
+      !this.isMousePressing ||
+      event.buttons === 0
+    ) {
       return;
     }
 
@@ -96,7 +100,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleMouseUp = (event: MouseEvent) => {
-    if (this.isTouching || !this.isMousePressing) {
+    if (this.touchIdentifier !== undefined || !this.isMousePressing) {
       return;
     }
 
@@ -117,13 +121,15 @@ class KanvasPointerListener extends HTMLElement {
   private handleTouchStart = (event: TouchEvent) => {
     if (
       this.isMousePressing ||
-      this.isTouching ||
+      this.touchIdentifier !== undefined ||
       event.changedTouches.length < 1
     ) {
       return;
     }
 
-    this.isTouching = true;
+    const touch = event.changedTouches[0];
+
+    this.touchIdentifier = touch.identifier;
 
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
       "kanvasPointerDown",
@@ -131,8 +137,8 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.changedTouches[0].clientX,
-          y: event.changedTouches[0].clientY,
+          x: touch.clientX,
+          y: touch.clientY,
         },
       }
     );
@@ -141,11 +147,11 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchMove = (event: TouchEvent) => {
-    if (
-      this.isMousePressing ||
-      !this.isTouching ||
-      event.changedTouches.length < 1
-    ) {
+    const touch = [...event.changedTouches].find(
+      (changedTouch) => changedTouch.identifier === this.touchIdentifier
+    );
+
+    if (this.isMousePressing || !touch) {
       return;
     }
 
@@ -155,8 +161,8 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.changedTouches[0].clientX,
-          y: event.changedTouches[0].clientY,
+          x: touch.clientX,
+          y: touch.clientY,
         },
       }
     );
@@ -165,15 +171,15 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
-    if (
-      this.isMousePressing ||
-      !this.isTouching ||
-      event.changedTouches.length < 1
-    ) {
+    const touch = [...event.changedTouches].find(
+      (changedTouch) => changedTouch.identifier === this.touchIdentifier
+    );
+
+    if (this.isMousePressing || !touch) {
       return;
     }
 
-    this.isTouching = false;
+    this.touchIdentifier = undefined;
 
     const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
       "kanvasPointerUp",
@@ -181,14 +187,16 @@ class KanvasPointerListener extends HTMLElement {
         bubbles: true,
         composed: true,
         detail: {
-          x: event.changedTouches[0].clientX,
-          y: event.changedTouches[0].clientY,
+          x: touch.clientX,
+          y: touch.clientY,
         },
       }
     );
 
     this.dispatchEvent(kanvasPointerUpEvent);
   };
+
+  private handleTouchCancel = () => (this.touchIdentifier = undefined);
 }
 
 customElements.define("kanvas-pointer-listener", KanvasPointerListener);

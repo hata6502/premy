@@ -52,7 +52,10 @@ class KanvasDialog extends HTMLElement {
 
         #action-container {
           display: flex;
+          position: sticky;
+          bottom: 0;
           align-items: center;
+          background-color: #ffffff;
           overflow: auto;
           padding-top: 8px;
           width: calc(min(var(--mdc-dialog-max-width), 100vw) - 96px);
