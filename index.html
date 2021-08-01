@@ -48,6 +48,19 @@
       const dialog = document.querySelector("#dialog");
       const openButton = document.querySelector("#open-button");
 
+      const image = localStorage.getItem("kanvas-image");
+
+      if (image) {
+        dialog.setAttribute("src", image);
+      }
+
+      dialog.addEventListener("kanvasHistoryChange", (event) =>
+        localStorage.setItem(
+          "kanvas-image",
+          event.detail.history[event.detail.historyIndex]
+        )
+      );
+
       openButton.addEventListener("click", () =>
         dialog.setAttribute("open", "")
       );

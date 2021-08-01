@@ -23,7 +23,7 @@ const dialogMaxWidth = 1280;
 
 class KanvasDialog extends HTMLElement {
   static get observedAttributes(): string[] {
-    return ["open"];
+    return ["open", "src"];
   }
 
   private brushButtons: Record<BrushType, IconButtonToggle>;
@@ -424,12 +424,16 @@ class KanvasDialog extends HTMLElement {
     );
   }
 
-  attributeChangedCallback(): void {
-    this.handleAttributeChange();
+  async attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null
+  ): Promise<void> {
+    await this.handleAttributeChange({ name, oldValue, newValue });
   }
 
-  connectedCallback(): void {
-    this.handleAttributeChange();
+  async connectedCallback(): Promise<void> {
+    await this.handleAttributeChange({});
   }
 
   private initializeBrushButton({
@@ -507,8 +511,19 @@ class KanvasDialog extends HTMLElement {
     return button;
   }
 
-  private handleAttributeChange() {
+  private async handleAttributeChange({
+    name,
+    newValue,
+  }: {
+    name?: string;
+    oldValue?: string | null;
+    newValue?: string | null;
+  }) {
     this.dialog.open = this.getAttribute("open") !== null;
+
+    if (name === "src" && newValue) {
+      await this.canvas.load({ src: newValue });
+    }
   }
 
   private handleBrushButtonClick({ brushType }: { brushType: BrushType }) {
