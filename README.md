@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 <h1 align="center">
   <img alt="" src="favicon.png" /><br />
   Welcome to kanvas-dialog 👋
@@ -15,11 +16,7 @@
   </a>
 </p>
 
-<!-- markdownlint-disable -->
-
 https://user-images.githubusercontent.com/7702653/127768488-929cc5fb-a690-46ab-bb58-5dfedf24d5f7.mp4
-
-<!-- markdownlint-enable -->
 
 [![Image from Gyazo](https://i.gyazo.com/e0c431cdb6119d34544fa26b6da38724.png)](https://gyazo.com/e0c431cdb6119d34544fa26b6da38724)
 [![Image from Gyazo](https://i.gyazo.com/4e57780551e102ceabfa0657b4f48b3e.png)](https://gyazo.com/4e57780551e102ceabfa0657b4f48b3e)
