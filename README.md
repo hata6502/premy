@@ -1,4 +1,8 @@
-<h1 align="center">Welcome to kanvas-dialog 👋</h1>
+<h1 align="center">
+  <img alt="" src="favicon.png" /><br />
+  Welcome to kanvas-dialog 👋
+</h1>
+
 <p>
   <a href="https://www.npmjs.com/package/kanvas-dialog" target="_blank">
     <img alt="Version" src="https://img.shields.io/npm/v/kanvas-dialog.svg">
@@ -11,9 +15,21 @@
   </a>
 </p>
 
+<!-- markdownlint-disable -->
+
+https://user-images.githubusercontent.com/7702653/127768488-929cc5fb-a690-46ab-bb58-5dfedf24d5f7.mp4
+
+<!-- markdownlint-enable -->
+
+[![Image from Gyazo](https://i.gyazo.com/e0c431cdb6119d34544fa26b6da38724.png)](https://gyazo.com/e0c431cdb6119d34544fa26b6da38724)
+[![Image from Gyazo](https://i.gyazo.com/4e57780551e102ceabfa0657b4f48b3e.png)](https://gyazo.com/4e57780551e102ceabfa0657b4f48b3e)
+[![Image from Gyazo](https://i.gyazo.com/0d0388d20d2eb46af0d3afece89fc95f.png)](https://gyazo.com/0d0388d20d2eb46af0d3afece89fc95f)
+
 > A sketching canvas written in Web Components.
 
-#### ✨ [Demo](https://kanvas.b-hood.site/)
+#### ✨ [Simple application](https://kanvas.b-hood.site/)
+
+#### ✨ [Gallery](https://scrapbox.io/hata6502/%E3%81%8A%E7%B5%B5%E3%81%8B%E3%81%8D%E9%9B%86)
 
 ## Install
 
@@ -82,6 +98,8 @@ This project is [MIT](https://github.com/hata6502/kanvas/blob/main/LICENSE) lice
 The following creations are included in this product:
 
 - [google/material-design-icons](https://github.com/google/material-design-icons/blob/master/LICENSE)
+
+Icon by Twemoji v13.1 (Twitter, inc. )
 
 ---
 
