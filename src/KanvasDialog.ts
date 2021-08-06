@@ -61,15 +61,23 @@ class KanvasDialog extends HTMLElement {
           width: calc(min(var(--mdc-dialog-max-width), 100vw) - 96px);
         }
 
+        #clipboard-error-snackbar {
+          --mdc-snackbar-z-index: 2147483647;
+        }
+
         #container {
           display: flex;
           align-items: center;
           flex-direction: column;
         }
 
+        #copied-to-clipboard-snackbar {
+          --mdc-snackbar-z-index: 2147483647;
+        }
+
         #dialog {
           --mdc-dialog-max-width: ${dialogMaxWidth}px;
-          --mdc-dialog-z-index: 2147483647;
+          --mdc-dialog-z-index: 2147483646;
 
           user-select: none;
         }
@@ -623,7 +631,7 @@ class KanvasDialog extends HTMLElement {
     const anchorElement = document.createElement("a");
 
     try {
-      anchorElement.download = "sketch.png";
+      anchorElement.download = `sketch-${Date.now()}.png`;
       anchorElement.href = this.canvas.toDataURL("image/png");
       document.body.append(anchorElement);
       anchorElement.click();
