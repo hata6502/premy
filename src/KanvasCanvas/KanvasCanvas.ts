@@ -39,7 +39,7 @@ class KanvasCanvas extends HTMLElement {
   private mode: Mode;
   private prevPosition: KanvasPosition;
   private text;
-  private textRect;
+  private textPreviewRect;
   private toneType: ToneType;
   private transactionMode?: Mode;
   private width: number;
@@ -76,7 +76,7 @@ class KanvasCanvas extends HTMLElement {
           vertical-align: bottom;
         }
 
-        #text-rect {
+        #text-preview-rect {
           position: absolute;
           border: 1px solid #d3d3d3;
         }
@@ -84,23 +84,23 @@ class KanvasCanvas extends HTMLElement {
 
       <canvas id="canvas"></canvas>
       <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
-      <div id="text-rect"></div>
+      <div id="text-preview-rect"></div>
     `;
 
     const canvas = shadow.querySelector("#canvas");
     const pointerListener = shadow.querySelector("#pointer-listener");
-    const textRect = shadow.querySelector("#text-rect");
+    const textPreviewRect = shadow.querySelector("#text-preview-rect");
 
     if (
       !(canvas instanceof HTMLCanvasElement) ||
       !(pointerListener instanceof KanvasPointerListener) ||
-      !(textRect instanceof HTMLDivElement)
+      !(textPreviewRect instanceof HTMLDivElement)
     ) {
       throw new Error("Canvas is not a 2D context");
     }
 
     this.canvas = canvas;
-    this.textRect = textRect;
+    this.textPreviewRect = textPreviewRect;
 
     pointerListener.addEventListener(
       "kanvasPointerDown",
@@ -252,12 +252,16 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchEvent(event);
   }
 
-  private displayTextRect(position: KanvasPosition) {
+  private displayTextPreviewRect(position: KanvasPosition) {
     const context = this.canvas.getContext("2d");
 
     if (!context) {
       throw new Error("Canvas is not a 2D context");
     }
+
+    context.font = `${
+      brushes[this.brushType].font.size * this.zoom
+    }px sans-serif`;
 
     const textMetrics = context.measureText(this.text);
 
@@ -269,11 +273,11 @@ class KanvasCanvas extends HTMLElement {
       Math.abs(textMetrics.actualBoundingBoxLeft) +
       Math.abs(textMetrics.actualBoundingBoxRight);
 
-    this.textRect.style.display = "block";
-    this.textRect.style.left = `${position.x * this.zoom}px`;
-    this.textRect.style.top = `${position.y * this.zoom - height}px`;
-    this.textRect.style.height = `${height}px`;
-    this.textRect.style.width = `${width}px`;
+    this.textPreviewRect.style.display = "block";
+    this.textPreviewRect.style.left = `${position.x * this.zoom}px`;
+    this.textPreviewRect.style.top = `${position.y * this.zoom - height}px`;
+    this.textPreviewRect.style.height = `${height}px`;
+    this.textPreviewRect.style.width = `${width}px`;
   }
 
   private drawLine({ from, to }: { from: KanvasPosition; to: KanvasPosition }) {
@@ -391,7 +395,7 @@ class KanvasCanvas extends HTMLElement {
         }
 
         this.transactionMode = "text";
-        this.displayTextRect(position);
+        this.displayTextPreviewRect(position);
 
         break;
       }
@@ -425,7 +429,7 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
-        this.displayTextRect(position);
+        this.displayTextPreviewRect(position);
 
         break;
       }
@@ -477,7 +481,7 @@ class KanvasCanvas extends HTMLElement {
           Math.round(canvasPosition.y * this.zoom)
         );
 
-        this.textRect.style.display = "none";
+        this.textPreviewRect.style.display = "none";
 
         break;
       }
