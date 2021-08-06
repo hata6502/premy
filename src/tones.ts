@@ -14,22 +14,6 @@ import toneVerticalLightPNG from "./toneVerticalLight.png";
 import toneVerticalMediumPNG from "./toneVerticalMedium.png";
 
 const tones = {
-  fill: {
-    bitmap: [
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-    ],
-    button: {
-      id: "tone-fill-button",
-      image: toneFillPNG,
-    },
-  },
   dotLight: {
     bitmap: [
       [1, 0, 1, 0, 1, 0, 1, 0],
@@ -76,6 +60,22 @@ const tones = {
     button: {
       id: "tone-dot-bold-button",
       image: toneDotBoldPNG,
+    },
+  },
+  fill: {
+    bitmap: [
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+    ],
+    button: {
+      id: "tone-fill-button",
+      image: toneFillPNG,
     },
   },
   horizontalLight: {

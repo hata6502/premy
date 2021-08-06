@@ -37,9 +37,11 @@ class KanvasCanvas extends HTMLElement {
   private historyIndex: number;
   private isEnabled;
   private mode: Mode;
-  private prevCanvasPosition: KanvasPosition;
+  private prevPosition: KanvasPosition;
   private text;
+  private textRect;
   private toneType: ToneType;
+  private transactionMode?: Mode;
   private width: number;
   private zoom: number;
 
@@ -53,7 +55,7 @@ class KanvasCanvas extends HTMLElement {
     this.historyIndex = -1;
     this.isEnabled = false;
     this.mode = "shape";
-    this.prevCanvasPosition = { x: 0, y: 0 };
+    this.prevPosition = { x: 0, y: 0 };
     this.text = "";
     this.toneType = "fill";
     this.width = 0;
@@ -63,30 +65,42 @@ class KanvasCanvas extends HTMLElement {
 
     shadow.innerHTML = `
       <style>
+        :host {
+          position: relative;
+          overflow: hidden;
+        }
+
         #canvas {
           border: 1px solid #d3d3d3;
           touch-action: pinch-zoom;
+          vertical-align: bottom;
+        }
+
+        #text-rect {
+          position: absolute;
+          border: 1px solid #d3d3d3;
         }
       </style>
 
-      <canvas
-        id="canvas"
-      ></canvas>
-
+      <canvas id="canvas"></canvas>
       <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
+      <div id="text-rect"></div>
     `;
 
     const canvas = shadow.querySelector("#canvas");
     const pointerListener = shadow.querySelector("#pointer-listener");
+    const textRect = shadow.querySelector("#text-rect");
 
     if (
       !(canvas instanceof HTMLCanvasElement) ||
-      !(pointerListener instanceof KanvasPointerListener)
+      !(pointerListener instanceof KanvasPointerListener) ||
+      !(textRect instanceof HTMLDivElement)
     ) {
-      throw new Error("Could not find canvas or pointer listener");
+      throw new Error("Canvas is not a 2D context");
     }
 
     this.canvas = canvas;
+    this.textRect = textRect;
 
     pointerListener.addEventListener(
       "kanvasPointerDown",
@@ -238,6 +252,30 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchEvent(event);
   }
 
+  private displayTextRect(position: KanvasPosition) {
+    const context = this.canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    const textMetrics = context.measureText(this.text);
+
+    const height =
+      Math.abs(textMetrics.actualBoundingBoxAscent) +
+      Math.abs(textMetrics.actualBoundingBoxDescent);
+
+    const width =
+      Math.abs(textMetrics.actualBoundingBoxLeft) +
+      Math.abs(textMetrics.actualBoundingBoxRight);
+
+    this.textRect.style.display = "block";
+    this.textRect.style.left = `${position.x * this.zoom}px`;
+    this.textRect.style.top = `${position.y * this.zoom - height}px`;
+    this.textRect.style.height = `${height}px`;
+    this.textRect.style.width = `${width}px`;
+  }
+
   private drawLine({ from, to }: { from: KanvasPosition; to: KanvasPosition }) {
     const stepLength = Math.round(
       Math.sqrt(Math.pow(to.x - from.x, 2.0) + Math.pow(to.y - from.y, 2.0))
@@ -327,21 +365,34 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private handlePointerDown = (event: KanvasPointerDownEvent) => {
-    if (!this.isEnabled) {
+    if (!this.isEnabled || this.transactionMode) {
       return;
     }
 
+    const position = this.getCanvasPosition(event.detail);
+
     switch (this.mode) {
       case "shape": {
-        const position = this.getCanvasPosition(event.detail);
-
+        this.transactionMode = "shape";
         this.drawPoint(position);
-        this.prevCanvasPosition = position;
 
         break;
       }
 
       case "text": {
+        // To use the actions UI.
+        if (
+          position.x < 0 ||
+          position.x >= this.width ||
+          position.y < 0 ||
+          position.y >= this.height
+        ) {
+          break;
+        }
+
+        this.transactionMode = "text";
+        this.displayTextRect(position);
+
         break;
       }
 
@@ -352,51 +403,55 @@ class KanvasCanvas extends HTMLElement {
         throw new Error("Unknown mode");
       }
     }
+
+    this.prevPosition = position;
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
-    if (!this.isEnabled) {
+    if (!this.isEnabled || !this.transactionMode) {
       return;
     }
 
-    switch (this.mode) {
+    const position = this.getCanvasPosition(event.detail);
+
+    switch (this.transactionMode) {
       case "shape": {
-        const canvasPosition = this.getCanvasPosition(event.detail);
-
         this.drawLine({
-          from: this.prevCanvasPosition,
-          to: canvasPosition,
+          from: this.prevPosition,
+          to: position,
         });
-
-        this.prevCanvasPosition = canvasPosition;
 
         break;
       }
 
       case "text": {
+        this.displayTextRect(position);
+
         break;
       }
 
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const exhaustiveCheck: never = this.mode;
+        const exhaustiveCheck: never = this.transactionMode;
 
         throw new Error("Unknown mode");
       }
     }
+
+    this.prevPosition = position;
   };
 
   private handlePointerUp = (event: KanvasPointerUpEvent) => {
-    if (!this.isEnabled) {
+    if (!this.isEnabled || !this.transactionMode) {
       return;
     }
 
     const canvasPosition = this.getCanvasPosition(event.detail);
 
-    switch (this.mode) {
+    switch (this.transactionMode) {
       case "shape": {
         this.drawLine({
-          from: this.prevCanvasPosition,
+          from: this.prevPosition,
           to: canvasPosition,
         });
 
@@ -404,15 +459,6 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
-        if (
-          canvasPosition.x < 0 ||
-          canvasPosition.x >= this.width ||
-          canvasPosition.y < 0 ||
-          canvasPosition.y >= this.height
-        ) {
-          break;
-        }
-
         const context = this.canvas.getContext("2d");
 
         if (!context) {
@@ -431,18 +477,21 @@ class KanvasCanvas extends HTMLElement {
           Math.round(canvasPosition.y * this.zoom)
         );
 
+        this.textRect.style.display = "none";
+
         break;
       }
 
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const exhaustiveCheck: never = this.mode;
+        const exhaustiveCheck: never = this.transactionMode;
 
         throw new Error("Unknown mode");
       }
     }
 
     this.pushHistory();
+    this.transactionMode = undefined;
   };
 }
 
