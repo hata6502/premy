@@ -19,10 +19,7 @@
 https://user-images.githubusercontent.com/7702653/127768488-929cc5fb-a690-46ab-bb58-5dfedf24d5f7.mp4
 
 [![Image from Gyazo](https://i.gyazo.com/176246e8cf25ece127628772eec083cc.png)](https://gyazo.com/176246e8cf25ece127628772eec083cc)
-
-
 [![Image from Gyazo](https://i.gyazo.com/2d19f366671b54fbe1042c071cd37114.png)](https://gyazo.com/2d19f366671b54fbe1042c071cd37114)
-
 [![Image from Gyazo](https://i.gyazo.com/e36b6f9a45fabb17d0e19de34f8fb090.png)](https://gyazo.com/e36b6f9a45fabb17d0e19de34f8fb090)
 
 > A sketching canvas written in Web Components.
