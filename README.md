@@ -26,7 +26,7 @@ https://user-images.githubusercontent.com/7702653/127768488-929cc5fb-a690-46ab-b
 
 #### ✨ [Simple application](https://kanvas.b-hood.site/)
 
-#### ✨ [Gallery](https://scrapbox.io/hata6502/%E3%81%8A%E7%B5%B5%E3%81%8B%E3%81%8D%E9%9B%86)
+#### ✨ [Gallery](https://scrapbox.io/hata6502/kanvas_%E3%81%8A%E7%B5%B5%E3%81%8B%E3%81%8D%E9%9B%86)
 
 ## Install
 
