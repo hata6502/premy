@@ -78,6 +78,7 @@ class KanvasCanvas extends HTMLElement {
 
         #text-preview-rect {
           position: absolute;
+          touch-action: pinch-zoom;
           border: 1px solid #d3d3d3;
         }
       </style>
@@ -101,6 +102,8 @@ class KanvasCanvas extends HTMLElement {
 
     this.canvas = canvas;
     this.textPreviewRect = textPreviewRect;
+
+    shadow.addEventListener("contextmenu", this.handleContextmenu);
 
     pointerListener.addEventListener(
       "kanvasPointerDown",
@@ -367,6 +370,8 @@ class KanvasCanvas extends HTMLElement {
     image.onload = () => context.drawImage(image, 0, 0);
     image.src = this.history[this.historyIndex];
   }
+
+  private handleContextmenu = (event: Event) => event.preventDefault();
 
   private handlePointerDown = (event: KanvasPointerDownEvent) => {
     if (!this.isEnabled || this.transactionMode) {

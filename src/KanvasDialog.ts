@@ -78,7 +78,6 @@ class KanvasDialog extends HTMLElement {
         #dialog {
           --mdc-dialog-max-width: ${dialogMaxWidth}px;
           --mdc-dialog-z-index: 2147483646;
-
           user-select: none;
         }
 
