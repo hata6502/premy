@@ -1,5 +1,4 @@
 import "@material/mwc-dialog";
-import { dialogMaxWidth } from "../KanvasDialog";
 import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
@@ -182,8 +181,9 @@ class KanvasCanvas extends HTMLElement {
 
     const heightZoom = (window.innerHeight - 152) / this.height;
 
+    // TODO: 1280 -> dialogMaxWidth
     const widthZoom =
-      (Math.min(window.innerWidth, dialogMaxWidth) - 96) / this.width;
+      (Math.min(window.innerWidth, 1280) - 96) / this.width;
 
     this.zoom = Math.min(heightZoom, widthZoom);
     this.canvas.height = this.height * this.zoom;

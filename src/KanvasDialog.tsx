@@ -1,42 +1,22 @@
-import { Dialog } from "@material/mwc-dialog";
-import { IconButton } from "@material/mwc-icon-button";
-import { IconButtonToggle } from "@material/mwc-icon-button-toggle";
-import { Snackbar } from "@material/mwc-snackbar";
-import { TextField } from "@material/mwc-textfield";
-import { KanvasCanvas } from "./KanvasCanvas";
-import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
-import { brushes } from "./brushes";
-import type { BrushType } from "./brushes";
-import { colors } from "./colors";
-import type { ColorType } from "./colors";
-import contentPasteSVG from "./content_paste_black_24dp.svg";
-import editSVG from "./edit_black_24dp.svg";
-import folderOpenSVG from "./folder_open_black_24dp.svg";
-import insertDriveFileSVG from "./insert_drive_file_black_24dp.svg";
-import redoSVG from "./redo_black_24dp.svg";
-import saveSVG from "./save_black_24dp.svg";
-import { tones } from "./tones";
-import type { ToneType } from "./tones";
-import undoSVG from "./undo_black_24dp.svg";
-
-const dialogMaxWidth = 1280;
+import {
+  CssBaseline,
+  Dialog,
+  StylesProvider,
+  jssPreset,
+} from "@material-ui/core";
+import * as jss from "jss";
+import ReactDOM from "react-dom";
+import { App } from "./App";
+import { KanvasThemeProvider } from "./KanvasThemeProvider";
 
 class KanvasDialog extends HTMLElement {
   static get observedAttributes(): string[] {
     return ["open", "src"];
   }
 
-  private brushButtons: Record<BrushType, IconButtonToggle>;
-  private canvas;
-  private clipboardErrorSnackbar;
-  private copiedToClipboardSnackbar;
-  private colorButtons: Record<ColorType, IconButtonToggle>;
-  private dialog;
-  private fileInput;
-  private redoButton;
-  private textInput;
-  private toneButtons: Record<ToneType, IconButtonToggle>;
-  private undoButton;
+  private appElement;
+  private containerElement;
+  private createdJSS;
 
   constructor() {
     super();
@@ -44,12 +24,36 @@ class KanvasDialog extends HTMLElement {
     const shadow = this.attachShadow({ mode: "open" });
 
     shadow.innerHTML = `
-      <style>
-        :host {
-          --mdc-theme-primary: #ffc107;
-          --mdc-theme-secondary: #651fff;
-        }
+      <div>
+        <noscript id="jss-insertion-point"></noscript>
 
+        <div id="container">
+          <div id="app"></div>
+        </div>
+      </div>
+    `;
+
+    this.appElement = shadow.querySelector("#app");
+    this.containerElement = shadow.querySelector("#container");
+
+    const jssInsertionPointElement = shadow.querySelector(
+      "#jss-insertion-point"
+    );
+
+    if (!(jssInsertionPointElement instanceof HTMLElement)) {
+      throw new Error("Could not find JSS insertion point.");
+    }
+
+    this.createdJSS = jss.create({
+      ...jssPreset(),
+      insertionPoint: jssInsertionPointElement,
+    });
+
+    this.render();
+  }
+
+  /*shadow.innerHTML = `
+      <style>
         #action-container {
           display: flex;
           position: sticky;
@@ -100,8 +104,6 @@ class KanvasDialog extends HTMLElement {
 
       <mwc-dialog id="dialog" hideActions>
         <div id="container">
-          <kanvas-canvas id="canvas"></kanvas-canvas>
-
           <div id="action-container">
             <mwc-icon-button id="clear-button" title="clear">
               <img src="${insertDriveFileSVG}" />
@@ -428,22 +430,35 @@ class KanvasDialog extends HTMLElement {
     copyToClipboardButton.addEventListener(
       "click",
       this.handleCopyToClipboardButtonClick
+    );*/
+
+  attributeChangedCallback() {
+    this.render();
+  }
+
+  private render() {
+    ReactDOM.render(
+      <StylesProvider jss={this.createdJSS}>
+        <KanvasThemeProvider>
+          <CssBaseline />
+
+          <Dialog
+            container={this.containerElement}
+            maxWidth="lg"
+            open={this.getAttribute("open") !== null}
+            onClose={this.handleClose}
+          >
+            <App src={this.getAttribute("src") ?? undefined} />
+          </Dialog>
+        </KanvasThemeProvider>
+      </StylesProvider>,
+      this.appElement
     );
   }
 
-  async attributeChangedCallback(
-    name: string,
-    oldValue: string | null,
-    newValue: string | null
-  ): Promise<void> {
-    await this.handleAttributeChange({ name, oldValue, newValue });
-  }
+  private handleClose = () => this.removeAttribute("open");
 
-  async connectedCallback(): Promise<void> {
-    await this.handleAttributeChange({});
-  }
-
-  private initializeBrushButton({
+  /*private initializeBrushButton({
     brushType,
     on,
     shadow,
@@ -516,24 +531,9 @@ class KanvasDialog extends HTMLElement {
     );
 
     return button;
-  }
+  }*/
 
-  private async handleAttributeChange({
-    name,
-    newValue,
-  }: {
-    name?: string;
-    oldValue?: string | null;
-    newValue?: string | null;
-  }) {
-    this.dialog.open = this.getAttribute("open") !== null;
-
-    if (name === "src" && newValue) {
-      await this.canvas.load({ src: newValue });
-    }
-  }
-
-  private handleBrushButtonClick({ brushType }: { brushType: BrushType }) {
+  /*private handleBrushButtonClick({ brushType }: { brushType: BrushType }) {
     Object.values(this.brushButtons).forEach(
       (brushButton) => (brushButton.on = false)
     );
@@ -653,9 +653,9 @@ class KanvasDialog extends HTMLElement {
     this.canvas.setToneType({ toneType });
   }
 
-  private handleUndoButtonClick = () => this.canvas.undo();
+  private handleUndoButtonClick = () => this.canvas.undo();*/
 }
 
 customElements.define("kanvas-dialog", KanvasDialog);
 
-export { KanvasDialog, dialogMaxWidth };
+export { KanvasDialog };
