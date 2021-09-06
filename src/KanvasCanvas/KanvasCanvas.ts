@@ -182,8 +182,7 @@ class KanvasCanvas extends HTMLElement {
     const heightZoom = (window.innerHeight - 152) / this.height;
 
     // TODO: 1280 -> dialogMaxWidth
-    const widthZoom =
-      (Math.min(window.innerWidth, 1280) - 96) / this.width;
+    const widthZoom = (Math.min(window.innerWidth, 1280) - 96) / this.width;
 
     this.zoom = Math.min(heightZoom, widthZoom);
     this.canvas.height = this.height * this.zoom;

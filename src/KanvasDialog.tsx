@@ -104,55 +104,7 @@ class KanvasDialog extends HTMLElement {
 
       <mwc-dialog id="dialog" hideActions>
         <div id="container">
-          <div id="action-container">
-            <mwc-icon-button id="clear-button" title="clear">
-              <img src="${insertDriveFileSVG}" />
-            </mwc-icon-button>
-
-            <div class="divider"></div>
-
-            <mwc-icon-button id="undo-button" disabled title="undo">
-              <img src="${undoSVG}" />
-            </mwc-icon-button>
-
-            <mwc-icon-button id="redo-button" disabled title="redo">
-              <img src="${redoSVG}" />
-            </mwc-icon-button>
-
-            <div class="divider"></div>
-
-            ${Object.values(brushes)
-              .map(
-                (brush) => `
-                  <style>
-                    #${brush.button.id} {
-                      --mdc-icon-size: ${brush.button.size}px;
-                    }
-
-                    #${brush.button.id}[on] {
-                      background-color: rgba(0, 0, 0, 0.07);
-                      border-radius: 50%;
-                    }
-                  </style>
-
-                  <mwc-icon-button-toggle id="${brush.button.id}">
-                    <img slot="onIcon" src="${editSVG}" />
-                    <img slot="offIcon" src="${editSVG}" />
-                  </mwc-icon-button-toggle>
-                `
-              )
-              .join("")}
-
-            <div class="divider"></div>
-
-            <mwc-textfield
-              id="text-input"
-              outlined
-              label="Text"
-            ></mwc-textfield>
-
-            <div class="divider"></div>
-
+          <div id="action-container"
             ${Object.values(colors)
               .map(
                 (color) => `
@@ -444,11 +396,15 @@ class KanvasDialog extends HTMLElement {
 
           <Dialog
             container={this.containerElement}
+            disableEnforceFocus
             maxWidth="lg"
             open={this.getAttribute("open") !== null}
             onClose={this.handleClose}
           >
-            <App src={this.getAttribute("src") ?? undefined} />
+            <App
+              container={this.containerElement}
+              src={this.getAttribute("src") ?? undefined}
+            />
           </Dialog>
         </KanvasThemeProvider>
       </StylesProvider>,

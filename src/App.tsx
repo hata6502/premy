@@ -1,6 +1,5 @@
 /*
 import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
-import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
 import { colors } from "./colors";
 import type { ColorType } from "./colors";
@@ -9,18 +8,25 @@ import type { ToneType } from "./tones";*/
 import "./KanvasCanvas";
 import type { KanvasCanvas } from "./KanvasCanvas";
 import {
-  Button,
   DialogActions,
   DialogContent,
+  Divider,
+  IconButton,
+  TextField,
+  Tooltip,
 } from "@material-ui/core";
-import { memo, useEffect, useRef } from "react";
+import type { PopperProps } from "@material-ui/core";
+import { Edit, InsertDriveFile, Redo, Undo } from "@material-ui/icons";
+import { memo, useEffect, useMemo, useRef } from "react";
 import type { FunctionComponent } from "react";
+import { brushes } from "./brushes";
 
 // TODO: remove @material/mwc-*
 
 const App: FunctionComponent<{
+  container?: PopperProps["container"];
   src?: string;
-}> = memo(({ src }) => {
+}> = memo(({ container, src }) => {
   const kanvasCanvasElement = useRef<KanvasCanvas>(null);
 
   useEffect(() => {
@@ -32,8 +38,10 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.load({ src });
+    void kanvasCanvasElement.current.load({ src });
   }, [src]);
+
+  const popperProps = useMemo(() => ({ container }), [container]);
 
   return (
     <>
@@ -42,9 +50,45 @@ const App: FunctionComponent<{
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" color="primary">
-          Primary
-        </Button>
+        <Tooltip title="Clear" PopperProps={popperProps}>
+          <span>
+            <IconButton>
+              <InsertDriveFile />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Divider orientation="vertical" flexItem />
+
+        <Tooltip title="Undo" PopperProps={popperProps}>
+          <span>
+            <IconButton>
+              <Undo />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Redo" PopperProps={popperProps}>
+          <span>
+            <IconButton>
+              <Redo />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Divider orientation="vertical" flexItem />
+
+        {Object.entries(brushes).map(([brushType, brush]) => (
+          <IconButton key={brushType}>
+            <Edit style={{ fontSize: brush.button.size }} />
+          </IconButton>
+        ))}
+
+        <Divider orientation="vertical" flexItem />
+
+        <TextField variant="outlined" label="Text" />
+
+        <Divider orientation="vertical" flexItem />
       </DialogActions>
     </>
   );

@@ -59,7 +59,7 @@ openButton.addEventListener("click", () => dialog.setAttribute("open", ""));
 ## Development
 
 ```bash
-npm run build  -- --mode development && npm run serve
+npm run build -- --mode development && npm run serve
 ```
 
 ## Run tests
