@@ -1,4 +1,3 @@
-import "@material/mwc-dialog";
 import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";

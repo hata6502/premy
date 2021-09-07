@@ -33,16 +33,23 @@ class KanvasDialog extends HTMLElement {
       </div>
     `;
 
-    this.appElement = shadow.querySelector("#app");
-    this.containerElement = shadow.querySelector("#container");
+    const appElement = shadow.querySelector("#app");
+    const containerElement = shadow.querySelector("#container");
 
     const jssInsertionPointElement = shadow.querySelector(
       "#jss-insertion-point"
     );
 
-    if (!(jssInsertionPointElement instanceof HTMLElement)) {
+    if (
+      !(appElement instanceof HTMLDivElement) ||
+      !(containerElement instanceof HTMLDivElement) ||
+      !(jssInsertionPointElement instanceof HTMLElement)
+    ) {
       throw new Error("Could not find JSS insertion point.");
     }
+
+    this.appElement = appElement;
+    this.containerElement = containerElement;
 
     this.createdJSS = jss.create({
       ...jssPreset(),
@@ -54,25 +61,8 @@ class KanvasDialog extends HTMLElement {
 
   /*shadow.innerHTML = `
       <style>
-        #action-container {
-          display: flex;
-          position: sticky;
-          bottom: 0;
-          align-items: center;
-          background-color: #ffffff;
-          overflow: auto;
-          padding-top: 8px;
-          width: calc(min(var(--mdc-dialog-max-width), 100vw) - 96px);
-        }
-
         #clipboard-error-snackbar {
           --mdc-snackbar-z-index: 2147483647;
-        }
-
-        #container {
-          display: flex;
-          align-items: center;
-          flex-direction: column;
         }
 
         #copied-to-clipboard-snackbar {
@@ -88,60 +78,11 @@ class KanvasDialog extends HTMLElement {
         #file-input {
           display: none;
         }
-
-        #redo-button[disabled], #undo-button[disabled] {
-          opacity: 0.4;
-        }
-
-        #text-input {
-          min-width: 212px;
-        }
-
-        .divider {
-          min-width: 16px;
-        }
       </style>
 
       <mwc-dialog id="dialog" hideActions>
         <div id="container">
           <div id="action-container"
-            ${Object.values(colors)
-              .map(
-                (color) => `
-                  <style>
-                    #${color.button.id}[on] {
-                      background-color: rgba(0, 0, 0, 0.07);
-                      border-radius: 50%;
-                    }
-                  </style>
-
-                  <mwc-icon-button-toggle id="${color.button.id}">
-                    <img slot="onIcon" src="${color.button.image}" />
-                    <img slot="offIcon" src="${color.button.image}" />
-                  </mwc-icon-button-toggle>
-                `
-              )
-              .join("")}
-
-            <div class="divider"></div>
-
-            ${Object.values(tones)
-              .map(
-                (tone) => `
-                  <style>
-                    #${tone.button.id}[on] {
-                      background-color: rgba(0, 0, 0, 0.07);
-                      border-radius: 50%;
-                    }
-                  </style>
-
-                  <mwc-icon-button-toggle id="${tone.button.id}">
-                    <img slot="onIcon" src="${tone.button.image}" />
-                    <img slot="offIcon" src="${tone.button.image}" />
-                  </mwc-icon-button-toggle>
-                `
-              )
-              .join("")}
 
             <div class="divider"></div>
 
@@ -384,7 +325,7 @@ class KanvasDialog extends HTMLElement {
       this.handleCopyToClipboardButtonClick
     );*/
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     this.render();
   }
 

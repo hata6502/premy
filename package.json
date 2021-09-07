@@ -27,11 +27,6 @@
   "devDependencies": {
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
-    "@material/mwc-dialog": "^0.21.0",
-    "@material/mwc-icon-button": "^0.21.0",
-    "@material/mwc-icon-button-toggle": "^0.21.0",
-    "@material/mwc-snackbar": "^0.22.1",
-    "@material/mwc-textfield": "^0.22.1",
     "@types/react-dom": "^17.0.7",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
     "@typescript-eslint/parser": "^4.29.1",

@@ -10,49 +10,41 @@ import colorFFFFFFPNG from "./colorFFFFFF.png";
 const colors = {
   "#000000": {
     button: {
-      id: "color-button-000000",
       image: color000000PNG,
     },
   },
   "#ff0000": {
     button: {
-      id: "color-button-ff0000",
       image: colorFF0000PNG,
     },
   },
   "#00ff00": {
     button: {
-      id: "color-button-00ff00",
       image: color00FF00PNG,
     },
   },
   "#0000ff": {
     button: {
-      id: "color-button-0000ff",
       image: color0000FFPNG,
     },
   },
   "#ffff00": {
     button: {
-      id: "color-button-ffff00",
       image: colorFFFF00PNG,
     },
   },
   "#ff00ff": {
     button: {
-      id: "color-button-ff00ff",
       image: colorFF00FFPNG,
     },
   },
   "#00ffff": {
     button: {
-      id: "color-button-00ffff",
       image: color00FFFFPNG,
     },
   },
   "#ffffff": {
     button: {
-      id: "color-button-ffffff",
       image: colorFFFFFFPNG,
     },
   },
