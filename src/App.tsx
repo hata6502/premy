@@ -8,13 +8,24 @@ import {
   DialogContent,
   Divider,
   IconButton,
+  Snackbar,
   TextField,
   Tooltip,
   makeStyles,
 } from "@material-ui/core";
-import type { PopperProps } from "@material-ui/core";
-import { Edit, InsertDriveFile, Redo, Undo } from "@material-ui/icons";
-import { memo, useEffect, useMemo, useRef } from "react";
+import type { PopperProps, SnackbarProps } from "@material-ui/core";
+import { Alert, AlertTitle } from "@material-ui/lab";
+import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
+import {
+  Assignment,
+  Edit,
+  FolderOpen,
+  InsertDriveFile,
+  Redo,
+  Save,
+  Undo,
+} from "@material-ui/icons";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FunctionComponent } from "react";
 import "./KanvasCanvas";
 import type { KanvasCanvas } from "./KanvasCanvas";
@@ -35,6 +46,9 @@ const useStyles = makeStyles({
   content: {
     textAlign: "center",
   },
+  fileInput: {
+    display: "none",
+  },
   textInput: {
     minWidth: 238,
   },
@@ -43,10 +57,18 @@ const useStyles = makeStyles({
   },
 });
 
+interface AlertData {
+  isOpen?: SnackbarProps["open"];
+  severity?: AlertProps["severity"];
+  title?: AlertTitleProps["children"];
+  description?: AlertProps["children"];
+}
+
 const App: FunctionComponent<{
   container?: PopperProps["container"];
   src?: string;
 }> = memo(({ container, src }) => {
+  const [alertData, dispatchAlertData] = useState<AlertData>({});
   const kanvasCanvasElement = useRef<KanvasCanvas>(null);
 
   useEffect(() => {
@@ -64,6 +86,15 @@ const App: FunctionComponent<{
   const classes = useStyles();
   const popperProps = useMemo(() => ({ container }), [container]);
 
+  const handleAlertClose = useCallback(
+    () =>
+      dispatchAlertData((prevAlertData) => ({
+        ...prevAlertData,
+        isOpen: false,
+      })),
+    []
+  );
+
   return (
     <>
       <DialogContent className={classes.content}>
@@ -79,6 +110,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
         <Divider orientation="vertical" flexItem />
+
         <Tooltip title="Undo" PopperProps={popperProps}>
           <span>
             <IconButton>
@@ -86,6 +118,7 @@ const App: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
+
         <Tooltip title="Redo" PopperProps={popperProps}>
           <span>
             <IconButton>
@@ -93,19 +126,25 @@ const App: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
+
         <Divider orientation="vertical" flexItem />
+
         {Object.entries(brushes).map(([brushType, brush]) => (
           <IconButton key={brushType}>
             <Edit style={{ fontSize: brush.button.size }} />
           </IconButton>
         ))}
+
         <Divider orientation="vertical" flexItem />
+
         <TextField
           variant="outlined"
           className={classes.textInput}
           label="Text"
         />
+
         <Divider orientation="vertical" flexItem />
+
         {Object.entries(colors).map(([colorType, color]) => (
           <IconButton key={colorType}>
             <img
@@ -115,7 +154,9 @@ const App: FunctionComponent<{
             />
           </IconButton>
         ))}
+
         <Divider orientation="vertical" flexItem />
+
         {Object.entries(tones).map(([toneType, tone]) => (
           <IconButton key={toneType}>
             <img
@@ -125,7 +166,45 @@ const App: FunctionComponent<{
             />
           </IconButton>
         ))}
+
+        <Divider orientation="vertical" flexItem />
+
+        <Tooltip title="Open" PopperProps={popperProps}>
+          <span>
+            <IconButton component="label">
+              <FolderOpen />
+              <input
+                type="file"
+                accept="image/*"
+                className={classes.fileInput}
+              />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Save" PopperProps={popperProps}>
+          <span>
+            <IconButton>
+              <Save />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Copy to clipboard" PopperProps={popperProps}>
+          <span>
+            <IconButton>
+              <Assignment />
+            </IconButton>
+          </span>
+        </Tooltip>
       </DialogActions>
+
+      <Snackbar open={alertData.isOpen}>
+        <Alert severity={alertData.severity} onClose={handleAlertClose}>
+          <AlertTitle>{alertData.title}</AlertTitle>
+          {alertData.description}
+        </Alert>
+      </Snackbar>
     </>
   );
 });

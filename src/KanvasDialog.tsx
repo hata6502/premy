@@ -74,36 +74,9 @@ class KanvasDialog extends HTMLElement {
           --mdc-dialog-z-index: 2147483646;
           user-select: none;
         }
-
-        #file-input {
-          display: none;
-        }
       </style>
 
       <mwc-dialog id="dialog" hideActions>
-        <div id="container">
-          <div id="action-container"
-
-            <div class="divider"></div>
-
-            <mwc-icon-button id="open-button" title="open">
-              <img src="${folderOpenSVG}" />
-            </mwc-icon-button>
-
-            <input id="file-input" type="file" accept="image/*" />
-
-            <mwc-icon-button id="save-button" title="save" >
-              <img src="${saveSVG}" />
-            </mwc-icon-button>
-
-            <mwc-icon-button
-              id="copy-to-clipboard-button"
-              title="copy to clipboard"
-            >
-              <img src="${contentPasteSVG}" />
-            </mwc-icon-button>
-          </div>
-        </div>
       </mwc-dialog>
 
       <mwc-snackbar
@@ -113,7 +86,7 @@ class KanvasDialog extends HTMLElement {
 
       <mwc-snackbar
         id="clipboard-error-snackbar"
-        labelText="Failed to copy to clipboard."
+        labelText="Failed to copy."
       ></mwc-snackbar>
     `;
 
