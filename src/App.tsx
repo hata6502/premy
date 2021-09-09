@@ -25,7 +25,7 @@ import {
   Undo,
 } from "@material-ui/icons";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { FunctionComponent } from "react";
+import type { ChangeEventHandler, FunctionComponent } from "react";
 import "./KanvasCanvas";
 import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
 import { brushes } from "./brushes";
@@ -132,6 +132,71 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.redo();
   }, []);
 
+  const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
+    useCallback((event) => {
+      if (!kanvasCanvasElement.current) {
+        throw new Error("KanvasCanvas element not found");
+      }
+
+      kanvasCanvasElement.current.setText({ text: event.target.value });
+    }, []);
+
+  const handleTextInputFocus = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.setMode({ mode: "text" });
+  }, []);
+
+  const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
+    useCallback((event) => {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      const fileReader = new FileReader();
+
+      fileReader.addEventListener(
+        "load",
+        () =>
+          void (async () => {
+            const src = fileReader.result;
+
+            if (typeof src !== "string") {
+              throw new Error("Source is not a string");
+            }
+
+            if (!kanvasCanvasElement.current) {
+              throw new Error("KanvasCanvas element not found");
+            }
+
+            await kanvasCanvasElement.current.load({ src });
+          })()
+      );
+
+      fileReader.readAsDataURL(file);
+    }, []);
+
+  const handleSaveButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    const anchorElement = document.createElement("a");
+
+    try {
+      anchorElement.download = `sketch-${Date.now()}.png`;
+      anchorElement.href = kanvasCanvasElement.current.toDataURL("image/png");
+      document.body.append(anchorElement);
+      anchorElement.click();
+    } finally {
+      anchorElement.remove();
+    }
+  }, []);
+
   const handleCopyToClipboardButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
       throw new Error("KanvasCanvas element not found");
@@ -145,6 +210,7 @@ const App: FunctionComponent<{
               throw new Error("Blob is null");
             }
 
+            // @ts-expect-error ClipboardItemData is wrong.
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
 
@@ -227,6 +293,8 @@ const App: FunctionComponent<{
           variant="outlined"
           className={classes.textInput}
           label="Text"
+          onChange={handleTextInputChange}
+          onFocus={handleTextInputFocus}
         />
 
         <Divider orientation="vertical" flexItem />
@@ -259,10 +327,12 @@ const App: FunctionComponent<{
           <span>
             <IconButton component="label">
               <FolderOpen />
+
               <input
                 type="file"
                 accept="image/*"
                 className={classes.fileInput}
+                onChange={handleFileInputChange}
               />
             </IconButton>
           </span>
@@ -270,7 +340,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Save" PopperProps={popperProps}>
           <span>
-            <IconButton>
+            <IconButton onClick={handleSaveButtonClick}>
               <Save />
             </IconButton>
           </span>

@@ -210,16 +210,6 @@ class KanvasDialog extends HTMLElement {
         shadow,
       }),
     };
-
-    this.textInput.addEventListener("focus", this.handleTextInputFocus);
-    this.textInput.addEventListener("input", this.handleTextInputInput);
-
-    openButton.addEventListener("click", this.handleOpenButtonClick);
-    this.fileInput.addEventListener("change", this.handleFileInputChange);
-
-    saveButton.addEventListener("click", this.handleSaveButtonClick);
-
-
     */
 
   attributeChangedCallback(): void {
@@ -345,52 +335,6 @@ class KanvasDialog extends HTMLElement {
     this.colorButtons[colorType].on = true;
     this.canvas.setColor({ color: colorType });
   }
-
-  private handleFileInputChange = () => {
-    const file = this.fileInput.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const fileReader = new FileReader();
-
-    fileReader.addEventListener(
-      "load",
-      () =>
-        void (async () => {
-          const src = fileReader.result;
-
-          if (typeof src !== "string") {
-            throw new Error("Source is not a string");
-          }
-
-          await this.canvas.load({ src });
-        })()
-    );
-
-    fileReader.readAsDataURL(file);
-  };
-
-  private handleOpenButtonClick = () => this.fileInput.click();
-
-  private handleSaveButtonClick = () => {
-    const anchorElement = document.createElement("a");
-
-    try {
-      anchorElement.download = `sketch-${Date.now()}.png`;
-      anchorElement.href = this.canvas.toDataURL("image/png");
-      document.body.append(anchorElement);
-      anchorElement.click();
-    } finally {
-      anchorElement.remove();
-    }
-  };
-
-  private handleTextInputFocus = () => this.canvas.setMode({ mode: "text" });
-
-  private handleTextInputInput = () =>
-    this.canvas.setText({ text: this.textInput.value });
 
   private handleToneButtonClick({ toneType }: { toneType: ToneType }) {
     Object.values(this.toneButtons).forEach(
