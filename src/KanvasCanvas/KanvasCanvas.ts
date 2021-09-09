@@ -33,7 +33,6 @@ class KanvasCanvas extends HTMLElement {
   private height: number;
   private history: string[];
   private historyIndex: number;
-  private isEnabled;
   private mode: Mode;
   private prevPosition: KanvasPosition;
   private text;
@@ -51,7 +50,6 @@ class KanvasCanvas extends HTMLElement {
     this.height = 0;
     this.history = [];
     this.historyIndex = -1;
-    this.isEnabled = false;
     this.mode = "shape";
     this.prevPosition = { x: 0, y: 0 };
     this.text = "";
@@ -124,10 +122,6 @@ class KanvasCanvas extends HTMLElement {
 
   setColor({ color }: { color: string }): void {
     this.color = color;
-  }
-
-  setIsEnabled({ isEnabled }: { isEnabled: boolean }): void {
-    this.isEnabled = isEnabled;
   }
 
   setMode({ mode }: { mode: Mode }): void {
@@ -372,7 +366,7 @@ class KanvasCanvas extends HTMLElement {
   private handleContextmenu = (event: Event) => event.preventDefault();
 
   private handlePointerDown = (event: KanvasPointerDownEvent) => {
-    if (!this.isEnabled || this.transactionMode) {
+    if (this.transactionMode) {
       return;
     }
 
@@ -415,7 +409,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
-    if (!this.isEnabled || !this.transactionMode) {
+    if (!this.transactionMode) {
       return;
     }
 
@@ -449,7 +443,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerUp = (event: KanvasPointerUpEvent) => {
-    if (!this.isEnabled || !this.transactionMode) {
+    if (!this.transactionMode) {
       return;
     }
 

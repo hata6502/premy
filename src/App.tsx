@@ -1,5 +1,4 @@
 /*
-import type { KanvasHistoryChangeEvent } from "./KanvasCanvas";
 import type { BrushType } from "./brushes";
 import type { ColorType } from "./colors";
 import type { ToneType } from "./tones";*/
@@ -28,12 +27,10 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FunctionComponent } from "react";
 import "./KanvasCanvas";
-import type { KanvasCanvas } from "./KanvasCanvas";
+import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
 import { brushes } from "./brushes";
 import { colors } from "./colors";
 import { tones } from "./tones";
-
-// TODO: remove @material/mwc-*
 
 const useStyles = makeStyles({
   actions: {
@@ -69,6 +66,10 @@ const App: FunctionComponent<{
   src?: string;
 }> = memo(({ container, src }) => {
   const [alertData, dispatchAlertData] = useState<AlertData>({});
+
+  const [isUndoDisabled, setIsUndoDisabled] = useState(true);
+  const [isRedoDisabled, setIsRedoDisabled] = useState(true);
+
   const kanvasCanvasElement = useRef<KanvasCanvas>(null);
 
   useEffect(() => {
@@ -80,11 +81,90 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    void kanvasCanvasElement.current.load({ src });
+    const currentKanvasCanvasElement = kanvasCanvasElement.current;
+
+    const handleCanvasHistoryChange = (event: KanvasHistoryChangeEvent) => {
+      setIsUndoDisabled(event.detail.historyIndex < 1);
+      setIsRedoDisabled(
+        event.detail.historyIndex >= event.detail.history.length - 1
+      );
+    };
+
+    currentKanvasCanvasElement.addEventListener(
+      "kanvasHistoryChange",
+      handleCanvasHistoryChange
+    );
+
+    void currentKanvasCanvasElement.load({ src });
+
+    return () => {
+      currentKanvasCanvasElement.removeEventListener(
+        "kanvasHistoryChange",
+        handleCanvasHistoryChange
+      );
+    };
   }, [src]);
 
   const classes = useStyles();
   const popperProps = useMemo(() => ({ container }), [container]);
+
+  const handleClearButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.clear();
+  }, []);
+
+  const handleUndoButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.undo();
+  }, []);
+
+  const handleRedoButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.redo();
+  }, []);
+
+  const handleCopyToClipboardButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.toBlob(
+      (blob) =>
+        void (async () => {
+          try {
+            if (!blob) {
+              throw new Error("Blob is null");
+            }
+
+            const data = [new ClipboardItem({ [blob.type]: blob })];
+            await navigator.clipboard.write(data);
+
+            dispatchAlertData({
+              isOpen: true,
+              severity: "success",
+              description: "Copied to clipboard.",
+            });
+          } catch (exception: unknown) {
+            dispatchAlertData({
+              isOpen: true,
+              severity: "error",
+              description: "Failed to copy.",
+            });
+
+            throw exception;
+          }
+        })()
+    );
+  }, []);
 
   const handleAlertClose = useCallback(
     () =>
@@ -104,7 +184,7 @@ const App: FunctionComponent<{
       <DialogActions className={classes.actions}>
         <Tooltip title="Clear" PopperProps={popperProps}>
           <span>
-            <IconButton>
+            <IconButton onClick={handleClearButtonClick}>
               <InsertDriveFile />
             </IconButton>
           </span>
@@ -113,7 +193,10 @@ const App: FunctionComponent<{
 
         <Tooltip title="Undo" PopperProps={popperProps}>
           <span>
-            <IconButton>
+            <IconButton
+              disabled={isUndoDisabled}
+              onClick={handleUndoButtonClick}
+            >
               <Undo />
             </IconButton>
           </span>
@@ -121,7 +204,10 @@ const App: FunctionComponent<{
 
         <Tooltip title="Redo" PopperProps={popperProps}>
           <span>
-            <IconButton>
+            <IconButton
+              disabled={isRedoDisabled}
+              onClick={handleRedoButtonClick}
+            >
               <Redo />
             </IconButton>
           </span>
@@ -192,7 +278,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Copy to clipboard" PopperProps={popperProps}>
           <span>
-            <IconButton>
+            <IconButton onClick={handleCopyToClipboardButtonClick}>
               <Assignment />
             </IconButton>
           </span>
