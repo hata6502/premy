@@ -115,7 +115,7 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setBrushType({ brushType: brushType });
+    kanvasCanvasElement.current.setBrushType({ brushType });
     kanvasCanvasElement.current.setMode({ mode: "shape" });
   }, [brushType]);
 
@@ -124,7 +124,7 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setColor({ color: color });
+    kanvasCanvasElement.current.setColor({ color });
   }, [color]);
 
   useEffect(() => {
@@ -132,7 +132,7 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setToneType({ toneType: toneType });
+    kanvasCanvasElement.current.setToneType({ toneType });
   }, [toneType]);
 
   const classes = useStyles();

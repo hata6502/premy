@@ -22,6 +22,8 @@ const config = {
     ],
   },
   output: {
+    // Prevent to use mjs extension.
+    filename: "[name].js",
     library: {
       type: "module",
     },
