@@ -48,6 +48,10 @@ const useStyles = makeStyles({
   colorButtonImage: {
     width: 24,
   },
+  content: {
+    display: "flex",
+    justifyContent: "center",
+  },
   fileInput: {
     display: "none",
   },
@@ -303,7 +307,7 @@ const App: FunctionComponent<{
 
   return (
     <>
-      <DialogContent>
+      <DialogContent className={classes.content}>
         <kanvas-canvas ref={kanvasCanvasElement} />
       </DialogContent>
 
