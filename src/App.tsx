@@ -164,7 +164,13 @@ const App: FunctionComponent<{
 
   const handleBrushTypeChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, brushType) => setBrushType(brushType), []);
+  >((_event, brushType) => {
+    if (brushType === null) {
+      return;
+    }
+
+    setBrushType(brushType);
+  }, []);
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
@@ -185,11 +191,23 @@ const App: FunctionComponent<{
 
   const handleColorChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, color) => setColor(color), []);
+  >((_event, color) => {
+    if (color === null) {
+      return;
+    }
+
+    setColor(color);
+  }, []);
 
   const handleToneTypeChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, toneType) => setToneType(toneType), []);
+  >((_event, toneType) => {
+    if (toneType === null) {
+      return;
+    }
+
+    setToneType(toneType);
+  }, []);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
