@@ -60,27 +60,28 @@ class KanvasCanvas extends HTMLElement {
 
     shadow.innerHTML = `
       <style>
-        :host {
-          position: relative;
-          overflow: hidden;
-        }
-
         #canvas {
           border: 1px solid #d3d3d3;
           touch-action: pinch-zoom;
           vertical-align: bottom;
         }
 
+        #container {
+          position: relative;
+          overflow: hidden;
+        }
+
         #text-preview-rect {
           position: absolute;
           touch-action: pinch-zoom;
-          border: 1px solid #d3d3d3;
         }
       </style>
 
-      <canvas id="canvas"></canvas>
-      <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
-      <div id="text-preview-rect"></div>
+      <div id="container">
+        <canvas id="canvas"></canvas>
+        <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
+        <div id="text-preview-rect"></div>
+      </div>
     `;
 
     const canvas = shadow.querySelector("#canvas");
@@ -169,7 +170,7 @@ class KanvasCanvas extends HTMLElement {
     this.height = Math.round(imageElement.naturalHeight * density);
     this.width = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 176) / this.height;
+    const heightZoom = (window.innerHeight - 188) / this.height;
     const widthZoom = (Math.min(window.innerWidth, 1280) - 120) / this.width;
 
     this.zoom = Math.min(heightZoom, widthZoom);
@@ -249,25 +250,17 @@ class KanvasCanvas extends HTMLElement {
       throw new Error("Canvas is not a 2D context");
     }
 
-    context.font = `${
+    const font = `${
       brushes[this.brushType].font.size * this.zoom
     }px sans-serif`;
 
-    const textMetrics = context.measureText(this.text);
+    context.font = font;
 
-    const height =
-      Math.abs(textMetrics.actualBoundingBoxAscent) +
-      Math.abs(textMetrics.actualBoundingBoxDescent);
-
-    const width =
-      Math.abs(textMetrics.actualBoundingBoxLeft) +
-      Math.abs(textMetrics.actualBoundingBoxRight);
-
-    this.textPreviewRect.style.display = "block";
     this.textPreviewRect.style.left = `${position.x * this.zoom}px`;
-    this.textPreviewRect.style.top = `${position.y * this.zoom - height}px`;
-    this.textPreviewRect.style.height = `${height}px`;
-    this.textPreviewRect.style.width = `${width}px`;
+    this.textPreviewRect.style.top = `${position.y * this.zoom}px`;
+    this.textPreviewRect.style.font = font;
+    this.textPreviewRect.style.transform = "translateY(-75%)";
+    this.textPreviewRect.textContent = this.text;
   }
 
   private drawLine({ from, to }: { from: KanvasPosition; to: KanvasPosition }) {
@@ -473,7 +466,7 @@ class KanvasCanvas extends HTMLElement {
           Math.round(canvasPosition.y * this.zoom)
         );
 
-        this.textPreviewRect.style.display = "none";
+        this.textPreviewRect.textContent = "";
 
         break;
       }
