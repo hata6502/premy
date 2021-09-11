@@ -1,4 +1,4 @@
-export default {
+const config = {
   mode: "production",
   entry: {
     index: "./src/index.ts",
@@ -30,3 +30,5 @@ export default {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
 };
+
+export default config;

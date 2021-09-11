@@ -14,6 +14,21 @@ import toneVerticalLightPNG from "./toneVerticalLight.png";
 import toneVerticalMediumPNG from "./toneVerticalMedium.png";
 
 const tones = {
+  fill: {
+    bitmap: [
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+    ],
+    button: {
+      image: toneFillPNG,
+    },
+  },
   dotLight: {
     bitmap: [
       [1, 0, 1, 0, 1, 0, 1, 0],
@@ -26,7 +41,6 @@ const tones = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ],
     button: {
-      id: "tone-dot-light-button",
       image: toneDotLightPNG,
     },
   },
@@ -42,7 +56,6 @@ const tones = {
       [0, 1, 0, 1, 0, 1, 0, 1],
     ],
     button: {
-      id: "tone-dot-medium-button",
       image: toneDotMediumPNG,
     },
   },
@@ -58,24 +71,7 @@ const tones = {
       [1, 1, 1, 1, 1, 1, 1, 1],
     ],
     button: {
-      id: "tone-dot-bold-button",
       image: toneDotBoldPNG,
-    },
-  },
-  fill: {
-    bitmap: [
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-    ],
-    button: {
-      id: "tone-fill-button",
-      image: toneFillPNG,
     },
   },
   horizontalLight: {
@@ -90,7 +86,6 @@ const tones = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ],
     button: {
-      id: "tone-horizontal-light-button",
       image: toneHorizontalLightPNG,
     },
   },
@@ -106,7 +101,6 @@ const tones = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ],
     button: {
-      id: "tone-horizontal-medium-button",
       image: toneHorizontalMediumPNG,
     },
   },
@@ -122,7 +116,6 @@ const tones = {
       [1, 1, 1, 1, 1, 1, 1, 1],
     ],
     button: {
-      id: "tone-horizontal-bold-button",
       image: toneHorizontalBoldPNG,
     },
   },
@@ -138,7 +131,6 @@ const tones = {
       [1, 0, 0, 0, 1, 0, 0, 0],
     ],
     button: {
-      id: "tone-vertical-light-button",
       image: toneVerticalLightPNG,
     },
   },
@@ -154,7 +146,6 @@ const tones = {
       [1, 0, 1, 0, 1, 0, 1, 0],
     ],
     button: {
-      id: "tone-vertical-medium-button",
       image: toneVerticalMediumPNG,
     },
   },
@@ -170,7 +161,6 @@ const tones = {
       [0, 1, 1, 1, 0, 1, 1, 1],
     ],
     button: {
-      id: "tone-vertical-bold-button",
       image: toneVerticalBoldPNG,
     },
   },
@@ -186,7 +176,6 @@ const tones = {
       [1, 0, 0, 0, 1, 0, 0, 0],
     ],
     button: {
-      id: "tone-slash-light-button",
       image: toneSlashLightPNG,
     },
   },
@@ -202,7 +191,6 @@ const tones = {
       [0, 1, 1, 1, 0, 1, 1, 1],
     ],
     button: {
-      id: "tone-slash-bold-button",
       image: toneSlashBoldPNG,
     },
   },
@@ -218,7 +206,6 @@ const tones = {
       [0, 0, 0, 1, 0, 0, 0, 1],
     ],
     button: {
-      id: "tone-backslash-light-button",
       image: toneBackslashLightPNG,
     },
   },
@@ -234,7 +221,6 @@ const tones = {
       [1, 1, 1, 0, 1, 1, 1, 0],
     ],
     button: {
-      id: "tone-backslash-bold-button",
       image: toneBackslashBoldPNG,
     },
   },

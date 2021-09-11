@@ -2,7 +2,6 @@ const brushes = {
   light: {
     bitmap: [[1]],
     button: {
-      id: "brush-light-button",
       size: 18,
     },
     font: {
@@ -16,7 +15,6 @@ const brushes = {
       [0, 1, 0],
     ],
     button: {
-      id: "brush-medium-button",
       size: 24,
     },
     font: {
@@ -36,7 +34,6 @@ const brushes = {
       [0, 0, 0, 1, 1, 1, 0, 0, 0],
     ],
     button: {
-      id: "brush-bold-button",
       size: 36,
     },
     font: {

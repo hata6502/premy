@@ -1,6 +1,3 @@
-import "@material/mwc-dialog";
-import { dialogMaxWidth } from "../KanvasDialog";
-import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { tones } from "../tones";
@@ -35,7 +32,6 @@ class KanvasCanvas extends HTMLElement {
   private height: number;
   private history: string[];
   private historyIndex: number;
-  private isEnabled;
   private mode: Mode;
   private prevPosition: KanvasPosition;
   private text;
@@ -53,7 +49,6 @@ class KanvasCanvas extends HTMLElement {
     this.height = 0;
     this.history = [];
     this.historyIndex = -1;
-    this.isEnabled = false;
     this.mode = "shape";
     this.prevPosition = { x: 0, y: 0 };
     this.text = "";
@@ -116,8 +111,6 @@ class KanvasCanvas extends HTMLElement {
     );
 
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
-
-    void this.load({ src: blankPNG });
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -126,10 +119,6 @@ class KanvasCanvas extends HTMLElement {
 
   setColor({ color }: { color: string }): void {
     this.color = color;
-  }
-
-  setIsEnabled({ isEnabled }: { isEnabled: boolean }): void {
-    this.isEnabled = isEnabled;
   }
 
   setMode({ mode }: { mode: Mode }): void {
@@ -180,10 +169,8 @@ class KanvasCanvas extends HTMLElement {
     this.height = Math.round(imageElement.naturalHeight * density);
     this.width = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 152) / this.height;
-
-    const widthZoom =
-      (Math.min(window.innerWidth, dialogMaxWidth) - 96) / this.width;
+    const heightZoom = (window.innerHeight - 176) / this.height;
+    const widthZoom = (Math.min(window.innerWidth, 1280) - 120) / this.width;
 
     this.zoom = Math.min(heightZoom, widthZoom);
     this.canvas.height = this.height * this.zoom;
@@ -374,7 +361,7 @@ class KanvasCanvas extends HTMLElement {
   private handleContextmenu = (event: Event) => event.preventDefault();
 
   private handlePointerDown = (event: KanvasPointerDownEvent) => {
-    if (!this.isEnabled || this.transactionMode) {
+    if (this.transactionMode) {
       return;
     }
 
@@ -417,7 +404,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerMove = (event: KanvasPointerMoveEvent) => {
-    if (!this.isEnabled || !this.transactionMode) {
+    if (!this.transactionMode) {
       return;
     }
 
@@ -451,7 +438,7 @@ class KanvasCanvas extends HTMLElement {
   };
 
   private handlePointerUp = (event: KanvasPointerUpEvent) => {
-    if (!this.isEnabled || !this.transactionMode) {
+    if (!this.transactionMode) {
       return;
     }
 
