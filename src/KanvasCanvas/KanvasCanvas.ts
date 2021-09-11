@@ -74,6 +74,7 @@ class KanvasCanvas extends HTMLElement {
         #text-preview-rect {
           position: absolute;
           touch-action: pinch-zoom;
+          white-space: nowrap;
         }
       </style>
 
@@ -258,6 +259,7 @@ class KanvasCanvas extends HTMLElement {
 
     this.textPreviewRect.style.left = `${position.x * this.zoom}px`;
     this.textPreviewRect.style.top = `${position.y * this.zoom}px`;
+    this.textPreviewRect.style.color = this.color;
     this.textPreviewRect.style.font = font;
     this.textPreviewRect.style.transform = "translateY(-75%)";
     this.textPreviewRect.textContent = this.text;
