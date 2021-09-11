@@ -1,5 +1,7 @@
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
+import { fonts } from "../fonts";
+import type { FontType } from "../fonts";
 import { tones } from "../tones";
 import type { ToneType } from "../tones";
 import { KanvasPointerListener } from "./KanvasPointerListener";
@@ -29,6 +31,7 @@ class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
   private canvas;
   private color: string;
+  private fontType: FontType;
   private height: number;
   private history: string[];
   private historyIndex: number;
@@ -46,6 +49,7 @@ class KanvasCanvas extends HTMLElement {
 
     this.brushType = "light";
     this.color = "#000000";
+    this.fontType = "sans-serif";
     this.height = 0;
     this.history = [];
     this.historyIndex = -1;
@@ -120,6 +124,10 @@ class KanvasCanvas extends HTMLElement {
 
   setColor({ color }: { color: string }): void {
     this.color = color;
+  }
+
+  setFontType({ fontType }: { fontType: FontType }): void {
+    this.fontType = fontType;
   }
 
   setMode({ mode }: { mode: Mode }): void {
@@ -250,9 +258,9 @@ class KanvasCanvas extends HTMLElement {
       throw new Error("Canvas is not a 2D context");
     }
 
-    const font = `${
-      brushes[this.brushType].font.size * this.zoom
-    }px sans-serif`;
+    const font = `${brushes[this.brushType].font.size * this.zoom}px ${
+      fonts[this.fontType]
+    }`;
 
     context.font = font;
 
@@ -369,16 +377,6 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
-        // To use the actions UI.
-        if (
-          position.x < 0 ||
-          position.x >= this.width ||
-          position.y < 0 ||
-          position.y >= this.height
-        ) {
-          break;
-        }
-
         this.transactionMode = "text";
         this.displayTextPreviewRect(position);
 
@@ -456,9 +454,9 @@ class KanvasCanvas extends HTMLElement {
 
         context.fillStyle = this.color;
 
-        context.font = `${
-          brushes[this.brushType].font.size * this.zoom
-        }px sans-serif`;
+        context.font = `${brushes[this.brushType].font.size * this.zoom}px ${
+          fonts[this.fontType]
+        }`;
 
         context.fillText(
           this.text,

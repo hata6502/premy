@@ -38,6 +38,16 @@ class KanvasPointerListener extends HTMLElement {
     this.handleDisconnected({ document });
   }
 
+  private getShouldIgnore({ event }: { event: Event }) {
+    return event
+      .composedPath()
+      .some(
+        (eventTarget) =>
+          eventTarget instanceof Element &&
+          eventTarget.classList.contains("kanvas-pointer-listener-ignore")
+      );
+  }
+
   private handleConnected({ document }: { document: Document }) {
     document.addEventListener("mousedown", this.handleMouseDown);
     document.addEventListener("mousemove", this.handleMouseMove);
@@ -60,6 +70,10 @@ class KanvasPointerListener extends HTMLElement {
   }
 
   private handleMouseDown = (event: MouseEvent) => {
+    if (this.getShouldIgnore({ event })) {
+      return;
+    }
+
     if (this.touchIdentifier !== undefined || this.isMousePressing) {
       return;
     }
@@ -80,6 +94,7 @@ class KanvasPointerListener extends HTMLElement {
 
   private handleMouseMove = (event: MouseEvent) => {
     if (
+      this.getShouldIgnore({ event }) ||
       this.touchIdentifier !== undefined ||
       !this.isMousePressing ||
       event.buttons === 0
@@ -100,7 +115,11 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleMouseUp = (event: MouseEvent) => {
-    if (this.touchIdentifier !== undefined || !this.isMousePressing) {
+    if (
+      this.getShouldIgnore({ event }) ||
+      this.touchIdentifier !== undefined ||
+      !this.isMousePressing
+    ) {
       return;
     }
 
@@ -120,6 +139,7 @@ class KanvasPointerListener extends HTMLElement {
 
   private handleTouchStart = (event: TouchEvent) => {
     if (
+      this.getShouldIgnore({ event }) ||
       this.isMousePressing ||
       this.touchIdentifier !== undefined ||
       event.changedTouches.length < 1
@@ -147,6 +167,10 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchMove = (event: TouchEvent) => {
+    if (this.getShouldIgnore({ event })) {
+      return;
+    }
+
     const touch = [...event.changedTouches].find(
       (changedTouch) => changedTouch.identifier === this.touchIdentifier
     );
@@ -171,6 +195,10 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
+    if (this.getShouldIgnore({ event })) {
+      return;
+    }
+
     const touch = [...event.changedTouches].find(
       (changedTouch) => changedTouch.identifier === this.touchIdentifier
     );
@@ -196,7 +224,13 @@ class KanvasPointerListener extends HTMLElement {
     this.dispatchEvent(kanvasPointerUpEvent);
   };
 
-  private handleTouchCancel = () => (this.touchIdentifier = undefined);
+  private handleTouchCancel = (event: TouchEvent) => {
+    if (this.getShouldIgnore({ event })) {
+      return;
+    }
+
+    this.touchIdentifier = undefined;
+  };
 }
 
 customElements.define("kanvas-pointer-listener", KanvasPointerListener);

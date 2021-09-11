@@ -1,13 +1,21 @@
 import {
   DialogActions,
   DialogContent,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   Snackbar,
   TextField,
   Tooltip,
   makeStyles,
 } from "@material-ui/core";
-import type { PopperProps, SnackbarProps } from "@material-ui/core";
+import type {
+  PortalProps,
+  SelectProps,
+  SnackbarProps,
+} from "@material-ui/core";
 import {
   Alert,
   AlertTitle,
@@ -25,6 +33,7 @@ import {
   Save,
   Undo,
 } from "@material-ui/icons";
+import clsx from "clsx";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEventHandler, FunctionComponent } from "react";
 import "./KanvasCanvas";
@@ -34,6 +43,8 @@ import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
 import { colors } from "./colors";
 import type { ColorType } from "./colors";
+import { fonts } from "./fonts";
+import type { FontType } from "./fonts";
 import { tones } from "./tones";
 import type { ToneType } from "./tones";
 
@@ -55,6 +66,9 @@ const useStyles = makeStyles({
   fileInput: {
     display: "none",
   },
+  fontTypeSelect: {
+    minWidth: 136,
+  },
   textInput: {
     minWidth: 238,
   },
@@ -71,13 +85,14 @@ interface AlertData {
 }
 
 const App: FunctionComponent<{
-  container?: PopperProps["container"];
+  container?: PortalProps["container"];
   src?: string;
 }> = memo(({ container, src }) => {
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("light");
   const [color, setColor] = useState<ColorType>("#000000");
+  const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [toneType, setToneType] = useState<ToneType>("fill");
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
@@ -128,6 +143,14 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
+    kanvasCanvasElement.current.setFontType({ fontType });
+  }, [fontType]);
+
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
     kanvasCanvasElement.current.setColor({ color });
   }, [color]);
 
@@ -140,7 +163,13 @@ const App: FunctionComponent<{
   }, [toneType]);
 
   const classes = useStyles();
-  const popperProps = useMemo(() => ({ container }), [container]);
+
+  const menuProps = useMemo(
+    () => ({ className: "kanvas-pointer-listener-ignore", container }),
+    [container]
+  );
+
+  const portalProps = useMemo(() => ({ container }), [container]);
 
   const handleClearButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -192,6 +221,10 @@ const App: FunctionComponent<{
 
     kanvasCanvasElement.current.setMode({ mode: "text" });
   }, []);
+
+  const handleFontTypeChange = useCallback<
+    NonNullable<SelectProps["onChange"]>
+  >((event) => setFontType(event.target.value as FontType), []);
 
   const handleColorChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
@@ -311,8 +344,10 @@ const App: FunctionComponent<{
         <kanvas-canvas ref={kanvasCanvasElement} />
       </DialogContent>
 
-      <DialogActions className={classes.actions}>
-        <Tooltip title="Clear" PopperProps={popperProps}>
+      <DialogActions
+        className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
+      >
+        <Tooltip title="Clear" PopperProps={portalProps}>
           <span>
             <IconButton onClick={handleClearButtonClick}>
               <InsertDriveFile />
@@ -320,7 +355,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Undo" PopperProps={popperProps}>
+        <Tooltip title="Undo" PopperProps={portalProps}>
           <span>
             <IconButton
               disabled={isUndoDisabled}
@@ -331,7 +366,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Redo" PopperProps={popperProps}>
+        <Tooltip title="Redo" PopperProps={portalProps}>
           <span>
             <IconButton
               disabled={isRedoDisabled}
@@ -362,6 +397,23 @@ const App: FunctionComponent<{
           onFocus={handleTextInputFocus}
         />
 
+        <FormControl className={classes.fontTypeSelect} variant="outlined">
+          <InputLabel>Font</InputLabel>
+
+          <Select
+            label="Font"
+            value={fontType}
+            onChange={handleFontTypeChange}
+            MenuProps={menuProps}
+          >
+            {Object.keys(fonts).map((fontType) => (
+              <MenuItem key={fontType} value={fontType}>
+                {fontType}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <ToggleButtonGroup exclusive value={color} onChange={handleColorChange}>
           {Object.entries(colors).map(([colorType, color]) => (
             <ToggleButton key={colorType} value={colorType}>
@@ -390,7 +442,7 @@ const App: FunctionComponent<{
           ))}
         </ToggleButtonGroup>
 
-        <Tooltip title="Open" PopperProps={popperProps}>
+        <Tooltip title="Open" PopperProps={portalProps}>
           <span>
             <IconButton component="label">
               <FolderOpen />
@@ -405,7 +457,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Save" PopperProps={popperProps}>
+        <Tooltip title="Save" PopperProps={portalProps}>
           <span>
             <IconButton onClick={handleSaveButtonClick}>
               <Save />
@@ -413,7 +465,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Copy to clipboard" PopperProps={popperProps}>
+        <Tooltip title="Copy to clipboard" PopperProps={portalProps}>
           <span>
             <IconButton onClick={handleCopyToClipboardButtonClick}>
               <Assignment />
