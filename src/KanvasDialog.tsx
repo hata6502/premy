@@ -59,15 +59,6 @@ class KanvasDialog extends HTMLElement {
     this.render();
   }
 
-  /*shadow.innerHTML = `
-      <style>
-        #dialog {
-          user-select: none;
-        }
-      </style>
-    `;
-    */
-
   attributeChangedCallback(): void {
     this.render();
   }
@@ -84,6 +75,11 @@ class KanvasDialog extends HTMLElement {
             maxWidth="lg"
             open={this.getAttribute("open") !== null}
             onClose={this.handleClose}
+            TransitionProps={{
+              style: {
+                userSelect: "none",
+              },
+            }}
           >
             <App
               container={this.containerElement}
