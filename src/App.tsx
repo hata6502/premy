@@ -1,11 +1,6 @@
-/*
-import type { BrushType } from "./brushes";
-import type { ColorType } from "./colors";
-import type { ToneType } from "./tones";*/
 import {
   DialogActions,
   DialogContent,
-  Divider,
   IconButton,
   Snackbar,
   TextField,
@@ -13,7 +8,13 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import type { PopperProps, SnackbarProps } from "@material-ui/core";
-import { Alert, AlertTitle } from "@material-ui/lab";
+import {
+  Alert,
+  AlertTitle,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@material-ui/lab";
+import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Assignment,
@@ -28,9 +29,13 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEventHandler, FunctionComponent } from "react";
 import "./KanvasCanvas";
 import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
+import blankPNG from "./blank.png";
 import { brushes } from "./brushes";
+import type { BrushType } from "./brushes";
 import { colors } from "./colors";
+import type { ColorType } from "./colors";
 import { tones } from "./tones";
+import type { ToneType } from "./tones";
 
 const useStyles = makeStyles({
   actions: {
@@ -65,7 +70,11 @@ const App: FunctionComponent<{
   container?: PopperProps["container"];
   src?: string;
 }> = memo(({ container, src }) => {
-  const [alertData, dispatchAlertData] = useState<AlertData>({});
+  const [alertData, setAlertData] = useState<AlertData>({});
+
+  const [brushType, setBrushType] = useState<BrushType>("light");
+  const [color, setColor] = useState<ColorType>("#000000");
+  const [toneType, setToneType] = useState<ToneType>("fill");
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);
@@ -73,10 +82,6 @@ const App: FunctionComponent<{
   const kanvasCanvasElement = useRef<KanvasCanvas>(null);
 
   useEffect(() => {
-    if (src === undefined) {
-      return;
-    }
-
     if (!kanvasCanvasElement.current) {
       throw new Error("KanvasCanvas element not found");
     }
@@ -95,7 +100,7 @@ const App: FunctionComponent<{
       handleCanvasHistoryChange
     );
 
-    void currentKanvasCanvasElement.load({ src });
+    void currentKanvasCanvasElement.load({ src: src ?? blankPNG });
 
     return () => {
       currentKanvasCanvasElement.removeEventListener(
@@ -104,6 +109,31 @@ const App: FunctionComponent<{
       );
     };
   }, [src]);
+
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.setBrushType({ brushType: brushType });
+    kanvasCanvasElement.current.setMode({ mode: "shape" });
+  }, [brushType]);
+
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.setColor({ color: color });
+  }, [color]);
+
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.setToneType({ toneType: toneType });
+  }, [toneType]);
 
   const classes = useStyles();
   const popperProps = useMemo(() => ({ container }), [container]);
@@ -132,6 +162,10 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.redo();
   }, []);
 
+  const handleBrushTypeChange = useCallback<
+    NonNullable<ToggleButtonGroupProps["onChange"]>
+  >((_event, brushType) => setBrushType(brushType), []);
+
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
       if (!kanvasCanvasElement.current) {
@@ -148,6 +182,14 @@ const App: FunctionComponent<{
 
     kanvasCanvasElement.current.setMode({ mode: "text" });
   }, []);
+
+  const handleColorChange = useCallback<
+    NonNullable<ToggleButtonGroupProps["onChange"]>
+  >((_event, color) => setColor(color), []);
+
+  const handleToneTypeChange = useCallback<
+    NonNullable<ToggleButtonGroupProps["onChange"]>
+  >((_event, toneType) => setToneType(toneType), []);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
@@ -214,13 +256,13 @@ const App: FunctionComponent<{
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
 
-            dispatchAlertData({
+            setAlertData({
               isOpen: true,
               severity: "success",
               description: "Copied to clipboard.",
             });
           } catch (exception: unknown) {
-            dispatchAlertData({
+            setAlertData({
               isOpen: true,
               severity: "error",
               description: "Failed to copy.",
@@ -234,7 +276,7 @@ const App: FunctionComponent<{
 
   const handleAlertClose = useCallback(
     () =>
-      dispatchAlertData((prevAlertData) => ({
+      setAlertData((prevAlertData) => ({
         ...prevAlertData,
         isOpen: false,
       })),
@@ -255,7 +297,6 @@ const App: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Divider orientation="vertical" flexItem />
 
         <Tooltip title="Undo" PopperProps={popperProps}>
           <span>
@@ -279,15 +320,17 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Divider orientation="vertical" flexItem />
-
-        {Object.entries(brushes).map(([brushType, brush]) => (
-          <IconButton key={brushType}>
-            <Edit style={{ fontSize: brush.button.size }} />
-          </IconButton>
-        ))}
-
-        <Divider orientation="vertical" flexItem />
+        <ToggleButtonGroup
+          exclusive
+          value={brushType}
+          onChange={handleBrushTypeChange}
+        >
+          {Object.entries(brushes).map(([brushType, brush]) => (
+            <ToggleButton key={brushType} value={brushType}>
+              <Edit style={{ fontSize: brush.button.size }} />
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
 
         <TextField
           variant="outlined"
@@ -297,31 +340,33 @@ const App: FunctionComponent<{
           onFocus={handleTextInputFocus}
         />
 
-        <Divider orientation="vertical" flexItem />
+        <ToggleButtonGroup exclusive value={color} onChange={handleColorChange}>
+          {Object.entries(colors).map(([colorType, color]) => (
+            <ToggleButton key={colorType} value={colorType}>
+              <img
+                alt={colorType}
+                className={classes.colorButtonImage}
+                src={color.button.image}
+              />
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
 
-        {Object.entries(colors).map(([colorType, color]) => (
-          <IconButton key={colorType}>
-            <img
-              alt={colorType}
-              className={classes.colorButtonImage}
-              src={color.button.image}
-            />
-          </IconButton>
-        ))}
-
-        <Divider orientation="vertical" flexItem />
-
-        {Object.entries(tones).map(([toneType, tone]) => (
-          <IconButton key={toneType}>
-            <img
-              alt={toneType}
-              className={classes.toneButtonImage}
-              src={tone.button.image}
-            />
-          </IconButton>
-        ))}
-
-        <Divider orientation="vertical" flexItem />
+        <ToggleButtonGroup
+          exclusive
+          value={toneType}
+          onChange={handleToneTypeChange}
+        >
+          {Object.entries(tones).map(([toneType, tone]) => (
+            <ToggleButton key={toneType} value={toneType}>
+              <img
+                alt={toneType}
+                className={classes.toneButtonImage}
+                src={tone.button.image}
+              />
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
 
         <Tooltip title="Open" PopperProps={popperProps}>
           <span>

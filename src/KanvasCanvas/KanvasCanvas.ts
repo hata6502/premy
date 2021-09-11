@@ -1,4 +1,3 @@
-import blankPNG from "../blank.png";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { tones } from "../tones";
@@ -112,8 +111,6 @@ class KanvasCanvas extends HTMLElement {
     );
 
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
-
-    void this.load({ src: blankPNG });
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -172,10 +169,8 @@ class KanvasCanvas extends HTMLElement {
     this.height = Math.round(imageElement.naturalHeight * density);
     this.width = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 152) / this.height;
-
-    // TODO: 1280 -> dialogMaxWidth
-    const widthZoom = (Math.min(window.innerWidth, 1280) - 96) / this.width;
+    const heightZoom = (window.innerHeight - 176) / this.height;
+    const widthZoom = (Math.min(window.innerWidth, 1280) - 120) / this.width;
 
     this.zoom = Math.min(heightZoom, widthZoom);
     this.canvas.height = this.height * this.zoom;
