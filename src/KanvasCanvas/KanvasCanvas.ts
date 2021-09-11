@@ -62,7 +62,6 @@ class KanvasCanvas extends HTMLElement {
       <style>
         #canvas {
           border: 1px solid #d3d3d3;
-          touch-action: pinch-zoom;
           vertical-align: bottom;
         }
 
@@ -73,7 +72,6 @@ class KanvasCanvas extends HTMLElement {
 
         #text-preview-rect {
           position: absolute;
-          touch-action: pinch-zoom;
           white-space: nowrap;
         }
       </style>

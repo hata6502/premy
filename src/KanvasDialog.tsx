@@ -77,6 +77,7 @@ class KanvasDialog extends HTMLElement {
             onClose={this.handleClose}
             TransitionProps={{
               style: {
+                touchAction: "pinch-zoom",
                 userSelect: "none",
               },
             }}
