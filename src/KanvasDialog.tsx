@@ -24,6 +24,16 @@ class KanvasDialog extends HTMLElement {
     const shadow = this.attachShadow({ mode: "open" });
 
     shadow.innerHTML = `
+      <style>
+        #container {
+          user-select: none;
+        }
+
+        #container * {
+          touch-action: pinch-zoom;
+        }
+      </style>
+
       <div>
         <noscript id="jss-insertion-point"></noscript>
 
@@ -75,12 +85,6 @@ class KanvasDialog extends HTMLElement {
             maxWidth="lg"
             open={this.getAttribute("open") !== null}
             onClose={this.handleClose}
-            TransitionProps={{
-              style: {
-                touchAction: "pinch-zoom",
-                userSelect: "none",
-              },
-            }}
           >
             <App
               container={this.containerElement}
