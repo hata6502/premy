@@ -41,6 +41,9 @@ const useStyles = makeStyles({
   actions: {
     justifyContent: "unset",
     overflowX: "auto",
+    "&, & *": {
+      touchAction: "unset !important",
+    },
   },
   colorButtonImage: {
     width: 24,
