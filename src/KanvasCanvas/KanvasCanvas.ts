@@ -316,13 +316,16 @@ class KanvasCanvas extends HTMLElement {
         }
 
         const rectLeft = Math.round(x * this.zoom);
+        const rectRight = Math.round((x + 1) * this.zoom)
+
         const rectTop = Math.round(y * this.zoom);
+        const rectBottom = Math.round((y + 1) * this.zoom);
 
         context.fillRect(
           rectLeft,
           rectTop,
-          Math.round((x + 1) * this.zoom) - rectLeft,
-          Math.round((y + 1) * this.zoom) - rectTop
+          rectRight- rectLeft,
+          rectBottom- rectTop
         );
       }
     }
