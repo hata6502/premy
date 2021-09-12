@@ -180,8 +180,10 @@ class KanvasCanvas extends HTMLElement {
 
     const heightZoom = (window.innerHeight - 188) / this.height;
     const widthZoom = (Math.min(window.innerWidth, 1280) - 120) / this.width;
+    const minZoom = Math.min(heightZoom, widthZoom);
 
-    this.zoom = Math.min(heightZoom, widthZoom);
+    this.zoom = minZoom > 1 ? Math.floor(minZoom) : minZoom;
+
     this.canvas.height = this.height * this.zoom;
     this.canvas.width = this.width * this.zoom;
 
@@ -280,8 +282,8 @@ class KanvasCanvas extends HTMLElement {
       const distance = step / stepLength;
 
       this.drawPoint({
-        x: from.x + Math.round((to.x - from.x) * distance),
-        y: from.y + Math.round((to.y - from.y) * distance),
+        x: Math.round(from.x + (to.x - from.x) * distance),
+        y: Math.round(from.y + (to.y - from.y) * distance),
       });
     });
   }
@@ -315,18 +317,7 @@ class KanvasCanvas extends HTMLElement {
           continue;
         }
 
-        const rectLeft = Math.round(x * this.zoom);
-        const rectRight = Math.round((x + 1) * this.zoom)
-
-        const rectTop = Math.round(y * this.zoom);
-        const rectBottom = Math.round((y + 1) * this.zoom);
-
-        context.fillRect(
-          rectLeft,
-          rectTop,
-          rectRight- rectLeft,
-          rectBottom- rectTop
-        );
+        context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
       }
     }
   }
@@ -463,8 +454,8 @@ class KanvasCanvas extends HTMLElement {
 
         context.fillText(
           this.text,
-          Math.round(canvasPosition.x * this.zoom),
-          Math.round(canvasPosition.y * this.zoom)
+          canvasPosition.x * this.zoom,
+          canvasPosition.y * this.zoom
         );
 
         this.textPreviewRect.textContent = "";
