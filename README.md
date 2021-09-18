@@ -92,10 +92,6 @@ This project is [MIT](https://github.com/hata6502/kanvas/blob/main/LICENSE) lice
 
 ## Disclaimer
 
-The following creations are included in this product:
-
-- [google/material-design-icons](https://github.com/google/material-design-icons/blob/master/LICENSE)
-
 Icon by Twemoji v13.1 (Twitter, inc. )
 
 ---
