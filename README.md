@@ -62,12 +62,6 @@ openButton.addEventListener("click", () => dialog.setAttribute("open", ""));
 npm run build -- --mode development && npm run serve
 ```
 
-## Run tests
-
-```sh
-npm test
-```
-
 ## Author
 
 <img alt="Tomoyuki Hata" src="https://avatars.githubusercontent.com/hata6502" width="48" /> **Tomoyuki Hata <hato6502@gmail.com>**

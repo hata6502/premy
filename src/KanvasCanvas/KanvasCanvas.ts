@@ -116,6 +116,10 @@ class KanvasCanvas extends HTMLElement {
     );
 
     pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
+    pointerListener.addEventListener(
+      "kanvasPointerCancel",
+      this.handlePointerCancel
+    );
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -151,7 +155,7 @@ class KanvasCanvas extends HTMLElement {
 
     context.fillStyle = this.color;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.pushHistory();
+    this.pushImageToHistory();
   }
 
   async load({ src }: { src: string }): Promise<void> {
@@ -195,7 +199,7 @@ class KanvasCanvas extends HTMLElement {
       this.canvas.height
     );
 
-    this.pushHistory();
+    this.pushImageToHistory();
   }
 
   redo(): void {
@@ -204,7 +208,7 @@ class KanvasCanvas extends HTMLElement {
     }
 
     this.historyIndex++;
-    this.putHistory();
+    this.putImageFromHistory();
     this.dispatchChangeHistoryEvent();
   }
 
@@ -222,7 +226,7 @@ class KanvasCanvas extends HTMLElement {
     }
 
     this.historyIndex--;
-    this.putHistory();
+    this.putImageFromHistory();
     this.dispatchChangeHistoryEvent();
   }
 
@@ -322,7 +326,7 @@ class KanvasCanvas extends HTMLElement {
     }
   }
 
-  private pushHistory() {
+  private pushImageToHistory() {
     const dataURL = this.canvas.toDataURL();
 
     if (this.historyIndex >= 0 && this.history[this.historyIndex] === dataURL) {
@@ -341,7 +345,7 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchChangeHistoryEvent();
   }
 
-  private putHistory() {
+  private putImageFromHistory() {
     const context = this.canvas.getContext("2d");
     const image = new Image();
 
@@ -471,7 +475,16 @@ class KanvasCanvas extends HTMLElement {
       }
     }
 
-    this.pushHistory();
+    this.pushImageToHistory();
+    this.transactionMode = undefined;
+  };
+
+  private handlePointerCancel = () => {
+    if (!this.transactionMode) {
+      return;
+    }
+
+    this.putImageFromHistory();
     this.transactionMode = undefined;
   };
 }

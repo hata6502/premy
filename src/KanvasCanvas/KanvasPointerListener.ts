@@ -48,6 +48,17 @@ class KanvasPointerListener extends HTMLElement {
       );
   }
 
+  private cancelPointer() {
+    this.touchIdentifier = undefined;
+
+    this.dispatchEvent(
+      new CustomEvent("kanvasPointerCancel", {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   private handleConnected({ document }: { document: Document }) {
     document.addEventListener("mousedown", this.handleMouseDown);
     document.addEventListener("mousemove", this.handleMouseMove);
@@ -167,7 +178,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchMove = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event })) {
+    if (this.getShouldIgnore({ event }) || this.isMousePressing) {
       return;
     }
 
@@ -175,7 +186,9 @@ class KanvasPointerListener extends HTMLElement {
       (changedTouch) => changedTouch.identifier === this.touchIdentifier
     );
 
-    if (this.isMousePressing || !touch) {
+    if (!touch) {
+      this.cancelPointer();
+
       return;
     }
 
@@ -195,7 +208,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event })) {
+    if (this.getShouldIgnore({ event }) || this.isMousePressing) {
       return;
     }
 
@@ -203,7 +216,9 @@ class KanvasPointerListener extends HTMLElement {
       (changedTouch) => changedTouch.identifier === this.touchIdentifier
     );
 
-    if (this.isMousePressing || !touch) {
+    if (!touch) {
+      this.cancelPointer();
+
       return;
     }
 
@@ -225,11 +240,15 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchCancel = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event })) {
+    if (
+      this.getShouldIgnore({ event }) ||
+      this.isMousePressing ||
+      this.touchIdentifier === undefined
+    ) {
       return;
     }
 
-    this.touchIdentifier = undefined;
+    this.cancelPointer();
   };
 }
 
