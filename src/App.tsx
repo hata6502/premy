@@ -1,4 +1,5 @@
 import {
+  Dialog,
   DialogActions,
   DialogContent,
   FormControl,
@@ -27,6 +28,7 @@ import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Assignment,
   Edit,
+  FileCopy,
   FolderOpen,
   InsertDriveFile,
   Redo,
@@ -38,6 +40,8 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEventHandler, FunctionComponent } from "react";
 import "./KanvasCanvas";
 import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
+import { PasteDialogContent } from "./PasteDialogContent";
+import type { PasteDialogContentProps } from "./PasteDialogContent";
 import blankPNG from "./blank.png";
 import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
@@ -97,6 +101,8 @@ const App: FunctionComponent<{
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);
+
+  const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
   const kanvasCanvasElement = useRef<KanvasCanvas>(null);
 
@@ -256,26 +262,26 @@ const App: FunctionComponent<{
 
       const fileReader = new FileReader();
 
-      fileReader.addEventListener(
-        "load",
-        () =>
-          void (async () => {
-            const src = fileReader.result;
+      fileReader.onload = async () => {
+        const src = fileReader.result;
 
-            if (typeof src !== "string") {
-              throw new Error("Source is not a string");
-            }
+        if (typeof src !== "string") {
+          throw new Error("Source is not a string");
+        }
 
-            if (!kanvasCanvasElement.current) {
-              throw new Error("KanvasCanvas element not found");
-            }
+        if (!kanvasCanvasElement.current) {
+          throw new Error("KanvasCanvas element not found");
+        }
 
-            await kanvasCanvasElement.current.load({ src });
-          })()
-      );
+        await kanvasCanvasElement.current.load({ src });
+      };
 
       fileReader.readAsDataURL(file);
     }, []);
+
+  const handlePasteButtonClick = useCallback(() => {
+    setIsPasteDialogOpen(true);
+  }, []);
 
   const handleSaveButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -294,7 +300,7 @@ const App: FunctionComponent<{
     }
   }, []);
 
-  const handleCopyToClipboardButtonClick = useCallback(() => {
+  const handleCopyButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
       throw new Error("KanvasCanvas element not found");
     }
@@ -328,6 +334,21 @@ const App: FunctionComponent<{
         })()
     );
   }, []);
+
+  const handlePasteDialogClose = useCallback(() => {
+    setIsPasteDialogOpen(false);
+  }, []);
+
+  const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
+    useCallback(async (event) => {
+      if (!kanvasCanvasElement.current) {
+        throw new Error("KanvasCanvas element not found");
+      }
+
+      await kanvasCanvasElement.current.load(event);
+
+      setIsPasteDialogOpen(false);
+    }, []);
 
   const handleAlertClose = useCallback(
     () =>
@@ -457,6 +478,14 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
+        <Tooltip title="Paste from clipboard" PopperProps={portalProps}>
+          <span>
+            <IconButton onClick={handlePasteButtonClick}>
+              <Assignment />
+            </IconButton>
+          </span>
+        </Tooltip>
+
         <Tooltip title="Save" PopperProps={portalProps}>
           <span>
             <IconButton onClick={handleSaveButtonClick}>
@@ -467,12 +496,22 @@ const App: FunctionComponent<{
 
         <Tooltip title="Copy to clipboard" PopperProps={portalProps}>
           <span>
-            <IconButton onClick={handleCopyToClipboardButtonClick}>
-              <Assignment />
+            <IconButton onClick={handleCopyButtonClick}>
+              <FileCopy />
             </IconButton>
           </span>
         </Tooltip>
       </DialogActions>
+
+      <Dialog
+        className="kanvas-pointer-listener-ignore"
+        container={container}
+        disableEnforceFocus
+        open={isPasteDialogOpen}
+        onClose={handlePasteDialogClose}
+      >
+        <PasteDialogContent onPaste={handlePaste} />
+      </Dialog>
 
       <Snackbar open={alertData.isOpen}>
         <Alert severity={alertData.severity} onClose={handleAlertClose}>
