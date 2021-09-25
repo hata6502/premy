@@ -484,7 +484,27 @@ class KanvasCanvas extends HTMLElement {
       return;
     }
 
-    this.putImageFromHistory();
+    switch (this.transactionMode) {
+      case "shape": {
+        this.putImageFromHistory();
+
+        break;
+      }
+
+      case "text": {
+        this.textPreviewRect.textContent = "";
+
+        break;
+      }
+
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = this.transactionMode;
+
+        throw new Error("Unknown mode");
+      }
+    }
+
     this.transactionMode = undefined;
   };
 }

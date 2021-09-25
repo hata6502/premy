@@ -16,13 +16,7 @@ type KanvasPointerMoveEvent = CustomEvent<KanvasPosition>;
 type KanvasPointerUpEvent = CustomEvent<KanvasPosition>;
 
 class KanvasPointerListener extends HTMLElement {
-  private isMousePressing;
-
-  constructor() {
-    super();
-
-    this.isMousePressing = false;
-  }
+  private transactionDevice?: "mouse" | "touch";
 
   adoptedCallback(oldDocument: Document, newDocument: Document): void {
     this.handleDisconnected({ document: oldDocument });
@@ -54,6 +48,15 @@ class KanvasPointerListener extends HTMLElement {
         composed: true,
       })
     );
+
+    this.finishTransaction();
+  }
+
+  private finishTransaction() {
+    // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
+    setTimeout(() => {
+      this.transactionDevice = undefined;
+    }, 100);
   }
 
   private handleConnected({ document }: { document: Document }) {
@@ -64,6 +67,7 @@ class KanvasPointerListener extends HTMLElement {
     document.addEventListener("touchstart", this.handleTouchStart);
     document.addEventListener("touchmove", this.handleTouchMove);
     document.addEventListener("touchend", this.handleTouchEnd);
+    document.addEventListener("touchcancel", this.handleTouchCancel);
   }
 
   private handleDisconnected({ document }: { document: Document }) {
@@ -78,15 +82,11 @@ class KanvasPointerListener extends HTMLElement {
   }
 
   private handleMouseDown = (event: MouseEvent) => {
-    if (this.getShouldIgnore({ event })) {
+    if (this.getShouldIgnore({ event }) || this.transactionDevice) {
       return;
     }
 
-    if (this.isMousePressing) {
-      return;
-    }
-
-    this.isMousePressing = true;
+    this.transactionDevice = "mouse";
 
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
       "kanvasPointerDown",
@@ -103,7 +103,7 @@ class KanvasPointerListener extends HTMLElement {
   private handleMouseMove = (event: MouseEvent) => {
     if (
       this.getShouldIgnore({ event }) ||
-      !this.isMousePressing ||
+      this.transactionDevice !== "mouse" ||
       event.buttons === 0
     ) {
       return;
@@ -122,11 +122,9 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleMouseUp = (event: MouseEvent) => {
-    if (this.getShouldIgnore({ event }) || !this.isMousePressing) {
+    if (this.getShouldIgnore({ event }) || this.transactionDevice !== "mouse") {
       return;
     }
-
-    this.isMousePressing = false;
 
     const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
       "kanvasPointerUp",
@@ -138,16 +136,20 @@ class KanvasPointerListener extends HTMLElement {
     );
 
     this.dispatchEvent(kanvasPointerUpEvent);
+
+    this.finishTransaction();
   };
 
   private handleTouchStart = (event: TouchEvent) => {
     if (
       this.getShouldIgnore({ event }) ||
-      this.isMousePressing ||
+      this.transactionDevice ||
       event.touches.length !== 1
     ) {
       return;
     }
+
+    this.transactionDevice = "touch";
 
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
       "kanvasPointerDown",
@@ -165,7 +167,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchMove = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event }) || this.isMousePressing) {
+    if (this.getShouldIgnore({ event }) || this.transactionDevice !== "touch") {
       return;
     }
 
@@ -191,7 +193,7 @@ class KanvasPointerListener extends HTMLElement {
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event }) || this.isMousePressing) {
+    if (this.getShouldIgnore({ event }) || this.transactionDevice !== "touch") {
       return;
     }
 
@@ -214,10 +216,12 @@ class KanvasPointerListener extends HTMLElement {
     );
 
     this.dispatchEvent(kanvasPointerUpEvent);
+
+    this.finishTransaction();
   };
 
   private handleTouchCancel = (event: TouchEvent) => {
-    if (this.getShouldIgnore({ event }) || this.isMousePressing) {
+    if (this.getShouldIgnore({ event }) || this.transactionDevice !== "touch") {
       return;
     }
 
