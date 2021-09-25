@@ -41,13 +41,16 @@ const PasteDialogContent: FunctionComponent<PasteDialogContentProps> = memo(
 
     const handleContainerPaste: ClipboardEventHandler = useCallback(
       (event) => {
-        const item = event.clipboardData.items[0];
-
-        if (!item.type.startsWith("image")) {
+        if (event.clipboardData.files.length < 1) {
           return;
         }
 
-        const file = item.getAsFile();
+        const file = event.clipboardData.files[0];
+
+        if (!file.type.startsWith("image")) {
+          return;
+        }
+
         const fileReader = new FileReader();
 
         fileReader.onload = () => {
@@ -59,10 +62,6 @@ const PasteDialogContent: FunctionComponent<PasteDialogContentProps> = memo(
 
           onPaste?.({ src });
         };
-
-        if (!file) {
-          throw new Error("No file");
-        }
 
         fileReader.readAsDataURL(file);
       },
