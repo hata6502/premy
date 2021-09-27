@@ -56,7 +56,7 @@ class KanvasPointerListener extends HTMLElement {
     // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
     setTimeout(() => {
       this.transactionDevice = undefined;
-    }, 100);
+    }, 10);
   }
 
   private handleConnected({ document }: { document: Document }) {
