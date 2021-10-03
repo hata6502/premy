@@ -25,12 +25,12 @@ class KanvasDialog extends HTMLElement {
 
     shadow.innerHTML = `
       <style>
-        #container {
-          user-select: none;
-        }
-
-        #container * {
+        #container, #container * {
           touch-action: pinch-zoom;
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
         }
       </style>
 

@@ -74,6 +74,14 @@ class KanvasCanvas extends HTMLElement {
           overflow: hidden;
         }
 
+        #container, #container * {
+          touch-action: pinch-zoom;
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
         #text-preview-rect {
           position: absolute;
           transform: translateY(-80%);
