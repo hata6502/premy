@@ -45,6 +45,10 @@
     <script type="module">
       import "./dist/index.js";
 
+      if ("serviceWorker" in navigator) {
+        await navigator.serviceWorker.register("./serviceWorker.js");
+      }
+
       const dialog = document.querySelector("#dialog");
       const openButton = document.querySelector("#open-button");
 

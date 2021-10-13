@@ -2,6 +2,7 @@ const config = {
   mode: "production",
   entry: {
     index: "./src/index.ts",
+    "../serviceWorker": "./src/serviceWorker.ts",
   },
   experiments: {
     outputModule: true,
