@@ -30,8 +30,16 @@ https://user-images.githubusercontent.com/7702653/127768488-929cc5fb-a690-46ab-b
 
 ## Install
 
+Install via npm
+
 ```sh
 npm i kanvas-dialog
+```
+
+Load from CDN
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/kanvas-dialog@latest"></script>
 ```
 
 ## Usage
