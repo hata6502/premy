@@ -44,6 +44,8 @@ Load from CDN
 
 ## Usage
 
+- [Example](https://github.com/hata6502/kanvas/blob/main/index.html)
+
 Insert `<kanvas-dialog />` element in the HTML document.
 
 ```html
