@@ -1,4 +1,4 @@
-const cacheName = "v2";
+const cacheName = "v3";
 const requests = [".", "./dist/index.js", "./favicon.png"];
 
 // eslint-disable-next-line no-restricted-globals
