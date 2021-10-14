@@ -97,7 +97,14 @@ class KanvasDialog extends HTMLElement {
     );
   }
 
-  private handleClose = () => this.removeAttribute("open");
+  private handleClose = () => {
+    const event = new CustomEvent("kanvasClose", {
+      bubbles: true,
+      composed: true,
+    });
+
+    this.dispatchEvent(event);
+  };
 }
 
 customElements.define("kanvas-dialog", KanvasDialog);
