@@ -33,12 +33,14 @@
   <body>
     <kanvas-dialog id="dialog" open></kanvas-dialog>
 
-    <script type="module">
-      import "./dist/index.js";
-
+    <script>
       if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("./serviceWorker.js");
       }
+    </script>
+
+    <script type="module">
+      import "./dist/index.js";
 
       const dialog = document.querySelector("#dialog");
 
