@@ -1,7 +1,7 @@
 {
   "name": "kanvas-dialog",
   "version": "1.0.0",
-  "description": "A sketching canvas written in Web Components.",
+  "description": "Minimal sketching canvas written in Web Components.",
   "keywords": [
     "canvas",
     "sketching",

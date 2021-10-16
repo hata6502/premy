@@ -16,7 +16,7 @@
   </a>
 </p>
 
-> A sketching canvas written in Web Components.
+> Minimal sketching canvas written in Web Components.
 
 #### ✨ <https://kanvas.b-hood.site/>
 
