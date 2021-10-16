@@ -16,17 +16,11 @@
   </a>
 </p>
 
-[![Image from Gyazo](https://i.gyazo.com/176246e8cf25ece127628772eec083cc.png)](https://gyazo.com/176246e8cf25ece127628772eec083cc)
-[![Image from Gyazo](https://i.gyazo.com/2d19f366671b54fbe1042c071cd37114.png)](https://gyazo.com/2d19f366671b54fbe1042c071cd37114)
-[![Image from Gyazo](https://i.gyazo.com/e36b6f9a45fabb17d0e19de34f8fb090.png)](https://gyazo.com/e36b6f9a45fabb17d0e19de34f8fb090)
-
 > A sketching canvas written in Web Components.
 
-#### ✨ [Simple application](https://kanvas.b-hood.site/)
+#### ✨ <https://kanvas.b-hood.site/>
 
-#### ✨ [Gallery](https://scrapbox.io/hata6502/kanvas_%E3%81%8A%E7%B5%B5%E3%81%8B%E3%81%8D%E9%9B%86)
-
-## Install
+## Usage
 
 Install via npm
 
@@ -36,33 +30,11 @@ npm i kanvas-dialog
 
 Load from CDN
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/kanvas-dialog@latest"></script>
-```
-
-## Usage
-
-- [Example](https://github.com/hata6502/kanvas/blob/main/index.html)
-
-Insert `<kanvas-dialog />` element in the HTML document.
-
-```html
-<body>
-  <button id="open-button">Open</button>
-  <kanvas-dialog id="dialog"></kanvas-dialog>
-</body>
-```
-
-Kanvas dialog is open when `open` attribute is set.
-
 ```js
-import "kanvas-dialog";
-
-const dialog = document.querySelector("#dialog");
-const openButton = document.querySelector("#open-button");
-
-openButton.addEventListener("click", () => dialog.setAttribute("open", ""));
+import "https://cdn.jsdelivr.net/npm/kanvas-dialog@latest";
 ```
+
+[Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
 
 ## Development
 
@@ -91,10 +63,6 @@ Give a ⭐️ if this project helped you!
 
 Copyright © 2021 [Tomoyuki Hata <hato6502@gmail.com>](https://github.com/hata6502).
 This project is [MIT](https://github.com/hata6502/kanvas/blob/main/LICENSE) licensed.
-
-## Disclaimer
-
-Icon by Twemoji v13.1 (Twitter, inc. )
 
 ---
 
