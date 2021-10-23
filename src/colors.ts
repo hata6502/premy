@@ -1,4 +1,7 @@
 import color000000PNG from "./color000000.png";
+import color555555PNG from "./color555555.png";
+import colorAAAAAAPNG from "./colorAAAAAA.png";
+import colorFFFFFFPNG from "./colorFFFFFF.png";
 import colorFF0000PNG from "./colorFF0000.png";
 import colorFFFF00PNG from "./colorFFFF00.png";
 import color00FF00PNG from "./color00FF00.png";
@@ -11,12 +14,26 @@ import color8FEF8FPNG from "./color8FEF8F.png";
 import color8FEFEFPNG from "./color8FEFEF.png";
 import color8F8FEFPNG from "./color8F8FEF.png";
 import colorEF8FEFPNG from "./colorEF8FEF.png";
-import colorFFFFFFPNG from "./colorFFFFFF.png";
 
 const colors = {
   "#000000": {
     button: {
       image: color000000PNG,
+    },
+  },
+  "#555555": {
+    button: {
+      image: color555555PNG,
+    },
+  },
+  "#aaaaaa": {
+    button: {
+      image: colorAAAAAAPNG,
+    },
+  },
+  "#ffffff": {
+    button: {
+      image: colorFFFFFFPNG,
     },
   },
   "#ff0000": {
@@ -77,11 +94,6 @@ const colors = {
   "#ef8fef": {
     button: {
       image: colorEF8FEFPNG,
-    },
-  },
-  "#ffffff": {
-    button: {
-      image: colorFFFFFFPNG,
     },
   },
 };

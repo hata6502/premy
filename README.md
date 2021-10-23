@@ -36,12 +36,6 @@ import "https://cdn.jsdelivr.net/npm/kanvas-dialog@latest";
 
 [Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
 
-## Development
-
-```bash
-npm run build -- --mode development && npm run serve
-```
-
 ## Author
 
 <img alt="Tomoyuki Hata" src="https://avatars.githubusercontent.com/hata6502" width="48" /> **Tomoyuki Hata <hato6502@gmail.com>**
