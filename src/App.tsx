@@ -58,6 +58,10 @@ const useStyles = makeStyles({
     overflowX: "auto",
     "&, & *": {
       touchAction: "unset !important",
+      "-moz-user-select": "unset !important",
+      "-webkit-user-select": "unset !important",
+      "-ms-user-select": "unset !important",
+      userSelect: "unset !important",
     },
   },
   colorButtonImage: {
