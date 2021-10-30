@@ -31,7 +31,7 @@ npm i kanvas-dialog
 Load from CDN
 
 ```js
-import "https://cdn.jsdelivr.net/npm/kanvas-dialog@latest";
+import "https://cdn.jsdelivr.net/npm/kanvas-dialog@x.x.x";
 ```
 
 [Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
