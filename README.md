@@ -34,6 +34,15 @@ Load from CDN
 import "https://cdn.jsdelivr.net/npm/kanvas-dialog@x.x.x";
 ```
 
+Optionally, please load the following extra fonts.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Dancing+Script|Fruktur"
+/>
+```
+
 [Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
 
 ## Author
