@@ -4,7 +4,6 @@ import {
   StylesProvider,
   jssPreset,
 } from "@material-ui/core";
-import clsx from "clsx";
 import * as jss from "jss";
 import ReactDOM from "react-dom";
 import { App } from "./App";
@@ -77,13 +76,17 @@ class KanvasDialog extends HTMLElement {
   private render() {
     const isOpen = this.getAttribute("open") !== null;
 
+    // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
+    setTimeout(() => {
+      document.body.classList.toggle("kanvas-pointer-listener-ignore", !isOpen);
+    }, 10);
+
     ReactDOM.render(
       <StylesProvider jss={this.createdJSS}>
         <KanvasThemeProvider>
           <CssBaseline />
 
           <Dialog
-            className={clsx(!isOpen && "kanvas-pointer-listener-ignore")}
             container={this.containerElement}
             disableEnforceFocus
             // To keep <App> state.
