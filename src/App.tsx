@@ -36,6 +36,7 @@ import {
   Undo,
 } from "@material-ui/icons";
 import clsx from "clsx";
+import { detect } from "detect-browser";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEventHandler, FunctionComponent } from "react";
 import "./KanvasCanvas";
@@ -172,6 +173,7 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.setToneType({ toneType });
   }, [toneType]);
 
+  const browser = detect();
   const classes = useStyles();
 
   const menuProps = useMemo(
@@ -414,30 +416,34 @@ const App: FunctionComponent<{
           ))}
         </ToggleButtonGroup>
 
-        <TextField
-          variant="outlined"
-          className={classes.textInput}
-          label="Text"
-          onChange={handleTextInputChange}
-          onFocus={handleTextInputFocus}
-        />
+        {browser?.name !== "safari" && (
+          <>
+            <TextField
+              variant="outlined"
+              className={classes.textInput}
+              label="Text"
+              onChange={handleTextInputChange}
+              onFocus={handleTextInputFocus}
+            />
 
-        <FormControl className={classes.fontTypeSelect} variant="outlined">
-          <InputLabel>Font</InputLabel>
+            <FormControl className={classes.fontTypeSelect} variant="outlined">
+              <InputLabel>Font</InputLabel>
 
-          <Select
-            label="Font"
-            value={fontType}
-            onChange={handleFontTypeChange}
-            MenuProps={menuProps}
-          >
-            {Object.keys(fonts).map((fontType) => (
-              <MenuItem key={fontType} value={fontType}>
-                {fontType}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              <Select
+                label="Font"
+                value={fontType}
+                onChange={handleFontTypeChange}
+                MenuProps={menuProps}
+              >
+                {Object.keys(fonts).map((fontType) => (
+                  <MenuItem key={fontType} value={fontType}>
+                    {fontType}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </>
+        )}
 
         <ToggleButtonGroup exclusive value={color} onChange={handleColorChange}>
           {Object.entries(colors).map(([colorType, color]) => (
