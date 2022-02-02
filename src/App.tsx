@@ -319,7 +319,6 @@ const App: FunctionComponent<{
               throw new Error("Blob is null");
             }
 
-            // @ts-expect-error ClipboardItemData is wrong.
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
 
