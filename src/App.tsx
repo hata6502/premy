@@ -27,6 +27,7 @@ import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Assignment,
+  Close,
   Edit,
   FileCopy,
   FolderOpen,
@@ -38,7 +39,11 @@ import {
 import clsx from "clsx";
 import { detect } from "detect-browser";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEventHandler, FunctionComponent } from "react";
+import type {
+  ChangeEventHandler,
+  FunctionComponent,
+  MouseEventHandler,
+} from "react";
 import "./KanvasCanvas";
 import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
 import { PasteDialogContent } from "./PasteDialogContent";
@@ -96,7 +101,8 @@ interface AlertData {
 const App: FunctionComponent<{
   container?: PortalProps["container"];
   src?: string;
-}> = memo(({ container, src }) => {
+  onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
+}> = memo(({ container, src, onCloseButtonClick }) => {
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("light");
@@ -373,9 +379,17 @@ const App: FunctionComponent<{
       <DialogActions
         className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
       >
+        <Tooltip title="Close" PopperProps={portalProps}>
+          <span>
+            <IconButton size="small" onClick={onCloseButtonClick}>
+              <Close />
+            </IconButton>
+          </span>
+        </Tooltip>
+
         <Tooltip title="Clear" PopperProps={portalProps}>
           <span>
-            <IconButton onClick={handleClearButtonClick}>
+            <IconButton size="small" onClick={handleClearButtonClick}>
               <InsertDriveFile />
             </IconButton>
           </span>
@@ -385,6 +399,7 @@ const App: FunctionComponent<{
           <span>
             <IconButton
               disabled={isUndoDisabled}
+              size="small"
               onClick={handleUndoButtonClick}
             >
               <Undo />
@@ -396,6 +411,7 @@ const App: FunctionComponent<{
           <span>
             <IconButton
               disabled={isRedoDisabled}
+              size="small"
               onClick={handleRedoButtonClick}
             >
               <Redo />
@@ -405,6 +421,7 @@ const App: FunctionComponent<{
 
         <ToggleButtonGroup
           exclusive
+          size="small"
           value={brushType}
           onChange={handleBrushTypeChange}
         >
@@ -421,11 +438,16 @@ const App: FunctionComponent<{
               variant="outlined"
               className={classes.textInput}
               label="Text"
+              size="small"
               onChange={handleTextInputChange}
               onFocus={handleTextInputFocus}
             />
 
-            <FormControl className={classes.fontTypeSelect} variant="outlined">
+            <FormControl
+              className={classes.fontTypeSelect}
+              size="small"
+              variant="outlined"
+            >
               <InputLabel>Font</InputLabel>
 
               <Select
@@ -444,7 +466,12 @@ const App: FunctionComponent<{
           </>
         )}
 
-        <ToggleButtonGroup exclusive value={color} onChange={handleColorChange}>
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={color}
+          onChange={handleColorChange}
+        >
           {Object.entries(colors).map(([colorType, color]) => (
             <ToggleButton key={colorType} value={colorType}>
               <img
@@ -458,6 +485,7 @@ const App: FunctionComponent<{
 
         <ToggleButtonGroup
           exclusive
+          size="small"
           value={toneType}
           onChange={handleToneTypeChange}
         >
@@ -474,7 +502,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Open" PopperProps={portalProps}>
           <span>
-            <IconButton component="label">
+            <IconButton component="label" size="small">
               <FolderOpen />
 
               <input
@@ -489,7 +517,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Paste from clipboard" PopperProps={portalProps}>
           <span>
-            <IconButton onClick={handlePasteButtonClick}>
+            <IconButton size="small" onClick={handlePasteButtonClick}>
               <Assignment />
             </IconButton>
           </span>
@@ -497,7 +525,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Save" PopperProps={portalProps}>
           <span>
-            <IconButton onClick={handleSaveButtonClick}>
+            <IconButton size="small" onClick={handleSaveButtonClick}>
               <Save />
             </IconButton>
           </span>
@@ -505,7 +533,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Copy to clipboard" PopperProps={portalProps}>
           <span>
-            <IconButton onClick={handleCopyButtonClick}>
+            <IconButton size="small" onClick={handleCopyButtonClick}>
               <FileCopy />
             </IconButton>
           </span>

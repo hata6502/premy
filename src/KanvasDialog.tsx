@@ -89,15 +89,16 @@ class KanvasDialog extends HTMLElement {
           <Dialog
             container={this.containerElement}
             disableEnforceFocus
+            fullScreen
             // To keep <App> state.
             keepMounted
             maxWidth="lg"
             open={isOpen}
-            onClose={this.handleClose}
           >
             <App
               container={this.containerElement}
               src={this.getAttribute("src") ?? undefined}
+              onCloseButtonClick={this.handleClose}
             />
           </Dialog>
         </KanvasThemeProvider>
