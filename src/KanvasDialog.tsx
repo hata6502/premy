@@ -94,6 +94,7 @@ class KanvasDialog extends HTMLElement {
             keepMounted
             maxWidth="lg"
             open={isOpen}
+            onClose={this.handleClose}
           >
             <App
               container={this.containerElement}
