@@ -75,6 +75,7 @@ const useStyles = makeStyles({
   },
   content: {
     display: "flex",
+    alignItems: "center",
     justifyContent: "center",
   },
   fileInput: {
