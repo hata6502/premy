@@ -62,6 +62,8 @@ const useStyles = makeStyles({
   actions: {
     justifyContent: "unset",
     overflowX: "auto",
+    // For Smartphone
+    paddingBottom: 24,
     "&, & *": {
       touchAction: "unset !important",
       "-moz-user-select": "unset !important",
