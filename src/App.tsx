@@ -306,7 +306,7 @@ const App: FunctionComponent<{
     const anchorElement = document.createElement("a");
 
     try {
-      anchorElement.download = `sketch-${Date.now()}.png`;
+      anchorElement.download = "kanvas.png";
       anchorElement.href = kanvasCanvasElement.current.toDataURL("image/png");
       document.body.append(anchorElement);
       anchorElement.click();
