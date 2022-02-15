@@ -184,7 +184,7 @@ class KanvasCanvas extends HTMLElement {
     );
 
     const density = Math.sqrt(
-      (320 * 180) / imageElement.naturalWidth / imageElement.naturalHeight
+      (256 * 144) / imageElement.naturalWidth / imageElement.naturalHeight
     );
 
     this.height = Math.round(imageElement.naturalHeight * density);
