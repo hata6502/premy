@@ -72,9 +72,6 @@ const useStyles = makeStyles({
       userSelect: "unset !important",
     },
   },
-  colorButtonImage: {
-    width: 24,
-  },
   content: {
     display: "flex",
     alignItems: "center",
@@ -109,7 +106,7 @@ const App: FunctionComponent<{
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("light");
-  const [color, setColor] = useState<ColorType>("#000000");
+  const [color, setColor] = useState<ColorType>("hsl(0, 0%, 0%)");
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [toneType, setToneType] = useState<ToneType>("fill");
 
@@ -192,12 +189,12 @@ const App: FunctionComponent<{
 
   const portalProps = useMemo(() => ({ container }), [container]);
 
-  const handleClearButtonClick = useCallback(() => {
+  const handleClearButtonClick = useCallback(async () => {
     if (!kanvasCanvasElement.current) {
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.clear();
+    await kanvasCanvasElement.current.load({ src: blankPNG });
   }, []);
 
   const handleUndoButtonClick = useCallback(() => {
@@ -475,13 +472,16 @@ const App: FunctionComponent<{
           value={color}
           onChange={handleColorChange}
         >
-          {Object.entries(colors).map(([colorType, color]) => (
+          {Object.keys(colors).map((colorType) => (
             <ToggleButton key={colorType} value={colorType}>
-              <img
-                alt={colorType}
-                className={classes.colorButtonImage}
-                src={color.button.image}
-              />
+              <svg
+                width={24}
+                height={24}
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect x={0} y={0} width={24} height={24} fill={colorType} />
+              </svg>
             </ToggleButton>
           ))}
         </ToggleButtonGroup>

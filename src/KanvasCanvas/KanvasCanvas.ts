@@ -154,18 +154,6 @@ class KanvasCanvas extends HTMLElement {
     this.toneType = toneType;
   }
 
-  clear(): void {
-    const context = this.canvas.getContext("2d");
-
-    if (!context) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    context.fillStyle = this.color;
-    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.pushImageToHistory();
-  }
-
   async load({ src }: { src: string }): Promise<void> {
     const context = this.canvas.getContext("2d");
 
