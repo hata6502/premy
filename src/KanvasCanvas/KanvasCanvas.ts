@@ -32,7 +32,6 @@ class KanvasCanvas extends HTMLElement {
   private canvas;
   private color: string;
   private fontType: FontType;
-  private height: number;
   private history: string[];
   private historyIndex: number;
   private mode: Mode;
@@ -41,8 +40,8 @@ class KanvasCanvas extends HTMLElement {
   private textPreviewRect;
   private toneType: ToneType;
   private transactionMode?: Mode;
-  private width: number;
-  private zoom: number;
+  private actualZoom: number;
+  private displayingZoom: number;
 
   constructor() {
     super();
@@ -50,15 +49,14 @@ class KanvasCanvas extends HTMLElement {
     this.brushType = "light";
     this.color = "#000000";
     this.fontType = "sans-serif";
-    this.height = 0;
     this.history = [];
     this.historyIndex = -1;
     this.mode = "shape";
     this.prevPosition = { x: 0, y: 0 };
     this.text = "";
     this.toneType = "fill";
-    this.width = 0;
-    this.zoom = 0;
+    this.actualZoom = 0;
+    this.displayingZoom = 0;
 
     const shadow = this.attachShadow({ mode: "open" });
 
@@ -172,20 +170,22 @@ class KanvasCanvas extends HTMLElement {
     );
 
     const density = Math.sqrt(
-      (320 * 180) / imageElement.naturalWidth / imageElement.naturalHeight
+      (320 * 180) / (imageElement.naturalWidth * imageElement.naturalHeight)
     );
 
-    this.height = Math.round(imageElement.naturalHeight * density);
-    this.width = Math.round(imageElement.naturalWidth * density);
+    const imageHeight = Math.round(imageElement.naturalHeight * density);
+    const imageWidth = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 112) / this.height;
-    const widthZoom = (Math.min(window.innerWidth, 1280) - 56) / this.width;
-    const minZoom = Math.min(heightZoom, widthZoom);
+    const heightZoom = (window.innerHeight - 112) / imageHeight;
+    const widthZoom = (Math.min(window.innerWidth, 1280) - 56) / imageWidth;
 
-    this.zoom = minZoom > 2 ? Math.floor(minZoom) : minZoom;
+    this.displayingZoom = Math.min(heightZoom, widthZoom);
+    this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
+    this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
 
-    this.canvas.height = this.height * this.zoom;
-    this.canvas.width = this.width * this.zoom;
+    this.actualZoom = Math.ceil(this.displayingZoom);
+    this.canvas.height = imageHeight * this.actualZoom;
+    this.canvas.width = imageWidth * this.actualZoom;
 
     context.drawImage(
       imageElement,
@@ -232,8 +232,8 @@ class KanvasCanvas extends HTMLElement {
     const pixelY = clientPosition.y - (domRect.top + 1);
 
     return {
-      x: Math.round(pixelX / this.zoom),
-      y: Math.round(pixelY / this.zoom),
+      x: Math.round(pixelX / this.displayingZoom),
+      y: Math.round(pixelY / this.displayingZoom),
     };
   }
 
@@ -260,14 +260,20 @@ class KanvasCanvas extends HTMLElement {
       throw new Error("Canvas is not a 2D context");
     }
 
-    const font = `${brushes[this.brushType].font.size * this.zoom}px ${
-      fonts[this.fontType]
-    }`;
+    const font = `${
+      brushes[this.brushType].font.size * this.displayingZoom
+    }px ${fonts[this.fontType]}`;
 
     context.font = font;
 
-    this.textPreviewRect.style.left = `${position.x * this.zoom + 1}px`;
-    this.textPreviewRect.style.top = `${position.y * this.zoom + 1}px`;
+    this.textPreviewRect.style.left = `${
+      position.x * this.displayingZoom + 1
+    }px`;
+
+    this.textPreviewRect.style.top = `${
+      position.y * this.displayingZoom + 1
+    }px`;
+
     this.textPreviewRect.style.color = this.color;
     this.textPreviewRect.style.font = font;
     this.textPreviewRect.textContent = this.text;
@@ -303,21 +309,22 @@ class KanvasCanvas extends HTMLElement {
     context.fillStyle = this.color;
 
     for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
-      if (y < 0 || y >= this.height) {
-        continue;
-      }
-
       for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
         if (
-          x < 0 ||
-          x >= this.width ||
-          brush.bitmap[y - beginY][x - beginX] === 0 ||
-          tone.bitmap[y % tone.bitmap.length][x % tone.bitmap[0].length] === 0
+          brush.bitmap[Math.abs(y - beginY)][Math.abs(x - beginX)] === 0 ||
+          tone.bitmap[Math.abs(y % tone.bitmap.length)][
+            Math.abs(x % tone.bitmap[0].length)
+          ] === 0
         ) {
           continue;
         }
 
-        context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
+        context.fillRect(
+          x * this.actualZoom,
+          y * this.actualZoom,
+          this.actualZoom,
+          this.actualZoom
+        );
       }
     }
   }
@@ -440,14 +447,14 @@ class KanvasCanvas extends HTMLElement {
 
         context.fillStyle = this.color;
 
-        context.font = `${brushes[this.brushType].font.size * this.zoom}px ${
-          fonts[this.fontType]
-        }`;
+        context.font = `${
+          brushes[this.brushType].font.size * this.actualZoom
+        }px ${fonts[this.fontType]}`;
 
         context.fillText(
           this.text,
-          canvasPosition.x * this.zoom,
-          canvasPosition.y * this.zoom
+          canvasPosition.x * this.actualZoom,
+          canvasPosition.y * this.actualZoom
         );
 
         this.textPreviewRect.textContent = "";
