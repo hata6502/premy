@@ -381,7 +381,7 @@ const App: FunctionComponent<{
       >
         <Tooltip title="Close" PopperProps={portalProps}>
           <span>
-            <IconButton size="small" onClick={onCloseButtonClick}>
+            <IconButton onClick={onCloseButtonClick}>
               <Close />
             </IconButton>
           </span>
@@ -389,7 +389,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Clear" PopperProps={portalProps}>
           <span>
-            <IconButton size="small" onClick={handleClearButtonClick}>
+            <IconButton onClick={handleClearButtonClick}>
               <InsertDriveFile />
             </IconButton>
           </span>
@@ -399,7 +399,6 @@ const App: FunctionComponent<{
           <span>
             <IconButton
               disabled={isUndoDisabled}
-              size="small"
               onClick={handleUndoButtonClick}
             >
               <Undo />
@@ -411,7 +410,6 @@ const App: FunctionComponent<{
           <span>
             <IconButton
               disabled={isRedoDisabled}
-              size="small"
               onClick={handleRedoButtonClick}
             >
               <Redo />
@@ -505,7 +503,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Open" PopperProps={portalProps}>
           <span>
-            <IconButton component="label" size="small">
+            <IconButton component="label">
               <FolderOpen />
 
               <input
@@ -520,7 +518,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Paste from clipboard" PopperProps={portalProps}>
           <span>
-            <IconButton size="small" onClick={handlePasteButtonClick}>
+            <IconButton onClick={handlePasteButtonClick}>
               <Assignment />
             </IconButton>
           </span>
@@ -528,7 +526,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Save" PopperProps={portalProps}>
           <span>
-            <IconButton size="small" onClick={handleSaveButtonClick}>
+            <IconButton onClick={handleSaveButtonClick}>
               <Save />
             </IconButton>
           </span>
@@ -536,7 +534,7 @@ const App: FunctionComponent<{
 
         <Tooltip title="Copy to clipboard" PopperProps={portalProps}>
           <span>
-            <IconButton size="small" onClick={handleCopyButtonClick}>
+            <IconButton onClick={handleCopyButtonClick}>
               <FileCopy />
             </IconButton>
           </span>
