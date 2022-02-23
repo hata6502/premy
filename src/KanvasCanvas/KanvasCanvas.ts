@@ -342,15 +342,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private putImageFromHistory() {
-    const context = this.canvas.getContext("2d");
-    const image = new Image();
-
-    if (!context) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    image.onload = () => context.drawImage(image, 0, 0);
-    image.src = this.history[this.historyIndex];
+    void this.load({ src: this.history[this.historyIndex] });
   }
 
   private handleContextmenu = (event: Event) => event.preventDefault();
