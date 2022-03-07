@@ -51,10 +51,9 @@ import type { PasteDialogContentProps } from "./PasteDialogContent";
 import blankPNG from "./blank.png";
 import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
-import { colors } from "./colors";
-import type { ColorType } from "./colors";
 import { fonts } from "./fonts";
 import type { FontType } from "./fonts";
+import { palettes } from "./palettes";
 import { tones } from "./tones";
 import type { ToneType } from "./tones";
 
@@ -81,10 +80,13 @@ const useStyles = makeStyles({
     display: "none",
   },
   fontTypeSelect: {
-    minWidth: 136,
+    minWidth: 112,
+  },
+  paletteKeySelect: {
+    minWidth: 96,
   },
   textInput: {
-    minWidth: 238,
+    minWidth: 192,
   },
   toneButtonImage: {
     width: 24,
@@ -106,8 +108,9 @@ const App: FunctionComponent<{
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("light");
-  const [color, setColor] = useState<ColorType>("hsl(0, 0%, 0%)");
+  const [colorIndex, setColorIndex] = useState(0);
   const [fontType, setFontType] = useState<FontType>("sans-serif");
+  const [paletteKey, setPaletteKey] = useState<keyof typeof palettes>("bright");
   const [toneType, setToneType] = useState<ToneType>("fill");
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
@@ -168,8 +171,10 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setColor({ color });
-  }, [color]);
+    kanvasCanvasElement.current.setColor({
+      color: palettes[paletteKey][colorIndex],
+    });
+  }, [colorIndex, paletteKey]);
 
   useEffect(() => {
     if (!kanvasCanvasElement.current) {
@@ -188,40 +193,6 @@ const App: FunctionComponent<{
   );
 
   const portalProps = useMemo(() => ({ container }), [container]);
-
-  const handleClearButtonClick = useCallback(async () => {
-    if (!kanvasCanvasElement.current) {
-      throw new Error("KanvasCanvas element not found");
-    }
-
-    await kanvasCanvasElement.current.load({ src: blankPNG });
-  }, []);
-
-  const handleUndoButtonClick = useCallback(() => {
-    if (!kanvasCanvasElement.current) {
-      throw new Error("KanvasCanvas element not found");
-    }
-
-    kanvasCanvasElement.current.undo();
-  }, []);
-
-  const handleRedoButtonClick = useCallback(() => {
-    if (!kanvasCanvasElement.current) {
-      throw new Error("KanvasCanvas element not found");
-    }
-
-    kanvasCanvasElement.current.redo();
-  }, []);
-
-  const handleBrushTypeChange = useCallback<
-    NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, brushType) => {
-    if (brushType === null) {
-      return;
-    }
-
-    setBrushType(brushType);
-  }, []);
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
@@ -244,15 +215,29 @@ const App: FunctionComponent<{
     NonNullable<SelectProps["onChange"]>
   >((event) => setFontType(event.target.value as FontType), []);
 
-  const handleColorChange = useCallback<
+  const handleColorIndexChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, color) => {
-    if (color === null) {
+  >((_event, index) => {
+    if (index === null) {
       return;
     }
 
-    setColor(color);
+    setColorIndex(index);
   }, []);
+
+  const handleBrushTypeChange = useCallback<
+    NonNullable<ToggleButtonGroupProps["onChange"]>
+  >((_event, brushType) => {
+    if (brushType === null) {
+      return;
+    }
+
+    setBrushType(brushType);
+  }, []);
+
+  const handlePaletteKeyChange = useCallback<
+    NonNullable<SelectProps["onChange"]>
+  >((event) => setPaletteKey(event.target.value as keyof typeof palettes), []);
 
   const handleToneTypeChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
@@ -262,6 +247,30 @@ const App: FunctionComponent<{
     }
 
     setToneType(toneType);
+  }, []);
+
+  const handleUndoButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.undo();
+  }, []);
+
+  const handleRedoButtonClick = useCallback(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.redo();
+  }, []);
+
+  const handleClearButtonClick = useCallback(async () => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    await kanvasCanvasElement.current.load({ src: blankPNG });
   }, []);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
@@ -387,49 +396,6 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Clear" PopperProps={portalProps}>
-          <span>
-            <IconButton onClick={handleClearButtonClick}>
-              <InsertDriveFile />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip title="Undo" PopperProps={portalProps}>
-          <span>
-            <IconButton
-              disabled={isUndoDisabled}
-              onClick={handleUndoButtonClick}
-            >
-              <Undo />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip title="Redo" PopperProps={portalProps}>
-          <span>
-            <IconButton
-              disabled={isRedoDisabled}
-              onClick={handleRedoButtonClick}
-            >
-              <Redo />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={brushType}
-          onChange={handleBrushTypeChange}
-        >
-          {Object.entries(brushes).map(([brushType, brush]) => (
-            <ToggleButton key={brushType} value={brushType}>
-              <Edit style={{ fontSize: brush.button.size }} />
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-
         {browser?.name !== "safari" && (
           <>
             <TextField
@@ -467,22 +433,56 @@ const App: FunctionComponent<{
         <ToggleButtonGroup
           exclusive
           size="small"
-          value={color}
-          onChange={handleColorChange}
+          value={brushType}
+          onChange={handleBrushTypeChange}
         >
-          {Object.keys(colors).map((colorType) => (
-            <ToggleButton key={colorType} value={colorType}>
+          {Object.entries(brushes).map(([brushType, brush]) => (
+            <ToggleButton key={brushType} value={brushType}>
+              <Edit style={{ fontSize: brush.button.size }} />
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={colorIndex}
+          onChange={handleColorIndexChange}
+        >
+          {palettes[paletteKey].map((color, index) => (
+            <ToggleButton key={color} value={index}>
               <svg
                 width={24}
                 height={24}
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <rect x={0} y={0} width={24} height={24} fill={colorType} />
+                <rect x={0} y={0} width={24} height={24} fill={color} />
               </svg>
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
+
+        <FormControl
+          className={classes.paletteKeySelect}
+          size="small"
+          variant="outlined"
+        >
+          <InputLabel>Palette</InputLabel>
+
+          <Select
+            label="Palette"
+            value={paletteKey}
+            onChange={handlePaletteKeyChange}
+            MenuProps={menuProps}
+          >
+            {Object.keys(palettes).map((paletteKey) => (
+              <MenuItem key={paletteKey} value={paletteKey}>
+                {paletteKey}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <ToggleButtonGroup
           exclusive
@@ -500,6 +500,36 @@ const App: FunctionComponent<{
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
+
+        <Tooltip title="Undo" PopperProps={portalProps}>
+          <span>
+            <IconButton
+              disabled={isUndoDisabled}
+              onClick={handleUndoButtonClick}
+            >
+              <Undo />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Redo" PopperProps={portalProps}>
+          <span>
+            <IconButton
+              disabled={isRedoDisabled}
+              onClick={handleRedoButtonClick}
+            >
+              <Redo />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Clear" PopperProps={portalProps}>
+          <span>
+            <IconButton onClick={handleClearButtonClick}>
+              <InsertDriveFile />
+            </IconButton>
+          </span>
+        </Tooltip>
 
         <Tooltip title="Open" PopperProps={portalProps}>
           <span>
