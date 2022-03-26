@@ -24,12 +24,13 @@ import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Assignment,
   Close,
-  Edit,
   FileCopy,
   FolderOpen,
+  Gesture,
   InsertDriveFile,
   Redo,
   Save,
+  TextFormat,
   Undo,
 } from "@material-ui/icons";
 import clsx from "clsx";
@@ -40,7 +41,11 @@ import type {
   MouseEventHandler,
 } from "react";
 import "./KanvasCanvas";
-import type { KanvasCanvas, KanvasHistoryChangeEvent } from "./KanvasCanvas";
+import type {
+  KanvasCanvas,
+  KanvasCanvasMode,
+  KanvasHistoryChangeEvent,
+} from "./KanvasCanvas";
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
 import blankPNG from "./blank.png";
@@ -104,6 +109,7 @@ const App: FunctionComponent<{
   const [brushType, setBrushType] = useState<BrushType>("light");
   const [colorIndex, setColorIndex] = useState(0);
   const [fontType, setFontType] = useState<FontType>("sans-serif");
+  const [mode, setMode] = useState<KanvasCanvasMode>("shape");
   const [paletteKey, setPaletteKey] = useState<keyof typeof palettes>("bright");
   const [toneType, setToneType] = useState<ToneType>("fill");
 
@@ -149,7 +155,6 @@ const App: FunctionComponent<{
     }
 
     kanvasCanvasElement.current.setBrushType({ brushType });
-    kanvasCanvasElement.current.setMode({ mode: "shape" });
   }, [brushType]);
 
   useEffect(() => {
@@ -175,10 +180,33 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
+    kanvasCanvasElement.current.setMode({ mode });
+  }, [mode]);
+
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
     kanvasCanvasElement.current.setToneType({ toneType });
   }, [toneType]);
 
   const classes = useStyles();
+
+  const Brush = ({
+    shape: Gesture,
+    text: TextFormat,
+  })[mode];
+
+  const handleModeChange = useCallback<
+    NonNullable<ToggleButtonGroupProps["onChange"]>
+  >((_event, mode) => {
+    if (mode === null) {
+      return;
+    }
+
+    setMode(mode);
+  }, []);
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
@@ -188,14 +216,6 @@ const App: FunctionComponent<{
 
       kanvasCanvasElement.current.setText({ text: event.target.value });
     }, []);
-
-  const handleTextInputFocus = useCallback(() => {
-    if (!kanvasCanvasElement.current) {
-      throw new Error("KanvasCanvas element not found");
-    }
-
-    kanvasCanvasElement.current.setMode({ mode: "text" });
-  }, []);
 
   const handleFontTypeChange = useCallback<
     NonNullable<SelectProps["onChange"]>
@@ -382,49 +402,6 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <TextField
-          variant="outlined"
-          className={classes.textInput}
-          label="Text"
-          size="small"
-          onChange={handleTextInputChange}
-          onFocus={handleTextInputFocus}
-        />
-
-        <FormControl
-          className={classes.fontTypeSelect}
-          size="small"
-          variant="outlined"
-        >
-          <InputLabel>Font</InputLabel>
-
-          <Select
-            label="Font"
-            value={fontType}
-            onChange={handleFontTypeChange}
-            MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
-          >
-            {Object.keys(fonts).map((fontType) => (
-              <MenuItem key={fontType} value={fontType}>
-                {fontType}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={brushType}
-          onChange={handleBrushTypeChange}
-        >
-          {Object.entries(brushes).map(([brushType, brush]) => (
-            <ToggleButton key={brushType} value={brushType}>
-              <Edit style={{ fontSize: brush.button.size }} />
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-
         <ToggleButtonGroup
           exclusive
           size="small"
@@ -468,20 +445,82 @@ const App: FunctionComponent<{
 
         <ToggleButtonGroup
           exclusive
-          size="small"
-          value={toneType}
-          onChange={handleToneTypeChange}
+          value={mode}
+          onChange={handleModeChange}
         >
-          {Object.entries(tones).map(([toneType, tone]) => (
-            <ToggleButton key={toneType} value={toneType}>
-              <img
-                alt={toneType}
-                className={classes.toneButtonImage}
-                src={tone.button.image}
-              />
+          <ToggleButton value="shape">
+            <Gesture />
+          </ToggleButton>
+
+          <ToggleButton value="text">
+            <TextFormat />
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={brushType}
+          onChange={handleBrushTypeChange}
+        >
+          {Object.entries(brushes).map(([brushType, brush]) => (
+            <ToggleButton key={brushType} value={brushType}>
+              <Brush style={{ fontSize: brush.button.size }} />
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
+
+        {mode === "shape" && (
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={toneType}
+            onChange={handleToneTypeChange}
+          >
+            {Object.entries(tones).map(([toneType, tone]) => (
+              <ToggleButton key={toneType} value={toneType}>
+                <img
+                  alt={toneType}
+                  className={classes.toneButtonImage}
+                  src={tone.button.image}
+                />
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        )}
+
+        {mode === "text" && (
+          <>
+            <TextField
+              variant="outlined"
+              className={classes.textInput}
+              label="Text"
+              size="small"
+              onChange={handleTextInputChange}
+            />
+
+            <FormControl
+              className={classes.fontTypeSelect}
+              size="small"
+              variant="outlined"
+            >
+              <InputLabel>Font</InputLabel>
+
+              <Select
+                label="Font"
+                value={fontType}
+                onChange={handleFontTypeChange}
+                MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
+              >
+                {Object.keys(fonts).map((fontType) => (
+                  <MenuItem key={fontType} value={fontType}>
+                    {fontType}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </>
+        )}
 
         <Tooltip title="Undo">
           <span>

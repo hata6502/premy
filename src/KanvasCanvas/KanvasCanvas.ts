@@ -25,7 +25,7 @@ type KanvasHistoryChangeEvent = CustomEvent<{
   historyIndex: number;
 }>;
 
-type Mode = "shape" | "text";
+export type KanvasCanvasMode = "shape" | "text";
 
 class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
@@ -34,12 +34,12 @@ class KanvasCanvas extends HTMLElement {
   private fontType: FontType;
   private history: string[];
   private historyIndex: number;
-  private mode: Mode;
+  private mode: KanvasCanvasMode;
   private prevPosition: KanvasPosition;
   private text;
   private textPreviewRect;
   private toneType: ToneType;
-  private transactionMode?: Mode;
+  private transactionMode?: KanvasCanvasMode;
   private actualZoom: number;
   private displayingZoom: number;
 
@@ -140,7 +140,7 @@ class KanvasCanvas extends HTMLElement {
     this.fontType = fontType;
   }
 
-  setMode({ mode }: { mode: Mode }): void {
+  setMode({ mode }: { mode: KanvasCanvasMode }): void {
     this.mode = mode;
   }
 
