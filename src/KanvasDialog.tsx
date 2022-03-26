@@ -47,6 +47,8 @@ export class KanvasDialog extends HTMLElement {
         <KanvasThemeProvider>
           <ScopedCssBaseline>
             <Dialog
+              // To bubble events.
+              disablePortal
               fullScreen
               // To keep <App> state.
               keepMounted
