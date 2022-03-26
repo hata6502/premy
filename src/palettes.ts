@@ -5,7 +5,7 @@ const getChromaticPalette = ({
   saturation: number;
   lightness: number;
 }) =>
-  [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
+  [0, 40, 80, 120, 160, 200, 240, 280, 320].map(
     (hue) => `hsl(${hue}, ${saturation}%, ${lightness}%)`
   );
 
@@ -18,28 +18,29 @@ export const palettes = {
     }),
   ],
   bright: [
-    "hsl(0, 0%, 80%)",
+    "hsl(0, 0%, 75%)",
     ...getChromaticPalette({
       saturation: 75,
       lightness: 67,
     }),
   ],
   vivid: [
-    "hsl(0, 0%, 60%)",
+    "hsl(0, 0%, 50%)",
     ...getChromaticPalette({
       saturation: 100,
       lightness: 50,
     }),
   ],
-  grayish: [
+  // パレットの見せ方を調整するため、いったんコメントアウト。
+  /*grayish: [
     "hsl(0, 0%, 40%)",
     ...getChromaticPalette({
       saturation: 25,
       lightness: 50,
     }),
-  ],
+  ],*/
   deep: [
-    "hsl(0, 0%, 20%)",
+    "hsl(0, 0%, 25%)",
     ...getChromaticPalette({
       saturation: 75,
       lightness: 33,

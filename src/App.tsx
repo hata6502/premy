@@ -1,7 +1,7 @@
 import {
   Box,
+  Container,
   Dialog,
-  DialogContent,
   IconButton,
   Menu,
   MenuItem,
@@ -21,8 +21,8 @@ import {
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
+  Brush as BrushIcon,
   Close,
-  Gesture,
   GetApp,
   Publish,
   Redo,
@@ -66,12 +66,13 @@ const useStyles = makeStyles({
       userSelect: "unset !important",
     },
   },
+  canvasContainer: {
+    display: "inline-block",
+    // For Android
+    marginBottom: 32,
+  },
   closeButton: {
     marginLeft: "auto",
-  },
-  content: {
-    marginLeft: "auto",
-    marginRight: "auto",
   },
   fileInput: {
     display: "none !important",
@@ -99,7 +100,7 @@ const App: FunctionComponent<{
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("medium");
-  const [color, setColor] = useState(palettes.grayish[0]);
+  const [color, setColor] = useState(palettes.deep[0]);
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [mode, setMode] = useState<KanvasCanvasMode>("shape");
   const [text, setText] = useState("");
@@ -198,7 +199,7 @@ const App: FunctionComponent<{
   const classes = useStyles();
 
   const Brush = {
-    shape: Gesture,
+    shape: BrushIcon,
     text: TextFormat,
   }[mode];
 
@@ -409,7 +410,7 @@ const App: FunctionComponent<{
 
   return (
     <>
-      <DialogContent className={classes.content}>
+      <Container>
         <div
           className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
         >
@@ -420,7 +421,7 @@ const App: FunctionComponent<{
               onChange={handleModeChange}
             >
               <ToggleButton value="shape">
-                <Gesture />
+                <BrushIcon />
               </ToggleButton>
 
               <ToggleButton value="text">
@@ -707,10 +708,10 @@ const App: FunctionComponent<{
           </div>
         </div>
 
-        <Box mb={3}>
+        <div className={classes.canvasContainer}>
           <kanvas-canvas ref={kanvasCanvasElement} />
-        </Box>
-      </DialogContent>
+        </div>
+      </Container>
 
       <Dialog
         className="kanvas-pointer-listener-ignore"
