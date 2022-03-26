@@ -1,79 +1,40 @@
-import {
-  CssBaseline,
-  Dialog,
-  StylesProvider,
-  jssPreset,
-} from "@material-ui/core";
-import * as jss from "jss";
+import { Dialog, StylesProvider } from "@material-ui/core";
+import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline';
 import ReactDOM from "react-dom";
 import { App } from "./App";
 import { KanvasThemeProvider } from "./KanvasThemeProvider";
 
-class KanvasDialog extends HTMLElement {
+export class KanvasDialog extends HTMLElement {
   static get observedAttributes(): string[] {
     return ["open", "src"];
   }
 
-  private appElement;
-  private containerElement;
-  private createdJSS;
-
-  constructor() {
-    super();
-
-    const shadow = this.attachShadow({ mode: "open" });
-
-    shadow.innerHTML = `
-      <style>
-        #container, #container * {
-          touch-action: pinch-zoom;
-          -moz-user-select: none;
-          -webkit-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-      </style>
-
-      <div>
-        <noscript id="jss-insertion-point"></noscript>
-
-        <div id="container">
-          <div id="app"></div>
-        </div>
-      </div>
-    `;
-
-    const appElement = shadow.querySelector("#app");
-    const containerElement = shadow.querySelector("#container");
-
-    const jssInsertionPointElement = shadow.querySelector(
-      "#jss-insertion-point"
-    );
-
-    if (
-      !(appElement instanceof HTMLDivElement) ||
-      !(containerElement instanceof HTMLDivElement) ||
-      !(jssInsertionPointElement instanceof HTMLElement)
-    ) {
-      throw new Error("Could not find JSS insertion point.");
-    }
-
-    this.appElement = appElement;
-    this.containerElement = containerElement;
-
-    this.createdJSS = jss.create({
-      ...jssPreset(),
-      insertionPoint: jssInsertionPointElement,
-    });
-
-    this.render();
-  }
+  private appElement?: HTMLDivElement;
 
   attributeChangedCallback(): void {
     this.render();
   }
 
+  connectedCallback() {
+    this.innerHTML = `
+      <div class="app"></div>
+    `;
+
+    const appElement = this.querySelector(".app");
+
+    if (!(appElement instanceof HTMLDivElement)) {
+      throw new Error("Invalid element.");
+    }
+
+    this.appElement = appElement;
+    this.render();
+  }
+
   private render() {
+    if (!this.appElement) {
+      return;
+    }
+
     const isOpen = this.getAttribute("open") !== null;
 
     // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
@@ -82,26 +43,22 @@ class KanvasDialog extends HTMLElement {
     }, 10);
 
     ReactDOM.render(
-      <StylesProvider jss={this.createdJSS}>
+      <StylesProvider>
         <KanvasThemeProvider>
-          <CssBaseline />
-
-          <Dialog
-            container={this.containerElement}
-            disableEnforceFocus
-            fullScreen
-            // To keep <App> state.
-            keepMounted
-            maxWidth="lg"
-            open={isOpen}
-            onClose={this.handleClose}
-          >
-            <App
-              container={this.containerElement}
-              src={this.getAttribute("src") ?? undefined}
-              onCloseButtonClick={this.handleClose}
-            />
-          </Dialog>
+          <ScopedCssBaseline>
+            <Dialog
+              fullScreen
+              // To keep <App> state.
+              keepMounted
+              open={isOpen}
+              onClose={this.handleClose}
+            >
+              <App
+                src={this.getAttribute("src") ?? undefined}
+                onCloseButtonClick={this.handleClose}
+              />
+            </Dialog>
+          </ScopedCssBaseline>
         </KanvasThemeProvider>
       </StylesProvider>,
       this.appElement
@@ -119,5 +76,3 @@ class KanvasDialog extends HTMLElement {
 }
 
 customElements.define("kanvas-dialog", KanvasDialog);
-
-export { KanvasDialog };

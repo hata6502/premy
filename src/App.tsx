@@ -13,7 +13,6 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import type {
-  PortalProps,
   SelectProps,
   SnackbarProps,
 } from "@material-ui/core";
@@ -38,7 +37,7 @@ import {
 } from "@material-ui/icons";
 import clsx from "clsx";
 import { detect } from "detect-browser";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type {
   ChangeEventHandler,
   FunctionComponent,
@@ -101,10 +100,9 @@ interface AlertData {
 }
 
 const App: FunctionComponent<{
-  container?: PortalProps["container"];
   src?: string;
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
-}> = memo(({ container, src, onCloseButtonClick }) => {
+}> = memo(({ src, onCloseButtonClick }) => {
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("light");
@@ -186,13 +184,6 @@ const App: FunctionComponent<{
 
   const browser = detect();
   const classes = useStyles();
-
-  const menuProps = useMemo(
-    () => ({ className: "kanvas-pointer-listener-ignore", container }),
-    [container]
-  );
-
-  const portalProps = useMemo(() => ({ container }), [container]);
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback((event) => {
@@ -388,7 +379,7 @@ const App: FunctionComponent<{
       <DialogActions
         className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
       >
-        <Tooltip title="Close" PopperProps={portalProps}>
+        <Tooltip title="Close">
           <span>
             <IconButton onClick={onCloseButtonClick}>
               <Close />
@@ -418,7 +409,7 @@ const App: FunctionComponent<{
                 label="Font"
                 value={fontType}
                 onChange={handleFontTypeChange}
-                MenuProps={menuProps}
+                MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
               >
                 {Object.keys(fonts).map((fontType) => (
                   <MenuItem key={fontType} value={fontType}>
@@ -474,8 +465,8 @@ const App: FunctionComponent<{
             label="Palette"
             value={paletteKey}
             onChange={handlePaletteKeyChange}
-            MenuProps={menuProps}
-          >
+            MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
+            >
             {Object.keys(palettes).map((paletteKey) => (
               <MenuItem key={paletteKey} value={paletteKey}>
                 {paletteKey}
@@ -501,7 +492,7 @@ const App: FunctionComponent<{
           ))}
         </ToggleButtonGroup>
 
-        <Tooltip title="Undo" PopperProps={portalProps}>
+        <Tooltip title="Undo">
           <span>
             <IconButton
               disabled={isUndoDisabled}
@@ -512,7 +503,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Redo" PopperProps={portalProps}>
+        <Tooltip title="Redo">
           <span>
             <IconButton
               disabled={isRedoDisabled}
@@ -523,7 +514,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Clear" PopperProps={portalProps}>
+        <Tooltip title="Clear">
           <span>
             <IconButton onClick={handleClearButtonClick}>
               <InsertDriveFile />
@@ -531,7 +522,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Open" PopperProps={portalProps}>
+        <Tooltip title="Open">
           <span>
             <IconButton component="label">
               <FolderOpen />
@@ -546,7 +537,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Paste from clipboard" PopperProps={portalProps}>
+        <Tooltip title="Paste from clipboard">
           <span>
             <IconButton onClick={handlePasteButtonClick}>
               <Assignment />
@@ -554,7 +545,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Save" PopperProps={portalProps}>
+        <Tooltip title="Save">
           <span>
             <IconButton onClick={handleSaveButtonClick}>
               <Save />
@@ -562,7 +553,7 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        <Tooltip title="Copy to clipboard" PopperProps={portalProps}>
+        <Tooltip title="Copy to clipboard">
           <span>
             <IconButton onClick={handleCopyButtonClick}>
               <FileCopy />
@@ -573,8 +564,6 @@ const App: FunctionComponent<{
 
       <Dialog
         className="kanvas-pointer-listener-ignore"
-        container={container}
-        disableEnforceFocus
         open={isPasteDialogOpen}
         onClose={handlePasteDialogClose}
       >
