@@ -1,5 +1,5 @@
 import { Dialog, StylesProvider } from "@material-ui/core";
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline';
+import ScopedCssBaseline from "@material-ui/core/ScopedCssBaseline";
 import ReactDOM from "react-dom";
 import { App } from "./App";
 import { KanvasThemeProvider } from "./KanvasThemeProvider";
@@ -15,7 +15,7 @@ export class KanvasDialog extends HTMLElement {
     this.render();
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.innerHTML = `
       <div class="app"></div>
     `;

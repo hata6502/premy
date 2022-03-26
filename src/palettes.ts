@@ -1,7 +1,3 @@
-const commonPalette = [0, 33, 67, 100].map(
-  (lightness) => `hsl(0, 0%, ${lightness}%)`
-);
-
 const getChromaticPalette = ({
   saturation,
   lightness,
@@ -14,43 +10,43 @@ const getChromaticPalette = ({
   );
 
 export const palettes = {
-  vivid: [
-    ...commonPalette,
-    ...getChromaticPalette({
-      saturation: 100,
-      lightness: 50,
-    }),
-  ],
-  bright: [
-    ...commonPalette,
-    ...getChromaticPalette({
-      saturation: 75,
-      lightness: 67,
-    }),
-  ],
-  deep: [
-    ...commonPalette,
-    ...getChromaticPalette({
-      saturation: 75,
-      lightness: 33,
-    }),
-  ],
   light: [
-    ...commonPalette,
+    "hsl(0, 0%, 100%)",
     ...getChromaticPalette({
       saturation: 50,
       lightness: 75,
     }),
   ],
+  bright: [
+    "hsl(0, 0%, 80%)",
+    ...getChromaticPalette({
+      saturation: 75,
+      lightness: 67,
+    }),
+  ],
+  vivid: [
+    "hsl(0, 0%, 60%)",
+    ...getChromaticPalette({
+      saturation: 100,
+      lightness: 50,
+    }),
+  ],
   grayish: [
-    ...commonPalette,
+    "hsl(0, 0%, 40%)",
     ...getChromaticPalette({
       saturation: 25,
       lightness: 50,
     }),
   ],
+  deep: [
+    "hsl(0, 0%, 20%)",
+    ...getChromaticPalette({
+      saturation: 75,
+      lightness: 33,
+    }),
+  ],
   dark: [
-    ...commonPalette,
+    "hsl(0, 0%, 0%)",
     ...getChromaticPalette({
       saturation: 50,
       lightness: 25,

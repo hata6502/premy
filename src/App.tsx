@@ -1,18 +1,17 @@
 import {
+  Box,
   Dialog,
-  DialogActions,
   DialogContent,
-  FormControl,
   IconButton,
-  InputLabel,
+  Menu,
   MenuItem,
-  Select,
+  Popover,
   Snackbar,
   TextField,
   Tooltip,
   makeStyles,
 } from "@material-ui/core";
-import type { SelectProps, SnackbarProps } from "@material-ui/core";
+import type { SnackbarProps } from "@material-ui/core";
 import {
   Alert,
   AlertTitle,
@@ -22,14 +21,11 @@ import {
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
-  Assignment,
   Close,
-  FileCopy,
-  FolderOpen,
   Gesture,
-  InsertDriveFile,
+  GetApp,
+  Publish,
   Redo,
-  Save,
   TextFormat,
   Undo,
 } from "@material-ui/icons";
@@ -59,11 +55,10 @@ import type { ToneType } from "./tones";
 
 const useStyles = makeStyles({
   actions: {
-    justifyContent: "unset",
-    overflowX: "auto",
-    // For Smartphone
-    paddingBottom: 32,
-    "&, & *": {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 8,
+    "& *": {
       touchAction: "unset !important",
       "-moz-user-select": "unset !important",
       "-webkit-user-select": "unset !important",
@@ -71,25 +66,22 @@ const useStyles = makeStyles({
       userSelect: "unset !important",
     },
   },
+  closeButton: {
+    marginLeft: "auto",
+  },
   content: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   fileInput: {
-    display: "none",
+    display: "none !important",
   },
-  fontTypeSelect: {
-    minWidth: 112,
-  },
-  paletteKeySelect: {
-    minWidth: 96,
+  fontButton: {
+    width: 48,
+    height: 48,
   },
   textInput: {
-    minWidth: 192,
-  },
-  toneButtonImage: {
-    width: 24,
+    minWidth: 128,
   },
 });
 
@@ -106,15 +98,21 @@ const App: FunctionComponent<{
 }> = memo(({ src, onCloseButtonClick }) => {
   const [alertData, setAlertData] = useState<AlertData>({});
 
-  const [brushType, setBrushType] = useState<BrushType>("light");
-  const [colorIndex, setColorIndex] = useState(0);
+  const [brushType, setBrushType] = useState<BrushType>("medium");
+  const [color, setColor] = useState(palettes.grayish[0]);
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [mode, setMode] = useState<KanvasCanvasMode>("shape");
-  const [paletteKey, setPaletteKey] = useState<keyof typeof palettes>("bright");
-  const [toneType, setToneType] = useState<ToneType>("fill");
+  const [text, setText] = useState("");
+  const [toneType, setToneType] = useState<ToneType>("dotBold");
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);
+
+  const [colorPopoverAnchorEl, setColorPopoverAnchorEl] = useState<Element>();
+  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState<Element>();
+  const [fontMenuAnchorEl, setFontMenuAnchorEl] = useState<Element>();
+  const [importMenuAnchorEl, setImportMenuAnchorEl] = useState<Element>();
+  const [tonePopoverAnchorEl, setTonePopoverAnchorEl] = useState<Element>();
 
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
@@ -170,10 +168,8 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setColor({
-      color: palettes[paletteKey][colorIndex],
-    });
-  }, [colorIndex, paletteKey]);
+    kanvasCanvasElement.current.setColor({ color });
+  }, [color]);
 
   useEffect(() => {
     if (!kanvasCanvasElement.current) {
@@ -191,12 +187,28 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.setToneType({ toneType });
   }, [toneType]);
 
+  useEffect(() => {
+    if (!kanvasCanvasElement.current) {
+      throw new Error("KanvasCanvas element not found");
+    }
+
+    kanvasCanvasElement.current.setText({ text });
+  }, [text]);
+
   const classes = useStyles();
 
-  const Brush = ({
+  const Brush = {
     shape: Gesture,
     text: TextFormat,
-  })[mode];
+  }[mode];
+
+  const handleColorButtonClick: MouseEventHandler<HTMLButtonElement> =
+    useCallback((event) => setColorPopoverAnchorEl(event.currentTarget), []);
+
+  const handleColorPopoverClose = useCallback(
+    () => setColorPopoverAnchorEl(undefined),
+    []
+  );
 
   const handleModeChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
@@ -209,27 +221,15 @@ const App: FunctionComponent<{
   }, []);
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback((event) => {
-      if (!kanvasCanvasElement.current) {
-        throw new Error("KanvasCanvas element not found");
-      }
+    useCallback((event) => setText(event.target.value), []);
 
-      kanvasCanvasElement.current.setText({ text: event.target.value });
-    }, []);
+  const handleFontButtonClick: MouseEventHandler<HTMLButtonElement> =
+    useCallback((event) => setFontMenuAnchorEl(event.currentTarget), []);
 
-  const handleFontTypeChange = useCallback<
-    NonNullable<SelectProps["onChange"]>
-  >((event) => setFontType(event.target.value as FontType), []);
-
-  const handleColorIndexChange = useCallback<
-    NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, index) => {
-    if (index === null) {
-      return;
-    }
-
-    setColorIndex(index);
-  }, []);
+  const handleFontMenuClose = useCallback(
+    () => setFontMenuAnchorEl(undefined),
+    []
+  );
 
   const handleBrushTypeChange = useCallback<
     NonNullable<ToggleButtonGroupProps["onChange"]>
@@ -241,19 +241,13 @@ const App: FunctionComponent<{
     setBrushType(brushType);
   }, []);
 
-  const handlePaletteKeyChange = useCallback<
-    NonNullable<SelectProps["onChange"]>
-  >((event) => setPaletteKey(event.target.value as keyof typeof palettes), []);
+  const handleToneButtonClick: MouseEventHandler<HTMLButtonElement> =
+    useCallback((event) => setTonePopoverAnchorEl(event.currentTarget), []);
 
-  const handleToneTypeChange = useCallback<
-    NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, toneType) => {
-    if (toneType === null) {
-      return;
-    }
-
-    setToneType(toneType);
-  }, []);
+  const handleTonePopoverClose = useCallback(
+    () => setTonePopoverAnchorEl(undefined),
+    []
+  );
 
   const handleUndoButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -271,44 +265,67 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.redo();
   }, []);
 
+  const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> =
+    useCallback((event) => setImportMenuAnchorEl(event.currentTarget), []);
+
+  const handleImportMenuClose = useCallback(
+    () => setImportMenuAnchorEl(undefined),
+    []
+  );
+
+  const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
+    useCallback((event) => setExportMenuAnchorEl(event.currentTarget), []);
+
+  const handleExportMenuClose = useCallback(
+    () => setExportMenuAnchorEl(undefined),
+    []
+  );
+
   const handleClearButtonClick = useCallback(async () => {
     if (!kanvasCanvasElement.current) {
       throw new Error("KanvasCanvas element not found");
     }
 
+    handleImportMenuClose();
     await kanvasCanvasElement.current.load({ src: blankPNG });
-  }, []);
+  }, [handleImportMenuClose]);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback((event) => {
-      const file = event.target.files?.[0];
+    useCallback(
+      (event) => {
+        handleImportMenuClose();
 
-      if (!file) {
-        return;
-      }
+        const file = event.target.files?.[0];
 
-      const fileReader = new FileReader();
-
-      fileReader.onload = async () => {
-        const src = fileReader.result;
-
-        if (typeof src !== "string") {
-          throw new Error("Source is not a string");
+        if (!file) {
+          return;
         }
 
-        if (!kanvasCanvasElement.current) {
-          throw new Error("KanvasCanvas element not found");
-        }
+        const fileReader = new FileReader();
 
-        await kanvasCanvasElement.current.load({ src });
-      };
+        fileReader.onload = async () => {
+          const src = fileReader.result;
 
-      fileReader.readAsDataURL(file);
-    }, []);
+          if (typeof src !== "string") {
+            throw new Error("Source is not a string");
+          }
+
+          if (!kanvasCanvasElement.current) {
+            throw new Error("KanvasCanvas element not found");
+          }
+
+          await kanvasCanvasElement.current.load({ src });
+        };
+
+        fileReader.readAsDataURL(file);
+      },
+      [handleImportMenuClose]
+    );
 
   const handlePasteButtonClick = useCallback(() => {
     setIsPasteDialogOpen(true);
-  }, []);
+    handleImportMenuClose();
+  }, [handleImportMenuClose]);
 
   const handleSaveButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -325,7 +342,9 @@ const App: FunctionComponent<{
     } finally {
       anchorElement.remove();
     }
-  }, []);
+
+    handleExportMenuClose();
+  }, [handleExportMenuClose]);
 
   const handleCopyButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -359,11 +378,14 @@ const App: FunctionComponent<{
           }
         })()
     );
-  }, []);
 
-  const handlePasteDialogClose = useCallback(() => {
-    setIsPasteDialogOpen(false);
-  }, []);
+    handleExportMenuClose();
+  }, [handleExportMenuClose]);
+
+  const handlePasteDialogClose = useCallback(
+    () => setIsPasteDialogOpen(false),
+    []
+  );
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
     useCallback(async (event) => {
@@ -388,209 +410,307 @@ const App: FunctionComponent<{
   return (
     <>
       <DialogContent className={classes.content}>
-        <kanvas-canvas ref={kanvasCanvasElement} />
-      </DialogContent>
-
-      <DialogActions
-        className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
-      >
-        <Tooltip title="Close">
-          <span>
-            <IconButton onClick={onCloseButtonClick}>
-              <Close />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={colorIndex}
-          onChange={handleColorIndexChange}
+        <div
+          className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
         >
-          {palettes[paletteKey].map((color, index) => (
-            <ToggleButton key={color} value={index}>
-              <svg
-                width={24}
-                height={24}
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect x={0} y={0} width={24} height={24} fill={color} />
-              </svg>
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-
-        <FormControl
-          className={classes.paletteKeySelect}
-          size="small"
-          variant="outlined"
-        >
-          <InputLabel>Palette</InputLabel>
-
-          <Select
-            label="Palette"
-            value={paletteKey}
-            onChange={handlePaletteKeyChange}
-            MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
-          >
-            {Object.keys(palettes).map((paletteKey) => (
-              <MenuItem key={paletteKey} value={paletteKey}>
-                {paletteKey}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <ToggleButtonGroup
-          exclusive
-          value={mode}
-          onChange={handleModeChange}
-        >
-          <ToggleButton value="shape">
-            <Gesture />
-          </ToggleButton>
-
-          <ToggleButton value="text">
-            <TextFormat />
-          </ToggleButton>
-        </ToggleButtonGroup>
-
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={brushType}
-          onChange={handleBrushTypeChange}
-        >
-          {Object.entries(brushes).map(([brushType, brush]) => (
-            <ToggleButton key={brushType} value={brushType}>
-              <Brush style={{ fontSize: brush.button.size }} />
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-
-        {mode === "shape" && (
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={toneType}
-            onChange={handleToneTypeChange}
-          >
-            {Object.entries(tones).map(([toneType, tone]) => (
-              <ToggleButton key={toneType} value={toneType}>
-                <img
-                  alt={toneType}
-                  className={classes.toneButtonImage}
-                  src={tone.button.image}
-                />
+          <Box mr={1}>
+            <ToggleButtonGroup
+              exclusive
+              value={mode}
+              onChange={handleModeChange}
+            >
+              <ToggleButton value="shape">
+                <Gesture />
               </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        )}
 
-        {mode === "text" && (
-          <>
-            <TextField
-              variant="outlined"
-              className={classes.textInput}
-              label="Text"
-              size="small"
-              onChange={handleTextInputChange}
-            />
+              <ToggleButton value="text">
+                <TextFormat />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
-            <FormControl
-              className={classes.fontTypeSelect}
+          <Box mr={1}>
+            <ToggleButtonGroup
+              exclusive
               size="small"
-              variant="outlined"
+              value={brushType}
+              onChange={handleBrushTypeChange}
             >
-              <InputLabel>Font</InputLabel>
+              {Object.entries(brushes).map(([brushType, brush]) => (
+                <ToggleButton key={brushType} value={brushType}>
+                  <Brush style={{ fontSize: brush.button.size }} />
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
 
-              <Select
-                label="Font"
-                value={fontType}
-                onChange={handleFontTypeChange}
-                MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
+          <Box mr={1}>
+            <Tooltip title="Color">
+              <span>
+                <IconButton onClick={handleColorButtonClick}>
+                  <svg
+                    width={24}
+                    height={24}
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect x={0} y={0} width={24} height={24} fill={color} />
+                  </svg>
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Popover
+              open={Boolean(colorPopoverAnchorEl)}
+              anchorEl={colorPopoverAnchorEl}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              className="kanvas-pointer-listener-ignore"
+              onClose={handleColorPopoverClose}
+            >
+              {Object.entries(palettes).map(([paletteKey, palette]) => (
+                <div key={paletteKey}>
+                  {palette.map((paletteColor) => {
+                    // TODO: useCallback
+                    const handleClick = () => {
+                      setColor(paletteColor);
+                      handleColorPopoverClose();
+                    };
+
+                    return (
+                      <IconButton key={paletteColor} onClick={handleClick}>
+                        <svg
+                          width={24}
+                          height={24}
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <rect
+                            x={0}
+                            y={0}
+                            width={24}
+                            height={24}
+                            fill={paletteColor}
+                          />
+                        </svg>
+                      </IconButton>
+                    );
+                  })}
+                </div>
+              ))}
+            </Popover>
+          </Box>
+
+          {mode === "shape" && (
+            <Box mr={1}>
+              <Tooltip title="Tone">
+                <span>
+                  <IconButton onClick={handleToneButtonClick}>
+                    <img
+                      alt={toneType}
+                      src={tones[toneType].button.image}
+                      width={24}
+                    />
+                  </IconButton>
+                </span>
+              </Tooltip>
+
+              <Popover
+                open={Boolean(tonePopoverAnchorEl)}
+                anchorEl={tonePopoverAnchorEl}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "left",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "left",
+                }}
+                className="kanvas-pointer-listener-ignore"
+                onClose={handleTonePopoverClose}
               >
-                {Object.keys(fonts).map((fontType) => (
-                  <MenuItem key={fontType} value={fontType}>
-                    {fontType}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </>
-        )}
+                {Object.entries(tones).map(([popoverToneType, popoverTone]) => {
+                  // TODO: useCallback
+                  const handleClick = () => {
+                    setToneType(popoverToneType as ToneType);
+                    handleTonePopoverClose();
+                  };
 
-        <Tooltip title="Undo">
-          <span>
-            <IconButton
-              disabled={isUndoDisabled}
-              onClick={handleUndoButtonClick}
+                  return (
+                    <IconButton key={popoverToneType} onClick={handleClick}>
+                      <img
+                        alt={popoverToneType}
+                        src={popoverTone.button.image}
+                        width={24}
+                      />
+                    </IconButton>
+                  );
+                })}
+              </Popover>
+            </Box>
+          )}
+
+          {mode === "text" && (
+            <>
+              <Box mr={1}>
+                <TextField
+                  variant="outlined"
+                  className={classes.textInput}
+                  label="Text"
+                  size="small"
+                  onChange={handleTextInputChange}
+                />
+              </Box>
+
+              <Box mr={1}>
+                <Tooltip title="Font">
+                  <span>
+                    <IconButton
+                      className={classes.fontButton}
+                      onClick={handleFontButtonClick}
+                    >
+                      <span
+                        style={{
+                          fontFamily: fonts[fontType],
+                          fontWeight: "bold",
+                        }}
+                      >
+                        F
+                      </span>
+                    </IconButton>
+                  </span>
+                </Tooltip>
+
+                <Menu
+                  open={Boolean(fontMenuAnchorEl)}
+                  anchorEl={fontMenuAnchorEl}
+                  className="kanvas-pointer-listener-ignore"
+                  onClose={handleFontMenuClose}
+                >
+                  {Object.keys(fonts).map((menuFontType) => {
+                    // TODO: useCallback
+                    const handleClick = () => {
+                      setFontType(menuFontType as FontType);
+                      handleFontMenuClose();
+                    };
+
+                    return (
+                      <MenuItem
+                        key={menuFontType}
+                        selected={fontType === menuFontType}
+                        onClick={handleClick}
+                      >
+                        {menuFontType}
+                      </MenuItem>
+                    );
+                  })}
+                </Menu>
+              </Box>
+            </>
+          )}
+
+          <Box mr={1}>
+            <Tooltip title="Undo">
+              <span>
+                <IconButton
+                  disabled={isUndoDisabled}
+                  onClick={handleUndoButtonClick}
+                >
+                  <Undo />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+
+          <Box mr={1}>
+            <Tooltip title="Redo">
+              <span>
+                <IconButton
+                  disabled={isRedoDisabled}
+                  onClick={handleRedoButtonClick}
+                >
+                  <Redo />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+
+          <Box mr={1}>
+            <Tooltip title="Import">
+              <span>
+                <IconButton onClick={handleImportButtonClick}>
+                  <GetApp />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Menu
+              open={Boolean(importMenuAnchorEl)}
+              anchorEl={importMenuAnchorEl}
+              className="kanvas-pointer-listener-ignore"
+              onClose={handleImportMenuClose}
             >
-              <Undo />
-            </IconButton>
-          </span>
-        </Tooltip>
+              <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
 
-        <Tooltip title="Redo">
-          <span>
-            <IconButton
-              disabled={isRedoDisabled}
-              onClick={handleRedoButtonClick}
+              <MenuItem component="label">
+                Load from file
+                <input
+                  type="file"
+                  accept="image/*"
+                  className={classes.fileInput}
+                  onChange={handleFileInputChange}
+                />
+              </MenuItem>
+
+              <MenuItem onClick={handlePasteButtonClick}>
+                Paste from clipboard
+              </MenuItem>
+            </Menu>
+          </Box>
+
+          <Box mr={1}>
+            <Tooltip title="Export">
+              <span>
+                <IconButton onClick={handleExportButtonClick}>
+                  <Publish />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Menu
+              open={Boolean(exportMenuAnchorEl)}
+              anchorEl={exportMenuAnchorEl}
+              className="kanvas-pointer-listener-ignore"
+              onClose={handleExportMenuClose}
             >
-              <Redo />
-            </IconButton>
-          </span>
-        </Tooltip>
+              <MenuItem onClick={handleSaveButtonClick}>Save as file</MenuItem>
+              <MenuItem onClick={handleCopyButtonClick}>
+                Copy to clipboard
+              </MenuItem>
+            </Menu>
+          </Box>
 
-        <Tooltip title="Clear">
-          <span>
-            <IconButton onClick={handleClearButtonClick}>
-              <InsertDriveFile />
-            </IconButton>
-          </span>
-        </Tooltip>
+          <div className={classes.closeButton}>
+            <Tooltip title="Close">
+              <span>
+                <IconButton onClick={onCloseButtonClick}>
+                  <Close />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </div>
+        </div>
 
-        <Tooltip title="Open">
-          <span>
-            <IconButton component="label">
-              <FolderOpen />
-
-              <input
-                type="file"
-                accept="image/*"
-                className={classes.fileInput}
-                onChange={handleFileInputChange}
-              />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip title="Paste from clipboard">
-          <span>
-            <IconButton onClick={handlePasteButtonClick}>
-              <Assignment />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip title="Save">
-          <span>
-            <IconButton onClick={handleSaveButtonClick}>
-              <Save />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip title="Copy to clipboard">
-          <span>
-            <IconButton onClick={handleCopyButtonClick}>
-              <FileCopy />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </DialogActions>
+        <Box mb={3}>
+          <kanvas-canvas ref={kanvasCanvasElement} />
+        </Box>
+      </DialogContent>
 
       <Dialog
         className="kanvas-pointer-listener-ignore"
@@ -600,7 +720,11 @@ const App: FunctionComponent<{
         <PasteDialogContent onPaste={handlePaste} />
       </Dialog>
 
-      <Snackbar open={alertData.isOpen}>
+      <Snackbar
+        open={alertData.isOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+      >
         <Alert severity={alertData.severity} onClose={handleAlertClose}>
           <AlertTitle>{alertData.title}</AlertTitle>
           {alertData.description}
