@@ -68,8 +68,6 @@ const useStyles = makeStyles({
   },
   canvasContainer: {
     display: "inline-block",
-    // For Android
-    marginBottom: 32,
   },
   closeButton: {
     marginLeft: "auto",
