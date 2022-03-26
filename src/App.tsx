@@ -12,10 +12,7 @@ import {
   Tooltip,
   makeStyles,
 } from "@material-ui/core";
-import type {
-  SelectProps,
-  SnackbarProps,
-} from "@material-ui/core";
+import type { SelectProps, SnackbarProps } from "@material-ui/core";
 import {
   Alert,
   AlertTitle,
@@ -36,7 +33,6 @@ import {
   Undo,
 } from "@material-ui/icons";
 import clsx from "clsx";
-import { detect } from "detect-browser";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type {
   ChangeEventHandler,
@@ -182,7 +178,6 @@ const App: FunctionComponent<{
     kanvasCanvasElement.current.setToneType({ toneType });
   }, [toneType]);
 
-  const browser = detect();
   const classes = useStyles();
 
   const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
@@ -387,39 +382,35 @@ const App: FunctionComponent<{
           </span>
         </Tooltip>
 
-        {browser?.name !== "safari" && (
-          <>
-            <TextField
-              variant="outlined"
-              className={classes.textInput}
-              label="Text"
-              size="small"
-              onChange={handleTextInputChange}
-              onFocus={handleTextInputFocus}
-            />
+        <TextField
+          variant="outlined"
+          className={classes.textInput}
+          label="Text"
+          size="small"
+          onChange={handleTextInputChange}
+          onFocus={handleTextInputFocus}
+        />
 
-            <FormControl
-              className={classes.fontTypeSelect}
-              size="small"
-              variant="outlined"
-            >
-              <InputLabel>Font</InputLabel>
+        <FormControl
+          className={classes.fontTypeSelect}
+          size="small"
+          variant="outlined"
+        >
+          <InputLabel>Font</InputLabel>
 
-              <Select
-                label="Font"
-                value={fontType}
-                onChange={handleFontTypeChange}
-                MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
-              >
-                {Object.keys(fonts).map((fontType) => (
-                  <MenuItem key={fontType} value={fontType}>
-                    {fontType}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </>
-        )}
+          <Select
+            label="Font"
+            value={fontType}
+            onChange={handleFontTypeChange}
+            MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
+          >
+            {Object.keys(fonts).map((fontType) => (
+              <MenuItem key={fontType} value={fontType}>
+                {fontType}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <ToggleButtonGroup
           exclusive
@@ -466,7 +457,7 @@ const App: FunctionComponent<{
             value={paletteKey}
             onChange={handlePaletteKeyChange}
             MenuProps={{ className: "kanvas-pointer-listener-ignore" }}
-            >
+          >
             {Object.keys(palettes).map((paletteKey) => (
               <MenuItem key={paletteKey} value={paletteKey}>
                 {paletteKey}
