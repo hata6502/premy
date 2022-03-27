@@ -5,8 +5,8 @@ const getChromaticPalette = ({
   saturation: number;
   lightness: number;
 }) =>
-  [0, 40, 80, 120, 160, 200, 240, 280, 320].map(
-    (hue) => `hsl(${hue}, ${saturation}%, ${lightness}%)`
+  [...Array(12).keys()].map(
+    (index) => `hsl(${(index * 360) / 12}, ${saturation}%, ${lightness}%)`
   );
 
 export const palettes = {
