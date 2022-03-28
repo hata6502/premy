@@ -58,7 +58,6 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     marginBottom: 8,
-    marginTop: 8,
     "& *": {
       touchAction: "unset !important",
       "-moz-user-select": "unset !important",
