@@ -191,7 +191,7 @@ const App: FunctionComponent<{
       throw new Error("KanvasCanvas element not found");
     }
 
-    kanvasCanvasElement.current.setText({ text });
+    kanvasCanvasElement.current.setText({ text: text || "👒" });
   }, [text]);
 
   const classes = useStyles();
@@ -561,8 +561,9 @@ const App: FunctionComponent<{
                 <TextField
                   variant="outlined"
                   className={classes.textInput}
-                  label="Text"
+                  placeholder="👒"
                   size="small"
+                  value={text}
                   onChange={handleTextInputChange}
                 />
               </Box>
