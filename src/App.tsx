@@ -58,13 +58,6 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     marginBottom: 8,
-    "& *": {
-      touchAction: "unset !important",
-      "-moz-user-select": "unset !important",
-      "-webkit-user-select": "unset !important",
-      "-ms-user-select": "unset !important",
-      userSelect: "unset !important",
-    },
   },
   canvasContainer: {
     display: "inline-block",
