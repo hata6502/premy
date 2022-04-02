@@ -31,6 +31,7 @@ class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
   private canvas?: HTMLCanvasElement;
   private color: string;
+  private context?: CanvasRenderingContext2D;
   private fontType: FontType;
   private history: string[];
   private historyIndex: number;
@@ -133,7 +134,8 @@ class KanvasCanvas extends HTMLElement {
       throw new Error("Canvas is not a 2D context");
     }
 
-    context.imageSmoothingEnabled = false;
+    this.context = context;
+    this.context.imageSmoothingEnabled = false;
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -161,9 +163,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   async load({ src }: { src: string }): Promise<void> {
-    const context = this.canvas?.getContext("2d");
-
-    if (!this.canvas || !context) {
+    if (!this.canvas || !this.context) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -195,7 +195,7 @@ class KanvasCanvas extends HTMLElement {
     this.canvas.height = imageHeight * this.actualZoom;
     this.canvas.width = imageWidth * this.actualZoom;
 
-    context.drawImage(
+    this.context.drawImage(
       imageElement,
       0,
       0,
@@ -274,9 +274,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private displayTextPreviewRect(position: KanvasPosition) {
-    const context = this.canvas?.getContext("2d");
-
-    if (!context || !this.textPreviewRect) {
+    if (!this.context || !this.textPreviewRect) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -284,7 +282,7 @@ class KanvasCanvas extends HTMLElement {
       brushes[this.brushType].font.size * this.displayingZoom
     }px ${fonts[this.fontType]}`;
 
-    context.font = font;
+    this.context.font = font;
 
     this.textPreviewRect.style.left = `${
       position.x * this.displayingZoom + 1
@@ -315,9 +313,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private drawPoint(position: KanvasPosition) {
-    const context = this.canvas?.getContext("2d");
-
-    if (!context) {
+    if (!this.context) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -326,7 +322,7 @@ class KanvasCanvas extends HTMLElement {
     const beginY = position.y - (brush.bitmap.length - 1) / 2;
     const tone = tones[this.toneType];
 
-    context.fillStyle = this.color;
+    this.context.fillStyle = this.color;
 
     for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
       for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
@@ -339,7 +335,7 @@ class KanvasCanvas extends HTMLElement {
           continue;
         }
 
-        context.fillRect(
+        this.context.fillRect(
           x * this.actualZoom,
           y * this.actualZoom,
           this.actualZoom,
@@ -463,19 +459,17 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
-        const context = this.canvas?.getContext("2d");
-
-        if (!context || !this.textPreviewRect) {
+        if (!this.context || !this.textPreviewRect) {
           throw new Error("Canvas is not a 2D context");
         }
 
-        context.fillStyle = this.color;
+        this.context.fillStyle = this.color;
 
-        context.font = `${
+        this.context.font = `${
           brushes[this.brushType].font.size * this.actualZoom
         }px ${fonts[this.fontType]}`;
 
-        context.fillText(
+        this.context.fillText(
           this.text,
           canvasPosition.x * this.actualZoom,
           canvasPosition.y * this.actualZoom

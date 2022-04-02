@@ -13,20 +13,6 @@ export class KanvasDialog extends HTMLElement {
 
   async attributeChangedCallback(): Promise<void> {
     this.render();
-
-    if (this.isOpen()) {
-      try {
-        await window.screen.orientation.lock("landscape");
-      } catch (exception) {
-        console.error(exception);
-      }
-    } else {
-      try {
-        window.screen.orientation.unlock();
-      } catch (exception) {
-        console.error(exception);
-      }
-    }
   }
 
   connectedCallback(): void {
