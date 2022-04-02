@@ -177,7 +177,7 @@ class KanvasCanvas extends HTMLElement {
     const imageWidth = Math.round(imageElement.naturalWidth * density);
 
     const heightZoom = (window.innerHeight - 96) / imageHeight;
-    const widthZoom = (Math.min(window.innerWidth, 1280) - 48) / imageWidth;
+    const widthZoom = (Math.min(window.innerWidth, 1280) - 64) / imageWidth;
 
     this.displayingZoom = Math.min(heightZoom, widthZoom);
     this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;

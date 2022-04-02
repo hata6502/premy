@@ -400,8 +400,8 @@ const App: FunctionComponent<{
   );
 
   return (
-    <>
-      <Container>
+    <Container>
+      <Box ml={1} mr={1}>
         <div
           className={clsx(classes.actions, "kanvas-pointer-listener-ignore")}
         >
@@ -703,7 +703,7 @@ const App: FunctionComponent<{
         <div className={classes.canvasContainer}>
           <kanvas-canvas ref={kanvasCanvasElement} />
         </div>
-      </Container>
+      </Box>
 
       <Dialog
         className="kanvas-pointer-listener-ignore"
@@ -723,7 +723,7 @@ const App: FunctionComponent<{
           {alertData.description}
         </Alert>
       </Snackbar>
-    </>
+    </Container>
   );
 });
 
