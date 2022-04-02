@@ -10,29 +10,22 @@ export class KanvasDialog extends HTMLElement {
   }
 
   private appElement?: HTMLDivElement;
-  private prevIsOpen: boolean = false;
+  private prevIsOpen = false;
 
-  async attributeChangedCallback(): Promise<void> {
-    const isOpen = this.isOpen();
+  attributeChangedCallback(): void {
+    if (
+      !this.prevIsOpen &&
+      this.isOpen() &&
+      matchMedia("(orientation: portrait)").matches &&
+      !window.confirm(
+        "Your device is in portrait mode.\nWe recommend to use landscape mode.\n\nDo you want to continue?"
+      )
+    ) {
+      this.removeAttribute("open");
+    }
 
-    do {
-      if (
-        !this.prevIsOpen &&
-        isOpen &&
-        matchMedia("(orientation: portrait)").matches &&
-        !confirm(
-          "Your device is in portrait mode.\nWe recommend to use landscape mode.\n\nDo you want to continue?"
-        )
-      ) {
-        this.removeAttribute("open");
-
-        break;
-      }
-
-      this.render();
-    } while (false);
-
-    this.prevIsOpen = isOpen;
+    this.render();
+    this.prevIsOpen = this.isOpen();
   }
 
   connectedCallback(): void {
@@ -68,6 +61,8 @@ export class KanvasDialog extends HTMLElement {
         <KanvasThemeProvider>
           <ScopedCssBaseline>
             <Dialog
+              // canvasのサイズを計算するために必要。
+              className="kanvas-dialog-root"
               // To bubble events.
               disablePortal
               fullScreen

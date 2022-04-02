@@ -64,6 +64,7 @@ class KanvasCanvas extends HTMLElement {
     this.innerHTML = `
       <style>
         .kanvas-canvas-container {
+          display: inline-block;
           position: relative;
           overflow: hidden;
         }
@@ -78,7 +79,6 @@ class KanvasCanvas extends HTMLElement {
 
         .kanvas-canvas-container .canvas {
           border: 1px solid #d3d3d3;
-          vertical-align: bottom;
         }
 
         .kanvas-canvas-container .text-preview-rect {
@@ -90,9 +90,10 @@ class KanvasCanvas extends HTMLElement {
 
       <div class="kanvas-canvas-container">
         <canvas class="canvas"></canvas>
-        <kanvas-pointer-listener class="pointer-listener"></kanvas-pointer-listener>
         <div class="text-preview-rect"></div>
       </div>
+
+      <kanvas-pointer-listener class="pointer-listener"></kanvas-pointer-listener>
     `;
 
     const canvas = this.querySelector(".canvas");
@@ -162,7 +163,11 @@ class KanvasCanvas extends HTMLElement {
   }
 
   async load({ src }: { src: string }): Promise<void> {
-    if (!this.canvas || !this.context) {
+    const kanvasDialogRootElement = document.querySelector(
+      ".kanvas-dialog-root"
+    );
+
+    if (!this.canvas || !this.context || !kanvasDialogRootElement) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -183,8 +188,10 @@ class KanvasCanvas extends HTMLElement {
     const imageHeight = Math.round(imageElement.naturalHeight * density);
     const imageWidth = Math.round(imageElement.naturalWidth * density);
 
-    const heightZoom = (window.innerHeight - 96) / imageHeight;
-    const widthZoom = (Math.min(window.innerWidth, 1280) - 64) / imageWidth;
+    const heightZoom =
+      (kanvasDialogRootElement.clientHeight - 96) / imageHeight;
+    const widthZoom =
+      (Math.min(kanvasDialogRootElement.clientWidth, 1280) - 64) / imageWidth;
 
     this.displayingZoom = Math.min(heightZoom, widthZoom);
     this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;

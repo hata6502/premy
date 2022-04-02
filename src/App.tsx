@@ -59,9 +59,6 @@ const useStyles = makeStyles({
     alignItems: "center",
     marginBottom: 8,
   },
-  canvasContainer: {
-    display: "inline-block",
-  },
   closeButton: {
     marginLeft: "auto",
   },
@@ -700,9 +697,7 @@ const App: FunctionComponent<{
           </div>
         </div>
 
-        <div className={classes.canvasContainer}>
-          <kanvas-canvas ref={kanvasCanvasElement} />
-        </div>
+        <kanvas-canvas ref={kanvasCanvasElement} />
       </Box>
 
       <Dialog
