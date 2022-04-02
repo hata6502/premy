@@ -29,7 +29,7 @@ export type KanvasCanvasMode = "shape" | "text";
 
 class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
-  private canvas;
+  private canvas?: HTMLCanvasElement;
   private color: string;
   private fontType: FontType;
   private history: string[];
@@ -37,7 +37,7 @@ class KanvasCanvas extends HTMLElement {
   private mode: KanvasCanvasMode;
   private prevPosition: KanvasPosition;
   private text;
-  private textPreviewRect;
+  private textPreviewRect?: HTMLDivElement;
   private toneType: ToneType;
   private transactionMode?: KanvasCanvasMode;
   private actualZoom: number;
@@ -57,22 +57,17 @@ class KanvasCanvas extends HTMLElement {
     this.toneType = "fill";
     this.actualZoom = 0;
     this.displayingZoom = 0;
+  }
 
-    const shadow = this.attachShadow({ mode: "open" });
-
-    shadow.innerHTML = `
+  connectedCallback(): void {
+    this.innerHTML = `
       <style>
-        #canvas {
-          border: 1px solid #d3d3d3;
-          vertical-align: bottom;
-        }
-
-        #container {
+        .kanvas-canvas-container {
           position: relative;
           overflow: hidden;
         }
 
-        #container, #container * {
+        .kanvas-canvas-container * {
           touch-action: pinch-zoom;
           -moz-user-select: none;
           -webkit-user-select: none;
@@ -80,23 +75,28 @@ class KanvasCanvas extends HTMLElement {
           user-select: none;
         }
 
-        #text-preview-rect {
+        .kanvas-canvas-container .canvas {
+          border: 1px solid #d3d3d3;
+          vertical-align: bottom;
+        }
+
+        .kanvas-canvas-container .text-preview-rect {
           position: absolute;
           transform: translateY(-80%);
           white-space: nowrap;
         }
       </style>
 
-      <div id="container">
-        <canvas id="canvas"></canvas>
-        <kanvas-pointer-listener id="pointer-listener"></kanvas-pointer-listener>
-        <div id="text-preview-rect"></div>
+      <div class="kanvas-canvas-container">
+        <canvas class="canvas"></canvas>
+        <kanvas-pointer-listener class="pointer-listener"></kanvas-pointer-listener>
+        <div class="text-preview-rect"></div>
       </div>
     `;
 
-    const canvas = shadow.querySelector("#canvas");
-    const pointerListener = shadow.querySelector("#pointer-listener");
-    const textPreviewRect = shadow.querySelector("#text-preview-rect");
+    const canvas = this.querySelector(".canvas");
+    const pointerListener = this.querySelector(".pointer-listener");
+    const textPreviewRect = this.querySelector(".text-preview-rect");
 
     if (
       !(canvas instanceof HTMLCanvasElement) ||
@@ -109,7 +109,7 @@ class KanvasCanvas extends HTMLElement {
     this.canvas = canvas;
     this.textPreviewRect = textPreviewRect;
 
-    shadow.addEventListener("contextmenu", this.handleContextmenu);
+    this.addEventListener("contextmenu", this.handleContextmenu);
 
     pointerListener.addEventListener(
       "kanvasPointerDown",
@@ -126,6 +126,14 @@ class KanvasCanvas extends HTMLElement {
       "kanvasPointerCancel",
       this.handlePointerCancel
     );
+
+    const context = this.canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    context.imageSmoothingEnabled = false;
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -153,9 +161,9 @@ class KanvasCanvas extends HTMLElement {
   }
 
   async load({ src }: { src: string }): Promise<void> {
-    const context = this.canvas.getContext("2d");
+    const context = this.canvas?.getContext("2d");
 
-    if (!context) {
+    if (!this.canvas || !context) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -209,10 +217,18 @@ class KanvasCanvas extends HTMLElement {
   }
 
   toBlob(callback: BlobCallback, type?: string, quality?: unknown): void {
+    if (!this.canvas) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
     return this.canvas.toBlob(callback, type, quality);
   }
 
   toDataURL(type?: string, quality?: unknown): string {
+    if (!this.canvas) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
     return this.canvas.toDataURL(type, quality);
   }
 
@@ -227,6 +243,10 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private getCanvasPosition(clientPosition: KanvasPosition): KanvasPosition {
+    if (!this.canvas) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
     const domRect = this.canvas.getBoundingClientRect();
     const pixelX = clientPosition.x - (domRect.left + 1);
     const pixelY = clientPosition.y - (domRect.top + 1);
@@ -254,9 +274,9 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private displayTextPreviewRect(position: KanvasPosition) {
-    const context = this.canvas.getContext("2d");
+    const context = this.canvas?.getContext("2d");
 
-    if (!context) {
+    if (!context || !this.textPreviewRect) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -295,7 +315,7 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private drawPoint(position: KanvasPosition) {
-    const context = this.canvas.getContext("2d");
+    const context = this.canvas?.getContext("2d");
 
     if (!context) {
       throw new Error("Canvas is not a 2D context");
@@ -330,6 +350,10 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private pushImageToHistory() {
+    if (!this.canvas) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
     const dataURL = this.canvas.toDataURL();
 
     if (this.historyIndex >= 0 && this.history[this.historyIndex] === dataURL) {
@@ -439,9 +463,9 @@ class KanvasCanvas extends HTMLElement {
       }
 
       case "text": {
-        const context = this.canvas.getContext("2d");
+        const context = this.canvas?.getContext("2d");
 
-        if (!context) {
+        if (!context || !this.textPreviewRect) {
           throw new Error("Canvas is not a 2D context");
         }
 
@@ -477,6 +501,10 @@ class KanvasCanvas extends HTMLElement {
   private handlePointerCancel = () => {
     if (!this.transactionMode) {
       return;
+    }
+
+    if (!this.textPreviewRect) {
+      throw new Error("Text preview rect is not defined");
     }
 
     switch (this.transactionMode) {

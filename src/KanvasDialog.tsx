@@ -11,8 +11,22 @@ export class KanvasDialog extends HTMLElement {
 
   private appElement?: HTMLDivElement;
 
-  attributeChangedCallback(): void {
+  async attributeChangedCallback(): Promise<void> {
     this.render();
+
+    if (this.isOpen()) {
+      try {
+        await window.screen.orientation.lock("landscape");
+      } catch (exception) {
+        console.error(exception);
+      }
+    } else {
+      try {
+        window.screen.orientation.unlock();
+      } catch (exception) {
+        console.error(exception);
+      }
+    }
   }
 
   connectedCallback(): void {
@@ -35,11 +49,12 @@ export class KanvasDialog extends HTMLElement {
       return;
     }
 
-    const isOpen = this.getAttribute("open") !== null;
-
     // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
     setTimeout(() => {
-      document.body.classList.toggle("kanvas-pointer-listener-ignore", !isOpen);
+      document.body.classList.toggle(
+        "kanvas-pointer-listener-ignore",
+        !this.isOpen()
+      );
     }, 10);
 
     ReactDOM.render(
@@ -52,7 +67,7 @@ export class KanvasDialog extends HTMLElement {
               fullScreen
               // To keep <App> state.
               keepMounted
-              open={isOpen}
+              open={this.isOpen()}
               onClose={this.handleClose}
             >
               <App
@@ -65,6 +80,10 @@ export class KanvasDialog extends HTMLElement {
       </StylesProvider>,
       this.appElement
     );
+  }
+
+  private isOpen() {
+    return this.getAttribute("open") !== null;
   }
 
   private handleClose = () => {
