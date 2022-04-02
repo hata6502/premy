@@ -10,9 +10,29 @@ export class KanvasDialog extends HTMLElement {
   }
 
   private appElement?: HTMLDivElement;
+  private prevIsOpen: boolean = false;
 
   async attributeChangedCallback(): Promise<void> {
-    this.render();
+    const isOpen = this.isOpen();
+
+    do {
+      if (
+        !this.prevIsOpen &&
+        isOpen &&
+        matchMedia("(orientation: portrait)").matches &&
+        !confirm(
+          "Your device is in portrait mode.\nWe recommend to use landscape mode.\n\nDo you want to continue?"
+        )
+      ) {
+        this.removeAttribute("open");
+
+        break;
+      }
+
+      this.render();
+    } while (false);
+
+    this.prevIsOpen = isOpen;
   }
 
   connectedCallback(): void {

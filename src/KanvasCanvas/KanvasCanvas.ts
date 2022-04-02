@@ -135,7 +135,6 @@ class KanvasCanvas extends HTMLElement {
     }
 
     this.context = context;
-    this.context.imageSmoothingEnabled = false;
   }
 
   setBrushType({ brushType }: { brushType: BrushType }): void {
@@ -194,6 +193,8 @@ class KanvasCanvas extends HTMLElement {
     this.actualZoom = Math.ceil(this.displayingZoom);
     this.canvas.height = imageHeight * this.actualZoom;
     this.canvas.width = imageWidth * this.actualZoom;
+
+    this.context.imageSmoothingEnabled = false;
 
     this.context.drawImage(
       imageElement,
