@@ -162,7 +162,13 @@ class KanvasCanvas extends HTMLElement {
     this.toneType = toneType;
   }
 
-  async load({ src }: { src: string }): Promise<void> {
+  async load({
+    src,
+    pushesImageToHistory,
+  }: {
+    src: string;
+    pushesImageToHistory: boolean;
+  }): Promise<void> {
     const kanvasDialogRootElement = document.querySelector(
       ".kanvas-dialog-root"
     );
@@ -189,7 +195,7 @@ class KanvasCanvas extends HTMLElement {
     const imageWidth = Math.round(imageElement.naturalWidth * density);
 
     const heightZoom =
-      (kanvasDialogRootElement.clientHeight - 96) / imageHeight;
+      (kanvasDialogRootElement.clientHeight - 112) / imageHeight;
     const widthZoom =
       (Math.min(kanvasDialogRootElement.clientWidth, 1280) - 64) / imageWidth;
 
@@ -211,7 +217,9 @@ class KanvasCanvas extends HTMLElement {
       this.canvas.height
     );
 
-    this.pushImageToHistory();
+    if (pushesImageToHistory) {
+      this.pushImageToHistory();
+    }
   }
 
   redo(): void {
@@ -377,7 +385,10 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private putImageFromHistory() {
-    void this.load({ src: this.history[this.historyIndex] });
+    void this.load({
+      src: this.history[this.historyIndex],
+      pushesImageToHistory: false,
+    });
   }
 
   private handleContextmenu = (event: Event) => event.preventDefault();

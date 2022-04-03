@@ -66,8 +66,6 @@ export class KanvasDialog extends HTMLElement {
               // To bubble events.
               disablePortal
               fullScreen
-              // To keep <App> state.
-              keepMounted
               open={this.isOpen()}
               onClose={this.handleClose}
             >

@@ -36,6 +36,7 @@ import type {
   FunctionComponent,
   MouseEventHandler,
 } from "react";
+import { Color } from "./Color";
 import "./KanvasCanvas";
 import type {
   KanvasCanvas,
@@ -58,6 +59,7 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     marginBottom: 8,
+    marginTop: 16,
   },
   closeButton: {
     marginLeft: "auto",
@@ -71,6 +73,9 @@ const useStyles = makeStyles({
   },
   textInput: {
     minWidth: 128,
+  },
+  tonePopover: {
+    maxWidth: 336,
   },
 });
 
@@ -126,7 +131,10 @@ const App: FunctionComponent<{
       handleCanvasHistoryChange
     );
 
-    void currentKanvasCanvasElement.load({ src: src ?? blankPNG });
+    void currentKanvasCanvasElement.load({
+      src: src ?? blankPNG,
+      pushesImageToHistory: true,
+    });
 
     return () => {
       currentKanvasCanvasElement.removeEventListener(
@@ -276,7 +284,10 @@ const App: FunctionComponent<{
     }
 
     handleImportMenuClose();
-    await kanvasCanvasElement.current.load({ src: blankPNG });
+    await kanvasCanvasElement.current.load({
+      src: blankPNG,
+      pushesImageToHistory: true,
+    });
   }, [handleImportMenuClose]);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
@@ -303,7 +314,10 @@ const App: FunctionComponent<{
             throw new Error("KanvasCanvas element not found");
           }
 
-          await kanvasCanvasElement.current.load({ src });
+          await kanvasCanvasElement.current.load({
+            src,
+            pushesImageToHistory: true,
+          });
         };
 
         fileReader.readAsDataURL(file);
@@ -382,7 +396,10 @@ const App: FunctionComponent<{
         throw new Error("KanvasCanvas element not found");
       }
 
-      await kanvasCanvasElement.current.load(event);
+      await kanvasCanvasElement.current.load({
+        src: event.src,
+        pushesImageToHistory: true,
+      });
 
       setIsPasteDialogOpen(false);
     }, []);
@@ -437,14 +454,7 @@ const App: FunctionComponent<{
             <Tooltip title="Color">
               <span>
                 <IconButton onClick={handleColorButtonClick}>
-                  <svg
-                    width={24}
-                    height={24}
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect x={0} y={0} width={24} height={24} fill={color} />
-                  </svg>
+                  <Color color={color} />
                 </IconButton>
               </span>
             </Tooltip>
@@ -474,20 +484,7 @@ const App: FunctionComponent<{
 
                     return (
                       <IconButton key={paletteColor} onClick={handleClick}>
-                        <svg
-                          width={24}
-                          height={24}
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <rect
-                            x={0}
-                            y={0}
-                            width={24}
-                            height={24}
-                            fill={paletteColor}
-                          />
-                        </svg>
+                        <Color color={paletteColor} />
                       </IconButton>
                     );
                   })}
@@ -523,6 +520,9 @@ const App: FunctionComponent<{
                 }}
                 className="kanvas-pointer-listener-ignore"
                 onClose={handleTonePopoverClose}
+                PaperProps={{
+                  className: classes.tonePopover,
+                }}
               >
                 {Object.entries(tones).map(([popoverToneType, popoverTone]) => {
                   // TODO: useCallback
