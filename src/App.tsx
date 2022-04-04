@@ -71,6 +71,9 @@ const useStyles = makeStyles({
     width: 48,
     height: 48,
   },
+  selectedIconButton: {
+    backgroundColor: "rgba(0, 0, 0, 0.04)",
+  },
   textInput: {
     minWidth: 128,
   },
@@ -483,7 +486,13 @@ const App: FunctionComponent<{
                     };
 
                     return (
-                      <IconButton key={paletteColor} onClick={handleClick}>
+                      <IconButton
+                        key={paletteColor}
+                        className={clsx(
+                          paletteColor === color && classes.selectedIconButton
+                        )}
+                        onClick={handleClick}
+                      >
                         <Color color={paletteColor} />
                       </IconButton>
                     );
@@ -532,7 +541,14 @@ const App: FunctionComponent<{
                   };
 
                   return (
-                    <IconButton key={popoverToneType} onClick={handleClick}>
+                    <IconButton
+                      key={popoverToneType}
+                      className={clsx(
+                        popoverToneType === toneType &&
+                          classes.selectedIconButton
+                      )}
+                      onClick={handleClick}
+                    >
                       <img
                         alt={popoverToneType}
                         src={popoverTone.button.image}
