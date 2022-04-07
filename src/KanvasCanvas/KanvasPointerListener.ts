@@ -57,14 +57,8 @@ class KanvasPointerListener extends HTMLElement {
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.handleMouseUp);
 
-    document.addEventListener("touchstart", this.handleTouchStart, {
-      // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
-      passive: false,
-    });
-    document.addEventListener("touchmove", this.handleTouchMove, {
-      // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
-      passive: false,
-    });
+    document.addEventListener("touchstart", this.handleTouchStart);
+    document.addEventListener("touchmove", this.handleTouchMove);
     document.addEventListener("touchend", this.handleTouchEnd);
     document.addEventListener("touchcancel", this.handleTouchCancel);
   }
@@ -147,7 +141,6 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    event.preventDefault();
     this.transactionDevice = "touch";
 
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
@@ -169,8 +162,6 @@ class KanvasPointerListener extends HTMLElement {
     if (this.getShouldIgnore({ event }) || this.transactionDevice !== "touch") {
       return;
     }
-
-    event.preventDefault();
 
     if (event.touches.length !== 1) {
       this.cancelPointer();
@@ -203,6 +194,10 @@ class KanvasPointerListener extends HTMLElement {
 
       return;
     }
+
+    // Prevent mouse events for iOS.
+    // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
+    event.preventDefault();
 
     const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
       "kanvasPointerUp",
