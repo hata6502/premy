@@ -73,6 +73,7 @@ const useStyles = makeStyles({
   },
   selectedIconButton: {
     backgroundColor: "rgba(0, 0, 0, 0.04)",
+    borderRadius: "unset",
   },
   textInput: {
     minWidth: 128,
@@ -96,7 +97,14 @@ const App: FunctionComponent<{
   const [alertData, setAlertData] = useState<AlertData>({});
 
   const [brushType, setBrushType] = useState<BrushType>("medium");
-  const [color, setColor] = useState(palettes.deep[0]);
+  const [colorKey, setColorKey] = useState<{
+    paletteKey: keyof typeof palettes;
+    colorIndex: number;
+  }>({
+    paletteKey: "deep",
+    colorIndex: 0,
+  });
+  const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [mode, setMode] = useState<KanvasCanvasMode>("shape");
   const [text, setText] = useState("");
@@ -478,10 +486,14 @@ const App: FunctionComponent<{
             >
               {Object.entries(palettes).map(([paletteKey, palette]) => (
                 <div key={paletteKey}>
-                  {palette.map((paletteColor) => {
+                  {palette.map((paletteColor, colorIndex) => {
                     // TODO: useCallback
                     const handleClick = () => {
-                      setColor(paletteColor);
+                      setColorKey({
+                        paletteKey: paletteKey as keyof typeof palettes,
+                        colorIndex,
+                      });
+
                       handleColorPopoverClose();
                     };
 
@@ -489,7 +501,9 @@ const App: FunctionComponent<{
                       <IconButton
                         key={paletteColor}
                         className={clsx(
-                          paletteColor === color && classes.selectedIconButton
+                          (paletteKey === colorKey.paletteKey ||
+                            colorIndex === colorKey.colorIndex) &&
+                            classes.selectedIconButton
                         )}
                         onClick={handleClick}
                       >
