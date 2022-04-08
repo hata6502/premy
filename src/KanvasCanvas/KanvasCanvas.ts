@@ -203,7 +203,8 @@ class KanvasCanvas extends HTMLElement {
     this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
     this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
 
-    this.actualZoom = Math.ceil(this.displayingZoom);
+    // For retina display.
+    this.actualZoom = Math.ceil(this.displayingZoom * 2);
     this.canvas.height = imageHeight * this.actualZoom;
     this.canvas.width = imageWidth * this.actualZoom;
 
