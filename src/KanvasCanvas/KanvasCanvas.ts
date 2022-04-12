@@ -347,6 +347,8 @@ class KanvasCanvas extends HTMLElement {
       })
     );
 
+    shrinkedContext.imageSmoothingEnabled = false;
+
     shrinkedContext.drawImage(
       this.canvas,
       0,
