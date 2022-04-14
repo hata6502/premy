@@ -2,8 +2,8 @@ import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { fonts } from "../fonts";
 import type { FontType } from "../fonts";
-import { tones } from "../tones";
-import type { ToneType } from "../tones";
+import { palettes } from "../palettes";
+import { ToneType, tonePeriod, tones } from "../tones";
 import { KanvasPointerListener } from "./KanvasPointerListener";
 import type {
   KanvasPointerDownEvent,
@@ -26,6 +26,159 @@ type KanvasHistoryChangeEvent = CustomEvent<{
 }>;
 
 export type KanvasCanvasMode = "shape" | "text";
+
+const ditheringRate = 0.5;
+const ditheringPattern = [
+  {
+    deltaX: 1,
+    deltaY: 0,
+    rate: (7 / 16) * ditheringRate,
+  },
+  {
+    deltaX: -1,
+    deltaY: 1,
+    rate: (3 / 16) * ditheringRate,
+  },
+  {
+    deltaX: 0,
+    deltaY: 1,
+    rate: (5 / 16) * ditheringRate,
+  },
+  {
+    deltaX: 1,
+    deltaY: 1,
+    rate: (1 / 16) * ditheringRate,
+  },
+];
+
+const colors = Object.values(palettes).flat();
+const tonePeriodRange = [...Array(tonePeriod).keys()];
+const patternCanvasElement = document.createElement("canvas");
+
+patternCanvasElement.width = tonePeriod;
+patternCanvasElement.height = tonePeriod;
+
+const patternContext = patternCanvasElement.getContext("2d");
+
+if (!patternContext) {
+  throw new Error("Canvas is not a 2D context");
+}
+
+const patternImageDataCache = Object.fromEntries(
+  Object.keys(tones).map((toneType) => {
+    return [
+      toneType,
+      Object.fromEntries(
+        colors.map((backgroundColor) => {
+          return [
+            backgroundColor,
+            Object.fromEntries(
+              colors.map((foregroundColor) => {
+                return [
+                  foregroundColor,
+                  tonePeriodRange.map((_offsetY) => {
+                    return tonePeriodRange.map((_offsetX) => {
+                      return undefined as ImageData | undefined;
+                    });
+                  }),
+                ];
+              })
+            ),
+          ];
+        })
+      ),
+    ];
+  })
+);
+
+interface Pattern {
+  toneType: ToneType;
+  backgroundColor: string;
+  foregroundColor: string;
+  offsetY: number;
+  offsetX: number;
+}
+
+const getPatternImageData = ({
+  toneType,
+  backgroundColor,
+  foregroundColor,
+  offsetY,
+  offsetX,
+}: Pattern) => {
+  const cachedPatternImageData =
+    patternImageDataCache[toneType][backgroundColor][foregroundColor][offsetY][
+      offsetX
+    ];
+
+  if (cachedPatternImageData) {
+    return cachedPatternImageData;
+  }
+
+  const tone = tones[toneType];
+
+  tonePeriodRange.forEach((y) => {
+    tonePeriodRange.forEach((x) => {
+      const isForeground =
+        tone.bitmap[(y + offsetY) % tonePeriod][(x + offsetX) % tonePeriod];
+
+      patternContext.fillStyle = isForeground
+        ? foregroundColor
+        : backgroundColor;
+
+      patternContext.fillRect(x, y, 1, 1);
+    });
+  });
+
+  const patternImageData = patternContext.getImageData(
+    0,
+    0,
+    tonePeriod,
+    tonePeriod
+  );
+
+  patternImageDataCache[toneType][backgroundColor][foregroundColor][offsetY][
+    offsetX
+  ] = patternImageData;
+
+  return patternImageData;
+};
+
+const getBestPattern = ({
+  data,
+  patterns,
+}: {
+  data: Uint8ClampedArray;
+  patterns: Pattern[];
+}) => {
+  let bestPattern = patterns[0];
+  let bestPatternDistance = Infinity;
+
+  patterns.forEach((pattern) => {
+    let distance = 0;
+
+    for (let dataIndex = 0; dataIndex < data.length; dataIndex += 4) {
+      // Out of canvas area.
+      if (data[dataIndex + 3] !== 255) {
+        continue;
+      }
+
+      const patternImageData = getPatternImageData(pattern);
+
+      distance +=
+        (data[dataIndex + 0] - patternImageData.data[dataIndex + 0]) ** 2 +
+        (data[dataIndex + 1] - patternImageData.data[dataIndex + 1]) ** 2 +
+        (data[dataIndex + 2] - patternImageData.data[dataIndex + 2]) ** 2;
+    }
+
+    if (distance < bestPatternDistance) {
+      bestPattern = pattern;
+      bestPatternDistance = distance;
+    }
+  });
+
+  return bestPattern;
+};
 
 class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
@@ -164,9 +317,11 @@ class KanvasCanvas extends HTMLElement {
 
   async load({
     src,
+    applysMibaeFilter,
     pushesImageToHistory,
   }: {
     src: string;
+    applysMibaeFilter: boolean;
     pushesImageToHistory: boolean;
   }): Promise<void> {
     const kanvasDialogRootElement = document.querySelector(
@@ -217,6 +372,10 @@ class KanvasCanvas extends HTMLElement {
       this.canvas.width,
       this.canvas.height
     );
+
+    if (applysMibaeFilter) {
+      await this.applyMibaeFilter();
+    }
 
     if (pushesImageToHistory) {
       this.pushImageToHistory();
@@ -272,6 +431,183 @@ class KanvasCanvas extends HTMLElement {
       x: Math.round(pixelX / this.displayingZoom),
       y: Math.round(pixelY / this.displayingZoom),
     };
+  }
+
+  private async applyMibaeFilter() {
+    if (!this.canvas) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    const shrinkedCanvasElement = document.createElement("canvas");
+
+    shrinkedCanvasElement.width = this.canvas.width / this.actualZoom;
+    shrinkedCanvasElement.height = this.canvas.height / this.actualZoom;
+
+    const shrinkedContext = shrinkedCanvasElement.getContext("2d");
+
+    if (!shrinkedContext) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    shrinkedContext.imageSmoothingEnabled = false;
+
+    shrinkedContext.drawImage(
+      this.canvas,
+      0,
+      0,
+      shrinkedCanvasElement.width,
+      shrinkedCanvasElement.height
+    );
+
+    for (let y = 0; y < shrinkedCanvasElement.height; y++) {
+      [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
+        if (!this.context) {
+          throw new Error("Canvas is not a 2D context");
+        }
+
+        const beginX = x - tonePeriod / 2;
+        const beginY = y - tonePeriod / 2;
+
+        const windowImageData = shrinkedContext.getImageData(
+          beginX,
+          beginY,
+          tonePeriod,
+          tonePeriod
+        );
+
+        const normalizedData = Uint8ClampedArray.from(windowImageData.data);
+        const lightnesses = [];
+
+        for (
+          let dataIndex = 0;
+          dataIndex < normalizedData.length;
+          dataIndex += 4
+        ) {
+          // Out of canvas area.
+          if (normalizedData[dataIndex + 3] !== 255) {
+            continue;
+          }
+
+          const average =
+            normalizedData[dataIndex + 0] * 0.299 +
+            normalizedData[dataIndex + 1] * 0.587 +
+            normalizedData[dataIndex + 2] * 0.114;
+
+          normalizedData[dataIndex + 0] =
+            normalizedData[dataIndex + 1] =
+            normalizedData[dataIndex + 2] =
+              average;
+
+          lightnesses.push(average);
+        }
+
+        const maxLightness = Math.max(...lightnesses);
+        const minLightness = Math.min(...lightnesses);
+
+        for (
+          let dataIndex = 0;
+          dataIndex < normalizedData.length;
+          dataIndex += 4
+        ) {
+          // Out of canvas area.
+          if (normalizedData[dataIndex + 3] !== 255) {
+            continue;
+          }
+
+          normalizedData[dataIndex + 0] =
+            normalizedData[dataIndex + 1] =
+            normalizedData[dataIndex + 2] =
+              ((normalizedData[dataIndex + 0] - minLightness) * 255) /
+              (maxLightness - minLightness);
+        }
+
+        const offsetX = Math.abs(beginX % tonePeriod);
+        const offsetY = Math.abs(beginY % tonePeriod);
+
+        const { toneType } = getBestPattern({
+          data: normalizedData,
+          patterns: Object.keys(tones).map((toneType) => ({
+            toneType: toneType as ToneType,
+            backgroundColor: palettes.light[0],
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
+          })),
+        });
+        const tone = tones[toneType];
+
+        const { backgroundColor } = getBestPattern({
+          data: windowImageData.data,
+          patterns: colors.map((backgroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
+          })),
+        });
+
+        const { foregroundColor } = getBestPattern({
+          data: windowImageData.data,
+          patterns: colors.map((foregroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor,
+            offsetY,
+            offsetX,
+          })),
+        });
+
+        const isForeground = tone.bitmap[y % tonePeriod][x % tonePeriod];
+
+        this.context.fillStyle = isForeground
+          ? foregroundColor
+          : backgroundColor;
+
+        this.context.fillRect(
+          x * this.actualZoom,
+          y * this.actualZoom,
+          this.actualZoom,
+          this.actualZoom
+        );
+
+        // Floyd–Steinberg dithering
+        const [originalR, originalG, originalB] = shrinkedContext.getImageData(
+          x,
+          y,
+          1,
+          1
+        ).data;
+
+        const [putR, putG, putB] = this.context.getImageData(
+          x * this.actualZoom,
+          y * this.actualZoom,
+          1,
+          1
+        ).data;
+
+        ditheringPattern.forEach(({ deltaX, deltaY, rate }) => {
+          const NeighborhoodImageData = shrinkedContext.getImageData(
+            x + deltaX,
+            y + deltaY,
+            1,
+            1
+          );
+
+          NeighborhoodImageData.data[0] += (originalR - putR) * rate;
+          NeighborhoodImageData.data[1] += (originalG - putG) * rate;
+          NeighborhoodImageData.data[2] += (originalB - putB) * rate;
+
+          shrinkedContext.putImageData(
+            NeighborhoodImageData,
+            x + deltaX,
+            y + deltaY
+          );
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve));
+    }
   }
 
   private dispatchChangeHistoryEvent() {
@@ -345,9 +681,7 @@ class KanvasCanvas extends HTMLElement {
       for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
         if (
           brush.bitmap[Math.abs(y - beginY)][Math.abs(x - beginX)] === 0 ||
-          tone.bitmap[Math.abs(y % tone.bitmap.length)][
-            Math.abs(x % tone.bitmap[0].length)
-          ] === 0
+          tone.bitmap[Math.abs(y % tonePeriod)][Math.abs(x % tonePeriod)] === 0
         ) {
           continue;
         }
@@ -388,6 +722,7 @@ class KanvasCanvas extends HTMLElement {
   private putImageFromHistory() {
     void this.load({
       src: this.history[this.historyIndex],
+      applysMibaeFilter: false,
       pushesImageToHistory: false,
     });
   }
