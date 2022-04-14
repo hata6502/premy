@@ -27,6 +27,30 @@ type KanvasHistoryChangeEvent = CustomEvent<{
 
 export type KanvasCanvasMode = "shape" | "text";
 
+const ditheringRate = 0.5;
+const ditheringPattern = [
+  {
+    deltaX: 1,
+    deltaY: 0,
+    rate: (7 / 16) * ditheringRate,
+  },
+  {
+    deltaX: -1,
+    deltaY: 1,
+    rate: (3 / 16) * ditheringRate,
+  },
+  {
+    deltaX: 0,
+    deltaY: 1,
+    rate: (5 / 16) * ditheringRate,
+  },
+  {
+    deltaX: 1,
+    deltaY: 1,
+    rate: (1 / 16) * ditheringRate,
+  },
+];
+
 const colors = Object.values(palettes).flat();
 const tonePeriodRange = [...Array(tonePeriod).keys()];
 const patternCanvasElement = document.createElement("canvas");
@@ -67,19 +91,21 @@ const patternImageDataCache = Object.fromEntries(
   })
 );
 
+interface Pattern {
+  toneType: ToneType;
+  backgroundColor: string;
+  foregroundColor: string;
+  offsetY: number;
+  offsetX: number;
+}
+
 const getPatternImageData = ({
   toneType,
   backgroundColor,
   foregroundColor,
   offsetY,
   offsetX,
-}: {
-  toneType: ToneType;
-  backgroundColor: string;
-  foregroundColor: string;
-  offsetY: number;
-  offsetX: number;
-}) => {
+}: Pattern) => {
   const cachedPatternImageData =
     patternImageDataCache[toneType][backgroundColor][foregroundColor][offsetY][
       offsetX
@@ -118,28 +144,41 @@ const getPatternImageData = ({
   return patternImageData;
 };
 
-const ditheringPattern = [
-  {
-    deltaX: 1,
-    deltaY: 0,
-    ratio: 7 / 32,
-  },
-  {
-    deltaX: -1,
-    deltaY: 1,
-    ratio: 3 / 32,
-  },
-  {
-    deltaX: 0,
-    deltaY: 1,
-    ratio: 5 / 32,
-  },
-  {
-    deltaX: 1,
-    deltaY: 1,
-    ratio: 1 / 32,
-  },
-];
+const getBestPattern = ({
+  data,
+  patterns,
+}: {
+  data: Uint8ClampedArray;
+  patterns: Pattern[];
+}) => {
+  let bestPattern = patterns[0];
+  let bestPatternDistance = Infinity;
+
+  patterns.forEach((pattern) => {
+    let distance = 0;
+
+    for (let dataIndex = 0; dataIndex < data.length; dataIndex += 4) {
+      // Out of canvas area.
+      if (data[dataIndex + 3] !== 255) {
+        continue;
+      }
+
+      const patternImageData = getPatternImageData(pattern);
+
+      distance +=
+        (data[dataIndex + 0] - patternImageData.data[dataIndex + 0]) ** 2 +
+        (data[dataIndex + 1] - patternImageData.data[dataIndex + 1]) ** 2 +
+        (data[dataIndex + 2] - patternImageData.data[dataIndex + 2]) ** 2;
+    }
+
+    if (distance < bestPatternDistance) {
+      bestPattern = pattern;
+      bestPatternDistance = distance;
+    }
+  });
+
+  return bestPattern;
+};
 
 class KanvasCanvas extends HTMLElement {
   private brushType: BrushType;
@@ -417,6 +456,10 @@ class KanvasCanvas extends HTMLElement {
       shrinkedCanvasElement.height
     );
 
+    const paletteFromLightness = Object.fromEntries(
+      Object.values(palettes).map((palette) => [palette[0], palette])
+    );
+
     [...Array(shrinkedCanvasElement.height).keys()].forEach((y) => {
       [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
         if (!this.context) {
@@ -433,82 +476,86 @@ class KanvasCanvas extends HTMLElement {
           tonePeriod
         );
 
-        const getBestPattern = ({
-          patterns,
-        }: {
-          patterns: {
-            foregroundColor: string;
-            backgroundColor: string;
-            toneType: ToneType;
-          }[];
-        }) => {
-          let bestPattern = patterns[0];
-          let bestPatternDistance = Infinity;
+        const normalizedData = Uint8ClampedArray.from(windowImageData.data);
+        const lightnesses = [];
 
-          patterns.forEach((pattern) => {
-            let distance = 0;
+        for (
+          let dataIndex = 0;
+          dataIndex < normalizedData.length;
+          dataIndex += 4
+        ) {
+          // Out of canvas area.
+          if (normalizedData[dataIndex + 3] !== 255) {
+            continue;
+          }
 
-            for (
-              let dataIndex = 0;
-              dataIndex < windowImageData.data.length;
-              dataIndex += 4
-            ) {
-              // Out of canvas area.
-              if (windowImageData.data[dataIndex + 3] !== 255) {
-                continue;
-              }
+          const average =
+            normalizedData[dataIndex + 0] * 0.299 +
+            normalizedData[dataIndex + 1] * 0.587 +
+            normalizedData[dataIndex + 2] * 0.114;
 
-              const patternImageData = getPatternImageData({
-                toneType: pattern.toneType,
-                backgroundColor: pattern.backgroundColor,
-                foregroundColor: pattern.foregroundColor,
-                offsetY: Math.abs(beginY % tonePeriod),
-                offsetX: Math.abs(beginX % tonePeriod),
-              });
+          normalizedData[dataIndex + 0] =
+            normalizedData[dataIndex + 1] =
+            normalizedData[dataIndex + 2] =
+              average;
 
-              distance +=
-                (windowImageData.data[dataIndex + 0] -
-                  patternImageData.data[dataIndex + 0]) **
-                  2 +
-                (windowImageData.data[dataIndex + 1] -
-                  patternImageData.data[dataIndex + 1]) **
-                  2 +
-                (windowImageData.data[dataIndex + 2] -
-                  patternImageData.data[dataIndex + 2]) **
-                  2;
-            }
+          lightnesses.push(average);
+        }
 
-            if (distance < bestPatternDistance) {
-              bestPattern = pattern;
-              bestPatternDistance = distance;
-            }
-          });
+        const maxLightness = Math.max(...lightnesses);
+        const minLightness = Math.min(...lightnesses);
 
-          return bestPattern;
-        };
+        for (
+          let dataIndex = 0;
+          dataIndex < normalizedData.length;
+          dataIndex += 4
+        ) {
+          // Out of canvas area.
+          if (normalizedData[dataIndex + 3] !== 255) {
+            continue;
+          }
+
+          normalizedData[dataIndex + 0] =
+            normalizedData[dataIndex + 1] =
+            normalizedData[dataIndex + 2] =
+              ((normalizedData[dataIndex + 0] - minLightness) * 255) /
+              (maxLightness - minLightness);
+        }
+
+        const offsetX = Math.abs(beginX % tonePeriod);
+        const offsetY = Math.abs(beginY % tonePeriod);
 
         const { toneType } = getBestPattern({
+          data: normalizedData,
           patterns: Object.keys(tones).map((toneType) => ({
-            foregroundColor: palettes.dark[0],
-            backgroundColor: palettes.light[0],
             toneType: toneType as ToneType,
+            backgroundColor: palettes.light[0],
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
           })),
         });
         const tone = tones[toneType];
 
         const { backgroundColor } = getBestPattern({
+          data: windowImageData.data,
           patterns: colors.map((backgroundColor) => ({
-            foregroundColor: palettes.dark[0],
-            backgroundColor,
             toneType,
+            backgroundColor,
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
           })),
         });
 
         const { foregroundColor } = getBestPattern({
+          data: windowImageData.data,
           patterns: colors.map((foregroundColor) => ({
-            foregroundColor,
-            backgroundColor,
             toneType,
+            backgroundColor,
+            foregroundColor,
+            offsetY,
+            offsetX,
           })),
         });
 
@@ -540,7 +587,7 @@ class KanvasCanvas extends HTMLElement {
           1
         ).data;
 
-        ditheringPattern.forEach(({ deltaX, deltaY, ratio }) => {
+        ditheringPattern.forEach(({ deltaX, deltaY, rate }) => {
           const NeighborhoodImageData = shrinkedContext.getImageData(
             x + deltaX,
             y + deltaY,
@@ -548,9 +595,9 @@ class KanvasCanvas extends HTMLElement {
             1
           );
 
-          NeighborhoodImageData.data[0] += (originalR - putR) * ratio;
-          NeighborhoodImageData.data[1] += (originalG - putG) * ratio;
-          NeighborhoodImageData.data[2] += (originalB - putB) * ratio;
+          NeighborhoodImageData.data[0] += (originalR - putR) * rate;
+          NeighborhoodImageData.data[1] += (originalG - putG) * rate;
+          NeighborhoodImageData.data[2] += (originalB - putB) * rate;
 
           shrinkedContext.putImageData(
             NeighborhoodImageData,
