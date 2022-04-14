@@ -537,9 +537,9 @@ class KanvasCanvas extends HTMLElement {
         });
         const tone = tones[toneType];
 
-        const { backgroundColor } = getBestPattern({
+        const { backgroundColor: backgroundLightness } = getBestPattern({
           data: windowImageData.data,
-          patterns: colors.map((backgroundColor) => ({
+          patterns: Object.keys(paletteFromLightness).map((backgroundColor) => ({
             toneType,
             backgroundColor,
             foregroundColor: palettes.dark[0],
@@ -548,9 +548,31 @@ class KanvasCanvas extends HTMLElement {
           })),
         });
 
+        const { backgroundColor } = getBestPattern({
+          data: windowImageData.data,
+          patterns: paletteFromLightness[backgroundLightness].map((backgroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
+          })),
+        });
+
+        const { foregroundColor: foregroundLightness } = getBestPattern({
+          data: windowImageData.data,
+          patterns: Object.keys(paletteFromLightness).map((foregroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor,
+            offsetY,
+            offsetX,
+          })),
+        });
+
         const { foregroundColor } = getBestPattern({
           data: windowImageData.data,
-          patterns: colors.map((foregroundColor) => ({
+          patterns: paletteFromLightness[foregroundLightness].map((foregroundColor) => ({
             toneType,
             backgroundColor,
             foregroundColor,
