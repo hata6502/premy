@@ -1,5 +1,6 @@
 import {
   Box,
+  Checkbox,
   Container,
   Dialog,
   IconButton,
@@ -96,13 +97,14 @@ const App: FunctionComponent<{
 }> = memo(({ src, onCloseButtonClick }) => {
   const [alertData, setAlertData] = useState<AlertData>({});
 
+  const [applysMibaeFilter, setApplysMibaeFilter] = useState(false);
   const [brushType, setBrushType] = useState<BrushType>("medium");
   const [colorKey, setColorKey] = useState<{
     paletteKey: keyof typeof palettes;
     colorIndex: number;
   }>({
-    paletteKey: "deep",
-    colorIndex: 0,
+    paletteKey: "vivid",
+    colorIndex: 1,
   });
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const [fontType, setFontType] = useState<FontType>("sans-serif");
@@ -144,6 +146,7 @@ const App: FunctionComponent<{
 
     void currentKanvasCanvasElement.load({
       src: src ?? blankPNG,
+      applysMibaeFilter: false,
       pushesImageToHistory: true,
     });
 
@@ -297,6 +300,7 @@ const App: FunctionComponent<{
     handleImportMenuClose();
     await kanvasCanvasElement.current.load({
       src: blankPNG,
+      applysMibaeFilter: false,
       pushesImageToHistory: true,
     });
   }, [handleImportMenuClose]);
@@ -327,19 +331,24 @@ const App: FunctionComponent<{
 
           await kanvasCanvasElement.current.load({
             src,
+            applysMibaeFilter,
             pushesImageToHistory: true,
           });
         };
 
         fileReader.readAsDataURL(file);
       },
-      [handleImportMenuClose]
+      [applysMibaeFilter, handleImportMenuClose]
     );
 
   const handlePasteButtonClick = useCallback(() => {
     setIsPasteDialogOpen(true);
     handleImportMenuClose();
   }, [handleImportMenuClose]);
+
+  const handleApplyMibaeFilterButtonClick = useCallback(() => {
+    setApplysMibaeFilter((prevApplysMibaeFilter) => !prevApplysMibaeFilter);
+  }, []);
 
   const handleSaveButtonClick = useCallback(() => {
     if (!kanvasCanvasElement.current) {
@@ -402,18 +411,22 @@ const App: FunctionComponent<{
   );
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
-    useCallback(async (event) => {
-      if (!kanvasCanvasElement.current) {
-        throw new Error("KanvasCanvas element not found");
-      }
+    useCallback(
+      async (event) => {
+        if (!kanvasCanvasElement.current) {
+          throw new Error("KanvasCanvas element not found");
+        }
 
-      await kanvasCanvasElement.current.load({
-        src: event.src,
-        pushesImageToHistory: true,
-      });
+        await kanvasCanvasElement.current.load({
+          src: event.src,
+          applysMibaeFilter,
+          pushesImageToHistory: true,
+        });
 
-      setIsPasteDialogOpen(false);
-    }, []);
+        setIsPasteDialogOpen(false);
+      },
+      [applysMibaeFilter]
+    );
 
   const handleAlertClose = useCallback(
     () =>
@@ -676,6 +689,15 @@ const App: FunctionComponent<{
               className="kanvas-pointer-listener-ignore"
               onClose={handleImportMenuClose}
             >
+              <MenuItem onClick={handleApplyMibaeFilterButtonClick}>
+                <Checkbox
+                  checked={applysMibaeFilter}
+                  color="primary"
+                  edge="start"
+                />
+                Apply Mibae filter
+              </MenuItem>
+
               <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
 
               <MenuItem component="label">

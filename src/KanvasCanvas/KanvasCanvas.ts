@@ -317,9 +317,11 @@ class KanvasCanvas extends HTMLElement {
 
   async load({
     src,
+    applysMibaeFilter,
     pushesImageToHistory,
   }: {
     src: string;
+    applysMibaeFilter: boolean;
     pushesImageToHistory: boolean;
   }): Promise<void> {
     const kanvasDialogRootElement = document.querySelector(
@@ -371,8 +373,9 @@ class KanvasCanvas extends HTMLElement {
       this.canvas.height
     );
 
-    // TODO
-    this.applyMibaeFilter();
+    if (applysMibaeFilter) {
+      await this.applyMibaeFilter();
+    }
 
     if (pushesImageToHistory) {
       this.pushImageToHistory();
@@ -430,7 +433,7 @@ class KanvasCanvas extends HTMLElement {
     };
   }
 
-  private applyMibaeFilter() {
+  private async applyMibaeFilter() {
     if (!this.canvas) {
       throw new Error("Canvas is not a 2D context");
     }
@@ -456,11 +459,7 @@ class KanvasCanvas extends HTMLElement {
       shrinkedCanvasElement.height
     );
 
-    const paletteFromLightness = Object.fromEntries(
-      Object.values(palettes).map((palette) => [palette[0], palette])
-    );
-
-    [...Array(shrinkedCanvasElement.height).keys()].forEach((y) => {
+    for (let y = 0; y < shrinkedCanvasElement.height; y++) {
       [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
         if (!this.context) {
           throw new Error("Canvas is not a 2D context");
@@ -606,7 +605,9 @@ class KanvasCanvas extends HTMLElement {
           );
         });
       });
-    });
+
+      await new Promise((resolve) => setTimeout(resolve));
+    }
   }
 
   private dispatchChangeHistoryEvent() {
@@ -721,6 +722,7 @@ class KanvasCanvas extends HTMLElement {
   private putImageFromHistory() {
     void this.load({
       src: this.history[this.historyIndex],
+      applysMibaeFilter: false,
       pushesImageToHistory: false,
     });
   }

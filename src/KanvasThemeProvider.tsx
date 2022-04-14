@@ -13,9 +13,6 @@ const KanvasThemeProvider: FunctionComponent = memo(({ children }) => {
           primary: {
             main: "#ffc107",
           },
-          secondary: {
-            main: "#651fff",
-          },
         },
       }),
     [prefersDarkMode]
