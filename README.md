@@ -39,7 +39,7 @@ Optionally, please load the following extra fonts.
 ```html
 <link
   rel="stylesheet"
-  href="https://fonts.googleapis.com/css?family=Dancing+Script|Fruktur"
+  href="https://fonts.googleapis.com/css?family=Dancing+Script|Fruktur|Hachi+Maru+Pop|Potta+One"
 />
 ```
 
