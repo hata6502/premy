@@ -16,6 +16,7 @@ type KanvasPointerMoveEvent = CustomEvent<KanvasPosition>;
 type KanvasPointerUpEvent = CustomEvent<KanvasPosition>;
 
 class KanvasPointerListener extends HTMLElement {
+  private touchStartTime = 0;
   private transactionDevice?: "mouse" | "touch";
 
   adoptedCallback(oldDocument: Document, newDocument: Document): void {
@@ -141,6 +142,7 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
+    this.touchStartTime = Date.now();
     this.transactionDevice = "touch";
 
     const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
@@ -163,8 +165,10 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    if (event.touches.length !== 1) {
-      this.cancelPointer();
+    if (event.touches.length >= 2) {
+      if (this.touchStartTime >= Date.now() - 500) {
+        this.cancelPointer();
+      }
 
       return;
     }
@@ -189,9 +193,7 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    if (event.touches.length !== 0) {
-      this.cancelPointer();
-
+    if (event.touches.length >= 1) {
       return;
     }
 
