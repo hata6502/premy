@@ -8,46 +8,41 @@ const getBitmap = ({ diameter }: { diameter: number }) => {
   );
 };
 
-const smallDiameter = 1;
-const mediumDiameter = 3;
-const largeDiameter = 7;
-const xLargeDiameter = 15;
-
 const brushes = {
   small: {
-    bitmap: getBitmap({ diameter: smallDiameter }),
+    bitmap: getBitmap({ diameter: 1 }),
     button: {
       size: 12,
     },
     font: {
-      size: 6 * smallDiameter,
+      size: 8,
     },
   },
   medium: {
-    bitmap: getBitmap({ diameter: mediumDiameter }),
+    bitmap: getBitmap({ diameter: 3 }),
     button: {
       size: 16,
     },
     font: {
-      size: 6 * mediumDiameter,
+      size: 20,
     },
   },
   large: {
-    bitmap: getBitmap({ diameter: largeDiameter }),
+    bitmap: getBitmap({ diameter: 7 }),
     button: {
       size: 20,
     },
     font: {
-      size: 6 * largeDiameter,
+      size: 50,
     },
   },
   xLarge: {
-    bitmap: getBitmap({ diameter: xLargeDiameter }),
+    bitmap: getBitmap({ diameter: 15 }),
     button: {
       size: 24,
     },
     font: {
-      size: 6 * xLargeDiameter,
+      size: 125,
     },
   },
 };
