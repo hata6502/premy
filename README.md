@@ -34,7 +34,7 @@ Load from CDN
 import "https://cdn.jsdelivr.net/npm/kanvas-dialog@x.x.x";
 ```
 
-Optionally, please load the following extra fonts.
+Please load the following extra fonts.
 
 ```html
 <link
@@ -42,6 +42,8 @@ Optionally, please load the following extra fonts.
   href="https://fonts.googleapis.com/css?family=Dancing+Script|Fruktur|Hachi+Maru+Pop|Potta+One"
 />
 ```
+
+We recommend to set `maximum-scale=10` to the viewport for pixel artists.
 
 [Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
 
