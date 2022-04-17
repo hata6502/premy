@@ -200,7 +200,7 @@ class KanvasCanvas extends HTMLElement {
   constructor() {
     super();
 
-    this.brushType = "light";
+    this.brushType = "small";
     this.color = "#000000";
     this.fontType = "sans-serif";
     this.history = [];
