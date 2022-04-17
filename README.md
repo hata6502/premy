@@ -43,7 +43,7 @@ Please load the following extra fonts.
 />
 ```
 
-We recommend to set `maximum-scale=10` to the viewport for pixel artists.
+We recommend to set `maximum-scale=10.0` to the viewport for pixel artists.
 
 [Example](https://raw.githubusercontent.com/hata6502/kanvas-landing-page/main/content/_index.md)
 
