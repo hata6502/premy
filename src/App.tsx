@@ -695,7 +695,7 @@ const App: FunctionComponent<{
                   color="primary"
                   edge="start"
                 />
-                Apply Mibae filter
+                Apply Mibae filter (beta)
               </MenuItem>
 
               <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>

@@ -1,3 +1,4 @@
+import Color from "color";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { fonts } from "../fonts";
@@ -53,16 +54,6 @@ const ditheringPattern = [
 
 const colors = Object.values(palettes).flat();
 const tonePeriodRange = [...Array(tonePeriod).keys()];
-const patternCanvasElement = document.createElement("canvas");
-
-patternCanvasElement.width = tonePeriod;
-patternCanvasElement.height = tonePeriod;
-
-const patternContext = patternCanvasElement.getContext("2d");
-
-if (!patternContext) {
-  throw new Error("Canvas is not a 2D context");
-}
 
 const patternImageDataCache = Object.fromEntries(
   Object.keys(tones).map((toneType) => {
@@ -116,23 +107,21 @@ const getPatternImageData = ({
   }
 
   const tone = tones[toneType];
+  const data: number[] = [];
 
   tonePeriodRange.forEach((y) => {
     tonePeriodRange.forEach((x) => {
       const isForeground =
         tone.bitmap[(y + offsetY) % tonePeriod][(x + offsetX) % tonePeriod];
 
-      patternContext.fillStyle = isForeground
-        ? foregroundColor
-        : backgroundColor;
+      const color = isForeground ? foregroundColor : backgroundColor;
 
-      patternContext.fillRect(x, y, 1, 1);
+      data.push(...Color(color).rgb().array(), 255);
     });
   });
 
-  const patternImageData = patternContext.getImageData(
-    0,
-    0,
+  const patternImageData = new ImageData(
+    new Uint8ClampedArray(data),
     tonePeriod,
     tonePeriod
   );
@@ -488,10 +477,13 @@ class KanvasCanvas extends HTMLElement {
             continue;
           }
 
-          const average =
-            normalizedData[dataIndex + 0] * 0.299 +
-            normalizedData[dataIndex + 1] * 0.587 +
-            normalizedData[dataIndex + 2] * 0.114;
+          const average = Color({
+            r: normalizedData[dataIndex + 0],
+            g: normalizedData[dataIndex + 1],
+            b: normalizedData[dataIndex + 2],
+          })
+            .grayscale()
+            .red();
 
           normalizedData[dataIndex + 0] =
             normalizedData[dataIndex + 1] =
