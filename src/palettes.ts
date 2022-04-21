@@ -1,56 +1,77 @@
-const getChromaticPalette = ({
-  saturation,
-  lightness,
-}: {
-  saturation: number;
-  lightness: number;
-}) =>
-  [...Array(12).keys()].map(
-    (index) => `hsl(${(index * 360) / 12}, ${saturation}%, ${lightness}%)`
-  );
+import {
+  grey,
+  brown,
+  red,
+  pink,
+  purple,
+  blue,
+  cyan,
+  green,
+  yellow,
+  orange,
+} from "@material-ui/core/colors";
 
 export const palettes = {
   light: [
-    "hsl(0, 0%, 100%)",
-    ...getChromaticPalette({
-      saturation: 50,
-      lightness: 75,
-    }),
+    "#ffffff",
+    brown.A100,
+    red.A100,
+    pink.A100,
+    purple.A100,
+    blue.A100,
+    cyan.A100,
+    green.A100,
+    yellow.A100,
+    orange.A100,
   ],
   bright: [
-    "hsl(0, 0%, 75%)",
-    ...getChromaticPalette({
-      saturation: 75,
-      lightness: 67,
-    }),
+    grey.A200,
+    brown.A200,
+    red.A200,
+    pink.A200,
+    purple.A200,
+    blue.A200,
+    cyan.A200,
+    green.A200,
+    yellow.A200,
+    orange.A200,
   ],
   vivid: [
-    "hsl(0, 0%, 50%)",
-    ...getChromaticPalette({
-      saturation: 100,
-      lightness: 50,
-    }),
+    // For material-ui bug.
+    grey.A700,
+    brown.A400,
+    red.A400,
+    pink.A400,
+    purple.A400,
+    blue.A400,
+    cyan.A400,
+    green.A400,
+    yellow.A400,
+    orange.A400,
   ],
-  // パレットの見せ方を調整するため、いったんコメントアウト。
-  /*grayish: [
-    "hsl(0, 0%, 40%)",
-    ...getChromaticPalette({
-      saturation: 25,
-      lightness: 50,
-    }),
-  ],*/
   deep: [
-    "hsl(0, 0%, 25%)",
-    ...getChromaticPalette({
-      saturation: 75,
-      lightness: 33,
-    }),
+    // For material-ui bug.
+    grey.A400,
+    brown.A700,
+    red.A700,
+    pink.A700,
+    purple.A700,
+    blue.A700,
+    cyan.A700,
+    green.A700,
+    yellow.A700,
+    orange.A700,
   ],
   dark: [
-    "hsl(0, 0%, 0%)",
-    ...getChromaticPalette({
-      saturation: 50,
-      lightness: 25,
-    }),
+    "#000000",
+    brown[900],
+    red[900],
+    pink[900],
+    purple[900],
+    blue[900],
+    cyan[900],
+    green[900],
+    yellow[900],
+    orange[900],
   ],
 };

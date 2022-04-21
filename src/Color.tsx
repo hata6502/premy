@@ -17,7 +17,9 @@ export const Color: FunctionComponent<{
         width={24}
         height={24}
         fill={color}
-        stroke={ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color}
+        stroke={
+          ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color
+        }
       />
     </svg>
   );

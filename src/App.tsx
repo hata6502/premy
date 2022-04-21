@@ -104,7 +104,7 @@ const App: FunctionComponent<{
     colorIndex: number;
   }>({
     paletteKey: "vivid",
-    colorIndex: 1,
+    colorIndex: 2,
   });
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const [fontType, setFontType] = useState<FontType>("sans-serif");
