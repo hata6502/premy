@@ -77,7 +77,7 @@ const useStyles = makeStyles({
     borderRadius: "unset",
   },
   textInput: {
-    minWidth: 128,
+    minWidth: 80,
   },
   tonePopover: {
     maxWidth: 336,
