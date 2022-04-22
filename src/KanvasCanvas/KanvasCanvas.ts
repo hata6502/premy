@@ -457,6 +457,17 @@ class KanvasCanvas extends HTMLElement {
       shrinkedCanvasElement.height
     );
 
+    const hueColors = Object.fromEntries(
+      palettes.vivid.map((hueColor, hueIndex) => [
+        hueColor,
+        [
+          palettes.light[0],
+          ...Object.values(palettes).map((palette) => palette[hueIndex]),
+          palettes.dark[0],
+        ],
+      ])
+    );
+
     for (let y = 0; y < shrinkedCanvasElement.height; y++) {
       [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
         if (!this.context) {
@@ -537,9 +548,9 @@ class KanvasCanvas extends HTMLElement {
         });
         const tone = tones[toneType];
 
-        const { backgroundColor } = getBestPattern({
+        const { backgroundColor: backgroundHueColor } = getBestPattern({
           data: windowImageData.data,
-          patterns: colors.map((backgroundColor) => ({
+          patterns: palettes.vivid.map((backgroundColor) => ({
             toneType,
             backgroundColor,
             foregroundColor: palettes.dark[0],
@@ -548,9 +559,31 @@ class KanvasCanvas extends HTMLElement {
           })),
         });
 
+        const { backgroundColor } = getBestPattern({
+          data: windowImageData.data,
+          patterns: hueColors[backgroundHueColor].map((backgroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor: palettes.dark[0],
+            offsetY,
+            offsetX,
+          })),
+        });
+
+        const { foregroundColor: foregroundHueColor } = getBestPattern({
+          data: windowImageData.data,
+          patterns: palettes.vivid.map((foregroundColor) => ({
+            toneType,
+            backgroundColor,
+            foregroundColor,
+            offsetY,
+            offsetX,
+          })),
+        });
+
         const { foregroundColor } = getBestPattern({
           data: windowImageData.data,
-          patterns: colors.map((foregroundColor) => ({
+          patterns: hueColors[foregroundHueColor].map((foregroundColor) => ({
             toneType,
             backgroundColor,
             foregroundColor,
