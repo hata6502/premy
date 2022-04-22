@@ -134,7 +134,7 @@ const getPatternImageData = ({
   return patternImageData;
 };
 
-const colorDiffCache: Record<string, number> = {};
+const colorDiffCache = new Map<string, number>();
 
 const getBestPattern = ({
   data,
@@ -167,22 +167,21 @@ const getBestPattern = ({
       ].join("-");
 
       const diff =
-        colorDiffKey in colorDiffCache
-          ? colorDiffCache[colorDiffKey]
-          : colorDiff.diff(
-              colorDiff.rgb_to_lab({
-                R: data[dataIndex + 0],
-                G: data[dataIndex + 1],
-                B: data[dataIndex + 2],
-              }),
-              colorDiff.rgb_to_lab({
-                R: patternImageData.data[dataIndex + 0],
-                G: patternImageData.data[dataIndex + 1],
-                B: patternImageData.data[dataIndex + 2],
-              })
-            );
+        colorDiffCache.get(colorDiffKey) ??
+        colorDiff.diff(
+          colorDiff.rgb_to_lab({
+            R: data[dataIndex + 0],
+            G: data[dataIndex + 1],
+            B: data[dataIndex + 2],
+          }),
+          colorDiff.rgb_to_lab({
+            R: patternImageData.data[dataIndex + 0],
+            G: patternImageData.data[dataIndex + 1],
+            B: patternImageData.data[dataIndex + 2],
+          })
+        );
 
-      colorDiffCache[colorDiffKey] = diff;
+      colorDiffCache.set(colorDiffKey, diff);
       distance += diff;
     }
 
@@ -475,6 +474,10 @@ class KanvasCanvas extends HTMLElement {
     );
 
     for (let y = 0; y < shrinkedCanvasElement.height; y++) {
+      if (y % tonePeriod ** 2 === 0) {
+        colorDiffCache.clear();
+      }
+
       [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
         if (!this.context) {
           throw new Error("Canvas is not a 2D context");
