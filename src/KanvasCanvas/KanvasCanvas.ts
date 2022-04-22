@@ -1,4 +1,5 @@
 import Color from "color";
+import colorDiff from "color-diff";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { fonts } from "../fonts";
@@ -154,10 +155,18 @@ const getBestPattern = ({
 
       const patternImageData = getPatternImageData(pattern);
 
-      distance +=
-        (data[dataIndex + 0] - patternImageData.data[dataIndex + 0]) ** 2 +
-        (data[dataIndex + 1] - patternImageData.data[dataIndex + 1]) ** 2 +
-        (data[dataIndex + 2] - patternImageData.data[dataIndex + 2]) ** 2;
+      distance += colorDiff.diff(
+        colorDiff.rgb_to_lab({
+          R: data[dataIndex + 0],
+          G: data[dataIndex + 1],
+          B: data[dataIndex + 2],
+        }),
+        colorDiff.rgb_to_lab({
+          R: patternImageData.data[dataIndex + 0],
+          G: patternImageData.data[dataIndex + 1],
+          B: patternImageData.data[dataIndex + 2],
+        })
+      );
     }
 
     if (distance < bestPatternDistance) {
