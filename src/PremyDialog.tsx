@@ -2,9 +2,9 @@ import { Dialog, StylesProvider } from "@material-ui/core";
 import ScopedCssBaseline from "@material-ui/core/ScopedCssBaseline";
 import ReactDOM from "react-dom";
 import { App } from "./App";
-import { KanvasThemeProvider } from "./KanvasThemeProvider";
+import { PremyThemeProvider } from "./PremyThemeProvider";
 
-export class KanvasDialog extends HTMLElement {
+export class PremyDialog extends HTMLElement {
   static get observedAttributes(): string[] {
     return ["open", "src"];
   }
@@ -51,18 +51,18 @@ export class KanvasDialog extends HTMLElement {
     // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
     setTimeout(() => {
       document.body.classList.toggle(
-        "kanvas-pointer-listener-ignore",
+        "premy-pointer-listener-ignore",
         !this.isOpen()
       );
     }, 10);
 
     ReactDOM.render(
       <StylesProvider>
-        <KanvasThemeProvider>
+        <PremyThemeProvider>
           <ScopedCssBaseline>
             <Dialog
               // canvasのサイズを計算するために必要。
-              className="kanvas-dialog-root"
+              className="premy-dialog-root"
               // To bubble events.
               disablePortal
               fullScreen
@@ -75,7 +75,7 @@ export class KanvasDialog extends HTMLElement {
               />
             </Dialog>
           </ScopedCssBaseline>
-        </KanvasThemeProvider>
+        </PremyThemeProvider>
       </StylesProvider>,
       this.appElement
     );
@@ -86,7 +86,7 @@ export class KanvasDialog extends HTMLElement {
   }
 
   private handleClose = () => {
-    const event = new CustomEvent("kanvasClose", {
+    const event = new CustomEvent("premyClose", {
       bubbles: true,
       composed: true,
     });
@@ -95,4 +95,4 @@ export class KanvasDialog extends HTMLElement {
   };
 }
 
-customElements.define("kanvas-dialog", KanvasDialog);
+customElements.define("premy-dialog", PremyDialog);

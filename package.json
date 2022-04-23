@@ -1,5 +1,5 @@
 {
-  "name": "kanvas-dialog",
+  "name": "premy",
   "version": "1.0.0",
   "description": "Minimal sketching canvas written in Web Components.",
   "keywords": [
@@ -8,7 +8,7 @@
     "drawing",
     "web components"
   ],
-  "repository": "https://github.com/hata6502/kanvas",
+  "repository": "https://github.com/hata6502/premy",
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/hata6502"

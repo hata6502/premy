@@ -1,16 +1,16 @@
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
-import type { KanvasCanvas } from "./KanvasCanvas";
+import type { PremyCanvas } from "./PremyCanvas";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      "kanvas-canvas": DetailedHTMLProps<
-        HTMLAttributes<KanvasCanvas>,
-        KanvasCanvas
+      "premy-canvas": DetailedHTMLProps<
+        HTMLAttributes<PremyCanvas>,
+        PremyCanvas
       >;
     }
   }
 }
 
-export * from "./KanvasDialog";
+export * from "./PremyDialog";

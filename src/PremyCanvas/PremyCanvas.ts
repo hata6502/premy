@@ -6,28 +6,28 @@ import { fonts } from "../fonts";
 import type { FontType } from "../fonts";
 import { palettes } from "../palettes";
 import { ToneType, tonePeriod, tones } from "../tones";
-import { KanvasPointerListener } from "./KanvasPointerListener";
+import { PremyPointerListener } from "./PremyPointerListener";
 import type {
-  KanvasPointerDownEvent,
-  KanvasPointerMoveEvent,
-  KanvasPointerUpEvent,
-  KanvasPosition,
-} from "./KanvasPointerListener";
+  PremyPointerDownEvent,
+  PremyPointerMoveEvent,
+  PremyPointerUpEvent,
+  PremyPosition,
+} from "./PremyPointerListener";
 
 const historyMaxLength = 30;
 
 declare global {
   interface HTMLElementEventMap {
-    kanvasHistoryChange: KanvasHistoryChangeEvent;
+    premyHistoryChange: PremyHistoryChangeEvent;
   }
 }
 
-type KanvasHistoryChangeEvent = CustomEvent<{
+type PremyHistoryChangeEvent = CustomEvent<{
   history: string[];
   historyIndex: number;
 }>;
 
-export type KanvasCanvasMode = "shape" | "text";
+export type PremyCanvasMode = "shape" | "text";
 
 const ditheringRate = 0.5;
 const ditheringPattern = [
@@ -194,7 +194,7 @@ const getBestPattern = ({
   return bestPattern;
 };
 
-class KanvasCanvas extends HTMLElement {
+class PremyCanvas extends HTMLElement {
   private brushType: BrushType;
   private canvas?: HTMLCanvasElement;
   private color: string;
@@ -202,12 +202,12 @@ class KanvasCanvas extends HTMLElement {
   private fontType: FontType;
   private history: string[];
   private historyIndex: number;
-  private mode: KanvasCanvasMode;
-  private prevPosition: KanvasPosition;
+  private mode: PremyCanvasMode;
+  private prevPosition: PremyPosition;
   private text;
   private textPreviewRect?: HTMLDivElement;
   private toneType: ToneType;
-  private transactionMode?: KanvasCanvasMode;
+  private transactionMode?: PremyCanvasMode;
   private actualZoom: number;
   private displayingZoom: number;
 
@@ -230,13 +230,13 @@ class KanvasCanvas extends HTMLElement {
   connectedCallback(): void {
     this.innerHTML = `
       <style>
-        .kanvas-canvas-container {
+        .premy-canvas-container {
           display: inline-block;
           position: relative;
           overflow: hidden;
         }
 
-        .kanvas-canvas-container * {
+        .premy-canvas-container * {
           touch-action: pinch-zoom;
           -moz-user-select: none;
           -webkit-user-select: none;
@@ -244,23 +244,23 @@ class KanvasCanvas extends HTMLElement {
           user-select: none;
         }
 
-        .kanvas-canvas-container .canvas {
+        .premy-canvas-container .canvas {
           border: 1px solid #d3d3d3;
         }
 
-        .kanvas-canvas-container .text-preview-rect {
+        .premy-canvas-container .text-preview-rect {
           position: absolute;
           transform: translateY(-80%);
           white-space: nowrap;
         }
       </style>
 
-      <div class="kanvas-canvas-container">
+      <div class="premy-canvas-container">
         <canvas class="canvas"></canvas>
         <div class="text-preview-rect"></div>
       </div>
 
-      <kanvas-pointer-listener class="pointer-listener"></kanvas-pointer-listener>
+      <premy-pointer-listener class="pointer-listener"></premy-pointer-listener>
     `;
 
     const canvas = this.querySelector(".canvas");
@@ -269,7 +269,7 @@ class KanvasCanvas extends HTMLElement {
 
     if (
       !(canvas instanceof HTMLCanvasElement) ||
-      !(pointerListener instanceof KanvasPointerListener) ||
+      !(pointerListener instanceof PremyPointerListener) ||
       !(textPreviewRect instanceof HTMLDivElement)
     ) {
       throw new Error("Canvas is not a 2D context");
@@ -281,18 +281,18 @@ class KanvasCanvas extends HTMLElement {
     this.addEventListener("contextmenu", this.handleContextmenu);
 
     pointerListener.addEventListener(
-      "kanvasPointerDown",
+      "premyPointerDown",
       this.handlePointerDown
     );
 
     pointerListener.addEventListener(
-      "kanvasPointerMove",
+      "premyPointerMove",
       this.handlePointerMove
     );
 
-    pointerListener.addEventListener("kanvasPointerUp", this.handlePointerUp);
+    pointerListener.addEventListener("premyPointerUp", this.handlePointerUp);
     pointerListener.addEventListener(
-      "kanvasPointerCancel",
+      "premyPointerCancel",
       this.handlePointerCancel
     );
 
@@ -317,7 +317,7 @@ class KanvasCanvas extends HTMLElement {
     this.fontType = fontType;
   }
 
-  setMode({ mode }: { mode: KanvasCanvasMode }): void {
+  setMode({ mode }: { mode: PremyCanvasMode }): void {
     this.mode = mode;
   }
 
@@ -338,11 +338,9 @@ class KanvasCanvas extends HTMLElement {
     applysMibaeFilter: boolean;
     pushesImageToHistory: boolean;
   }): Promise<void> {
-    const kanvasDialogRootElement = document.querySelector(
-      ".kanvas-dialog-root"
-    );
+    const premyDialogRootElement = document.querySelector(".premy-dialog-root");
 
-    if (!this.canvas || !this.context || !kanvasDialogRootElement) {
+    if (!this.canvas || !this.context || !premyDialogRootElement) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -364,9 +362,9 @@ class KanvasCanvas extends HTMLElement {
     const imageWidth = Math.round(imageElement.naturalWidth * density);
 
     const heightZoom =
-      (kanvasDialogRootElement.clientHeight - 112) / imageHeight;
+      (premyDialogRootElement.clientHeight - 112) / imageHeight;
     const widthZoom =
-      (Math.min(kanvasDialogRootElement.clientWidth, 1280) - 64) / imageWidth;
+      (Math.min(premyDialogRootElement.clientWidth, 1280) - 64) / imageWidth;
 
     this.displayingZoom = Math.min(heightZoom, widthZoom);
     this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
@@ -432,7 +430,7 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchChangeHistoryEvent();
   }
 
-  private getCanvasPosition(clientPosition: KanvasPosition): KanvasPosition {
+  private getCanvasPosition(clientPosition: PremyPosition): PremyPosition {
     if (!this.canvas) {
       throw new Error("Canvas is not a 2D context");
     }
@@ -632,8 +630,8 @@ class KanvasCanvas extends HTMLElement {
   }
 
   private dispatchChangeHistoryEvent() {
-    const event: KanvasHistoryChangeEvent = new CustomEvent(
-      "kanvasHistoryChange",
+    const event: PremyHistoryChangeEvent = new CustomEvent(
+      "premyHistoryChange",
       {
         bubbles: true,
         composed: true,
@@ -647,7 +645,7 @@ class KanvasCanvas extends HTMLElement {
     this.dispatchEvent(event);
   }
 
-  private displayTextPreviewRect(position: KanvasPosition) {
+  private displayTextPreviewRect(position: PremyPosition) {
     if (!this.context || !this.textPreviewRect) {
       throw new Error("Canvas is not a 2D context");
     }
@@ -671,7 +669,7 @@ class KanvasCanvas extends HTMLElement {
     this.textPreviewRect.textContent = this.text;
   }
 
-  private drawLine({ from, to }: { from: KanvasPosition; to: KanvasPosition }) {
+  private drawLine({ from, to }: { from: PremyPosition; to: PremyPosition }) {
     const stepLength = Math.round(
       Math.sqrt(Math.pow(to.x - from.x, 2.0) + Math.pow(to.y - from.y, 2.0))
     );
@@ -686,7 +684,7 @@ class KanvasCanvas extends HTMLElement {
     });
   }
 
-  private drawPoint(position: KanvasPosition) {
+  private drawPoint(position: PremyPosition) {
     if (!this.context) {
       throw new Error("Canvas is not a 2D context");
     }
@@ -750,7 +748,7 @@ class KanvasCanvas extends HTMLElement {
 
   private handleContextmenu = (event: Event) => event.preventDefault();
 
-  private handlePointerDown = (event: KanvasPointerDownEvent) => {
+  private handlePointerDown = (event: PremyPointerDownEvent) => {
     if (this.transactionMode) {
       return;
     }
@@ -783,7 +781,7 @@ class KanvasCanvas extends HTMLElement {
     this.prevPosition = position;
   };
 
-  private handlePointerMove = (event: KanvasPointerMoveEvent) => {
+  private handlePointerMove = (event: PremyPointerMoveEvent) => {
     if (!this.transactionMode) {
       return;
     }
@@ -817,7 +815,7 @@ class KanvasCanvas extends HTMLElement {
     this.prevPosition = position;
   };
 
-  private handlePointerUp = (event: KanvasPointerUpEvent) => {
+  private handlePointerUp = (event: PremyPointerUpEvent) => {
     if (!this.transactionMode) {
       return;
     }
@@ -902,7 +900,7 @@ class KanvasCanvas extends HTMLElement {
   };
 }
 
-customElements.define("kanvas-canvas", KanvasCanvas);
+customElements.define("premy-canvas", PremyCanvas);
 
-export { KanvasCanvas };
-export type { KanvasHistoryChangeEvent };
+export { PremyCanvas };
+export type { PremyHistoryChangeEvent };

@@ -1,21 +1,21 @@
 declare global {
   interface HTMLElementEventMap {
-    kanvasPointerDown: KanvasPointerDownEvent;
-    kanvasPointerMove: KanvasPointerMoveEvent;
-    kanvasPointerUp: KanvasPointerUpEvent;
+    premyPointerDown: PremyPointerDownEvent;
+    premyPointerMove: PremyPointerMoveEvent;
+    premyPointerUp: PremyPointerUpEvent;
   }
 }
 
-interface KanvasPosition {
+interface PremyPosition {
   x: number;
   y: number;
 }
 
-type KanvasPointerDownEvent = CustomEvent<KanvasPosition>;
-type KanvasPointerMoveEvent = CustomEvent<KanvasPosition>;
-type KanvasPointerUpEvent = CustomEvent<KanvasPosition>;
+type PremyPointerDownEvent = CustomEvent<PremyPosition>;
+type PremyPointerMoveEvent = CustomEvent<PremyPosition>;
+type PremyPointerUpEvent = CustomEvent<PremyPosition>;
 
-class KanvasPointerListener extends HTMLElement {
+class PremyPointerListener extends HTMLElement {
   private touchStartTime = 0;
   private transactionDevice?: "mouse" | "touch";
 
@@ -38,13 +38,13 @@ class KanvasPointerListener extends HTMLElement {
       .some(
         (eventTarget) =>
           eventTarget instanceof Element &&
-          eventTarget.classList.contains("kanvas-pointer-listener-ignore")
+          eventTarget.classList.contains("premy-pointer-listener-ignore")
       );
   }
 
   private cancelPointer() {
     this.dispatchEvent(
-      new CustomEvent("kanvasPointerCancel", {
+      new CustomEvent("premyPointerCancel", {
         bubbles: true,
         composed: true,
       })
@@ -82,8 +82,8 @@ class KanvasPointerListener extends HTMLElement {
 
     this.transactionDevice = "mouse";
 
-    const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
-      "kanvasPointerDown",
+    const premyPointerDownEvent: PremyPointerDownEvent = new CustomEvent(
+      "premyPointerDown",
       {
         bubbles: true,
         composed: true,
@@ -91,7 +91,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerDownEvent);
+    this.dispatchEvent(premyPointerDownEvent);
   };
 
   private handleMouseMove = (event: MouseEvent) => {
@@ -103,8 +103,8 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    const kanvasPointerMoveEvent: KanvasPointerMoveEvent = new CustomEvent(
-      "kanvasPointerMove",
+    const premyPointerMoveEvent: PremyPointerMoveEvent = new CustomEvent(
+      "premyPointerMove",
       {
         bubbles: true,
         composed: true,
@@ -112,7 +112,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerMoveEvent);
+    this.dispatchEvent(premyPointerMoveEvent);
   };
 
   private handleMouseUp = (event: MouseEvent) => {
@@ -120,8 +120,8 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
-      "kanvasPointerUp",
+    const premyPointerUpEvent: PremyPointerUpEvent = new CustomEvent(
+      "premyPointerUp",
       {
         bubbles: true,
         composed: true,
@@ -129,7 +129,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerUpEvent);
+    this.dispatchEvent(premyPointerUpEvent);
     this.transactionDevice = undefined;
   };
 
@@ -145,8 +145,8 @@ class KanvasPointerListener extends HTMLElement {
     this.touchStartTime = Date.now();
     this.transactionDevice = "touch";
 
-    const kanvasPointerDownEvent: KanvasPointerDownEvent = new CustomEvent(
-      "kanvasPointerDown",
+    const premyPointerDownEvent: PremyPointerDownEvent = new CustomEvent(
+      "premyPointerDown",
       {
         bubbles: true,
         composed: true,
@@ -157,7 +157,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerDownEvent);
+    this.dispatchEvent(premyPointerDownEvent);
   };
 
   private handleTouchMove = (event: TouchEvent) => {
@@ -173,8 +173,8 @@ class KanvasPointerListener extends HTMLElement {
       return;
     }
 
-    const kanvasPointerMoveEvent: KanvasPointerMoveEvent = new CustomEvent(
-      "kanvasPointerMove",
+    const premyPointerMoveEvent: PremyPointerMoveEvent = new CustomEvent(
+      "premyPointerMove",
       {
         bubbles: true,
         composed: true,
@@ -185,7 +185,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerMoveEvent);
+    this.dispatchEvent(premyPointerMoveEvent);
   };
 
   private handleTouchEnd = (event: TouchEvent) => {
@@ -201,8 +201,8 @@ class KanvasPointerListener extends HTMLElement {
     // https://developer.mozilla.org/ja/docs/Web/API/touchevent#using_with_addeventlistener_and_preventdefault
     event.preventDefault();
 
-    const kanvasPointerUpEvent: KanvasPointerUpEvent = new CustomEvent(
-      "kanvasPointerUp",
+    const premyPointerUpEvent: PremyPointerUpEvent = new CustomEvent(
+      "premyPointerUp",
       {
         bubbles: true,
         composed: true,
@@ -213,7 +213,7 @@ class KanvasPointerListener extends HTMLElement {
       }
     );
 
-    this.dispatchEvent(kanvasPointerUpEvent);
+    this.dispatchEvent(premyPointerUpEvent);
     this.transactionDevice = undefined;
   };
 
@@ -226,12 +226,12 @@ class KanvasPointerListener extends HTMLElement {
   };
 }
 
-customElements.define("kanvas-pointer-listener", KanvasPointerListener);
+customElements.define("premy-pointer-listener", PremyPointerListener);
 
-export { KanvasPointerListener };
+export { PremyPointerListener };
 export type {
-  KanvasPointerDownEvent,
-  KanvasPointerMoveEvent,
-  KanvasPointerUpEvent,
-  KanvasPosition,
+  PremyPointerDownEvent,
+  PremyPointerMoveEvent,
+  PremyPointerUpEvent,
+  PremyPosition,
 };
