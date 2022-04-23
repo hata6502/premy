@@ -1,12 +1,14 @@
 import {
   grey,
   brown,
+  blueGrey,
   red,
   pink,
   purple,
   blue,
   cyan,
   green,
+  lime,
   yellow,
   orange,
 } from "@material-ui/core/colors";
@@ -14,6 +16,7 @@ import {
 export const palettes = {
   light: [
     "#ffffff",
+    blueGrey.A100,
     brown.A100,
     red.A100,
     pink.A100,
@@ -21,11 +24,13 @@ export const palettes = {
     blue.A100,
     cyan.A100,
     green.A100,
+    lime.A100,
     yellow.A100,
     orange.A100,
   ],
   bright: [
     grey.A200,
+    blueGrey.A200,
     brown.A200,
     red.A200,
     pink.A200,
@@ -33,12 +38,14 @@ export const palettes = {
     blue.A200,
     cyan.A200,
     green.A200,
+    lime.A200,
     yellow.A200,
     orange.A200,
   ],
   vivid: [
     // For material-ui bug.
     grey.A700,
+    blueGrey.A400,
     brown.A400,
     red.A400,
     pink.A400,
@@ -46,12 +53,14 @@ export const palettes = {
     blue.A400,
     cyan.A400,
     green.A400,
+    lime.A400,
     yellow.A400,
     orange.A400,
   ],
   deep: [
     // For material-ui bug.
     grey.A400,
+    blueGrey.A700,
     brown.A700,
     red.A700,
     pink.A700,
@@ -59,11 +68,13 @@ export const palettes = {
     blue.A700,
     cyan.A700,
     green.A700,
+    lime.A700,
     yellow.A700,
     orange.A700,
   ],
   dark: [
     "#000000",
+    blueGrey[900],
     brown[900],
     red[900],
     pink[900],
@@ -71,6 +82,7 @@ export const palettes = {
     blue[900],
     cyan[900],
     green[900],
+    lime[900],
     yellow[900],
     orange[900],
   ],
