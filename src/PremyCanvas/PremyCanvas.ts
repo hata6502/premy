@@ -210,6 +210,7 @@ class PremyCanvas extends HTMLElement {
   private transactionMode?: PremyCanvasMode;
   private actualZoom: number;
   private displayingZoom: number;
+  private pushingImageToHistoryTimeoutID?: number;
 
   constructor() {
     super();
@@ -746,6 +747,12 @@ class PremyCanvas extends HTMLElement {
     });
   }
 
+  private setPushingImageToHistoryTimeout() {
+    this.pushingImageToHistoryTimeoutID = window.setTimeout(() => {
+      this.pushImageToHistory();
+    }, 100);
+  }
+
   private handleContextmenu = (event: Event) => event.preventDefault();
 
   private handlePointerDown = (event: PremyPointerDownEvent) => {
@@ -779,6 +786,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.prevPosition = position;
+    clearTimeout(this.pushingImageToHistoryTimeoutID);
   };
 
   private handlePointerMove = (event: PremyPointerMoveEvent) => {
@@ -862,8 +870,8 @@ class PremyCanvas extends HTMLElement {
       }
     }
 
-    this.pushImageToHistory();
     this.transactionMode = undefined;
+    this.setPushingImageToHistoryTimeout();
   };
 
   private handlePointerCancel = () => {
@@ -897,6 +905,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.transactionMode = undefined;
+    this.setPushingImageToHistoryTimeout();
   };
 }
 
