@@ -335,10 +335,12 @@ class PremyCanvas extends HTMLElement {
   async load({
     src,
     applysMibaeFilter,
+    constrainsAspectRatio,
     pushesImageToHistory,
   }: {
     src: string;
     applysMibaeFilter: boolean;
+    constrainsAspectRatio: boolean;
     pushesImageToHistory: boolean;
   }): Promise<void> {
     const premyDialogRootElement = document.querySelector(".premy-dialog-root");
@@ -357,17 +359,26 @@ class PremyCanvas extends HTMLElement {
       }
     );
 
+    const canvasMaxHeight = premyDialogRootElement.clientHeight - 112;
+    const canvasMaxWidth =
+      Math.min(premyDialogRootElement.clientWidth, 1280) - 64;
+
+    const naturalImageHeight = constrainsAspectRatio
+      ? imageElement.naturalHeight
+      : canvasMaxHeight;
+    const naturalImageWidth = constrainsAspectRatio
+      ? imageElement.naturalWidth
+      : canvasMaxWidth;
+
     const density = Math.sqrt(
-      (320 * 180) / (imageElement.naturalWidth * imageElement.naturalHeight)
+      (320 * 180) / (naturalImageWidth * naturalImageHeight)
     );
 
-    const imageHeight = Math.round(imageElement.naturalHeight * density);
-    const imageWidth = Math.round(imageElement.naturalWidth * density);
+    const imageHeight = Math.round(naturalImageHeight * density);
+    const imageWidth = Math.round(naturalImageWidth * density);
 
-    const heightZoom =
-      (premyDialogRootElement.clientHeight - 112) / imageHeight;
-    const widthZoom =
-      (Math.min(premyDialogRootElement.clientWidth, 1280) - 64) / imageWidth;
+    const heightZoom = canvasMaxHeight / imageHeight;
+    const widthZoom = canvasMaxWidth / imageWidth;
 
     this.displayingZoom = Math.min(heightZoom, widthZoom);
     this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
@@ -745,6 +756,7 @@ class PremyCanvas extends HTMLElement {
     void this.load({
       src: this.history[this.historyIndex],
       applysMibaeFilter: false,
+      constrainsAspectRatio: true,
       pushesImageToHistory: false,
     });
   }

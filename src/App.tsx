@@ -147,6 +147,7 @@ const App: FunctionComponent<{
     void currentPremyCanvasElement.load({
       src: src ?? blankPNG,
       applysMibaeFilter: false,
+      constrainsAspectRatio: Boolean(src),
       pushesImageToHistory: true,
     });
 
@@ -301,6 +302,7 @@ const App: FunctionComponent<{
     await premyCanvasElement.current.load({
       src: blankPNG,
       applysMibaeFilter: false,
+      constrainsAspectRatio: false,
       pushesImageToHistory: true,
     });
   }, [handleImportMenuClose]);
@@ -332,6 +334,7 @@ const App: FunctionComponent<{
           await premyCanvasElement.current.load({
             src,
             applysMibaeFilter,
+            constrainsAspectRatio: true,
             pushesImageToHistory: true,
           });
         };
@@ -420,6 +423,7 @@ const App: FunctionComponent<{
         await premyCanvasElement.current.load({
           src: event.src,
           applysMibaeFilter,
+          constrainsAspectRatio: true,
           pushesImageToHistory: true,
         });
 
