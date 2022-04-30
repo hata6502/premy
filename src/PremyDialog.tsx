@@ -10,22 +10,9 @@ export class PremyDialog extends HTMLElement {
   }
 
   private appElement?: HTMLDivElement;
-  private prevIsOpen = false;
 
   attributeChangedCallback(): void {
-    if (
-      !this.prevIsOpen &&
-      this.isOpen() &&
-      matchMedia("(orientation: portrait)").matches &&
-      !window.confirm(
-        "Your device is in portrait mode.\nWe recommend to use landscape mode.\n\nDo you want to continue?"
-      )
-    ) {
-      this.removeAttribute("open");
-    }
-
     this.render();
-    this.prevIsOpen = this.isOpen();
   }
 
   connectedCallback(): void {
