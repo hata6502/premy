@@ -16,7 +16,7 @@
   </a>
 </p>
 
-> Minimal sketching canvas written in Web Components.
+> A drawing dialog written in Web Components.
 
 #### ✨ <https://premy.hata6502.com/>
 
