@@ -24,9 +24,9 @@ import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Brush as BrushIcon,
   Close,
-  GetApp,
-  Publish,
+  FolderOpen,
   Redo,
+  Share,
   TextFormat,
   Undo,
 } from "@material-ui/icons";
@@ -677,10 +677,10 @@ const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="Import">
+            <Tooltip title="Open">
               <span>
                 <IconButton onClick={handleImportButtonClick}>
-                  <GetApp />
+                  <FolderOpen />
                 </IconButton>
               </span>
             </Tooltip>
@@ -719,10 +719,10 @@ const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="Export">
+            <Tooltip title="Share">
               <span>
                 <IconButton onClick={handleExportButtonClick}>
-                  <Publish />
+                  <Share />
                 </IconButton>
               </span>
             </Tooltip>
