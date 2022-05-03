@@ -15,10 +15,6 @@ const config = {
           transpileOnly: true,
         },
       },
-      {
-        test: /\.(png|svg)$/,
-        type: "asset/inline",
-      },
     ],
   },
   output: {

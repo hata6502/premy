@@ -1,18 +1,3 @@
-import toneBackslashBoldPNG from "./toneBackslashBold.png";
-import toneBackslashLightPNG from "./toneBackslashLight.png";
-import toneDotBoldPNG from "./toneDotBold.png";
-import toneDotLightPNG from "./toneDotLight.png";
-import toneDotMediumPNG from "./toneDotMedium.png";
-import toneFillPNG from "./toneFill.png";
-import toneHorizontalBoldPNG from "./toneHorizontalBold.png";
-import toneHorizontalLightPNG from "./toneHorizontalLight.png";
-import toneHorizontalMediumPNG from "./toneHorizontalMedium.png";
-import toneSlashBoldPNG from "./toneSlashBold.png";
-import toneSlashLightPNG from "./toneSlashLight.png";
-import toneVerticalBoldPNG from "./toneVerticalBold.png";
-import toneVerticalLightPNG from "./toneVerticalLight.png";
-import toneVerticalMediumPNG from "./toneVerticalMedium.png";
-
 export const tonePeriod = 4;
 
 export const tones = {
@@ -23,9 +8,6 @@ export const tones = {
       [1, 1, 1, 1],
       [1, 1, 1, 1],
     ],
-    button: {
-      image: toneFillPNG,
-    },
   },
   dotLight: {
     bitmap: [
@@ -34,9 +16,6 @@ export const tones = {
       [1, 0, 1, 0],
       [0, 0, 0, 0],
     ],
-    button: {
-      image: toneDotLightPNG,
-    },
   },
   dotMedium: {
     bitmap: [
@@ -45,9 +24,6 @@ export const tones = {
       [1, 0, 1, 0],
       [0, 1, 0, 1],
     ],
-    button: {
-      image: toneDotMediumPNG,
-    },
   },
   dotBold: {
     bitmap: [
@@ -56,9 +32,6 @@ export const tones = {
       [0, 1, 0, 1],
       [1, 1, 1, 1],
     ],
-    button: {
-      image: toneDotBoldPNG,
-    },
   },
   horizontalLight: {
     bitmap: [
@@ -67,9 +40,6 @@ export const tones = {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ],
-    button: {
-      image: toneHorizontalLightPNG,
-    },
   },
   horizontalMedium: {
     bitmap: [
@@ -78,9 +48,6 @@ export const tones = {
       [1, 1, 1, 1],
       [0, 0, 0, 0],
     ],
-    button: {
-      image: toneHorizontalMediumPNG,
-    },
   },
   horizontalBold: {
     bitmap: [
@@ -89,9 +56,6 @@ export const tones = {
       [1, 1, 1, 1],
       [1, 1, 1, 1],
     ],
-    button: {
-      image: toneHorizontalBoldPNG,
-    },
   },
   verticalLight: {
     bitmap: [
@@ -100,9 +64,6 @@ export const tones = {
       [1, 0, 0, 0],
       [1, 0, 0, 0],
     ],
-    button: {
-      image: toneVerticalLightPNG,
-    },
   },
   verticalMedium: {
     bitmap: [
@@ -111,9 +72,6 @@ export const tones = {
       [1, 0, 1, 0],
       [1, 0, 1, 0],
     ],
-    button: {
-      image: toneVerticalMediumPNG,
-    },
   },
   verticalBold: {
     bitmap: [
@@ -122,9 +80,6 @@ export const tones = {
       [0, 1, 1, 1],
       [0, 1, 1, 1],
     ],
-    button: {
-      image: toneVerticalBoldPNG,
-    },
   },
   slashLight: {
     bitmap: [
@@ -133,9 +88,6 @@ export const tones = {
       [0, 1, 0, 0],
       [1, 0, 0, 0],
     ],
-    button: {
-      image: toneSlashLightPNG,
-    },
   },
   slashBold: {
     bitmap: [
@@ -144,9 +96,6 @@ export const tones = {
       [1, 0, 1, 1],
       [0, 1, 1, 1],
     ],
-    button: {
-      image: toneSlashBoldPNG,
-    },
   },
   backslashLight: {
     bitmap: [
@@ -155,9 +104,6 @@ export const tones = {
       [0, 0, 1, 0],
       [0, 0, 0, 1],
     ],
-    button: {
-      image: toneBackslashLightPNG,
-    },
   },
   backslashBold: {
     bitmap: [
@@ -166,9 +112,6 @@ export const tones = {
       [1, 1, 0, 1],
       [1, 1, 1, 0],
     ],
-    button: {
-      image: toneBackslashBoldPNG,
-    },
   },
 };
 

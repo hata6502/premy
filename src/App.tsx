@@ -46,7 +46,7 @@ import type {
 } from "./PremyCanvas";
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
-import blankPNG from "./blank.png";
+import { Tone } from "./Tone";
 import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
 import { fonts } from "./fonts";
@@ -54,6 +54,9 @@ import type { FontType } from "./fonts";
 import { palettes } from "./palettes";
 import { tones } from "./tones";
 import type { ToneType } from "./tones";
+
+const blankImageDataURL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
 const useStyles = makeStyles({
   actions: {
@@ -145,7 +148,7 @@ const App: FunctionComponent<{
     );
 
     void currentPremyCanvasElement.load({
-      src: src ?? blankPNG,
+      src: src ?? blankImageDataURL,
       applysMibaeFilter: false,
       constrainsAspectRatio: Boolean(src),
       pushesImageToHistory: true,
@@ -300,7 +303,7 @@ const App: FunctionComponent<{
 
     handleImportMenuClose();
     await premyCanvasElement.current.load({
-      src: blankPNG,
+      src: blankImageDataURL,
       applysMibaeFilter: false,
       constrainsAspectRatio: false,
       pushesImageToHistory: true,
@@ -536,11 +539,7 @@ const App: FunctionComponent<{
               <Tooltip title="Tone">
                 <span>
                   <IconButton onClick={handleToneButtonClick}>
-                    <img
-                      alt={toneType}
-                      src={tones[toneType].button.image}
-                      width={24}
-                    />
+                    <Tone color={color} toneType={toneType} />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -562,7 +561,7 @@ const App: FunctionComponent<{
                   className: classes.tonePopover,
                 }}
               >
-                {Object.entries(tones).map(([popoverToneType, popoverTone]) => {
+                {Object.keys(tones).map((popoverToneType) => {
                   // TODO: useCallback
                   const handleClick = () => {
                     setToneType(popoverToneType as ToneType);
@@ -578,10 +577,9 @@ const App: FunctionComponent<{
                       )}
                       onClick={handleClick}
                     >
-                      <img
-                        alt={popoverToneType}
-                        src={popoverTone.button.image}
-                        width={24}
+                      <Tone
+                        color={color}
+                        toneType={popoverToneType as ToneType}
                       />
                     </IconButton>
                   );
