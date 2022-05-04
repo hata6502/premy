@@ -7,20 +7,12 @@ import {
   Menu,
   MenuItem,
   Popover,
-  Snackbar,
   TextField,
   Tooltip,
   makeStyles,
 } from "@material-ui/core";
-import type { SnackbarProps } from "@material-ui/core";
-import {
-  Alert,
-  AlertTitle,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@material-ui/lab";
+import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
-import type { AlertProps, AlertTitleProps } from "@material-ui/lab";
 import {
   Brush as BrushIcon,
   Close,
@@ -38,6 +30,7 @@ import type {
   MouseEventHandler,
 } from "react";
 import { Color } from "./Color";
+import { CopyDialogContent } from "./CopyDialogContent";
 import "./PremyCanvas";
 import type {
   PremyCanvas,
@@ -87,19 +80,10 @@ const useStyles = makeStyles({
   },
 });
 
-interface AlertData {
-  isOpen?: SnackbarProps["open"];
-  severity?: AlertProps["severity"];
-  title?: AlertTitleProps["children"];
-  description?: AlertProps["children"];
-}
-
 const App: FunctionComponent<{
   src?: string;
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ src, onCloseButtonClick }) => {
-  const [alertData, setAlertData] = useState<AlertData>({});
-
   const [applysMibaeFilter, setApplysMibaeFilter] = useState(false);
   const [brushType, setBrushType] = useState<BrushType>("medium");
   const [colorKey, setColorKey] = useState<{
@@ -123,6 +107,9 @@ const App: FunctionComponent<{
   const [fontMenuAnchorEl, setFontMenuAnchorEl] = useState<Element>();
   const [importMenuAnchorEl, setImportMenuAnchorEl] = useState<Element>();
   const [tonePopoverAnchorEl, setTonePopoverAnchorEl] = useState<Element>();
+
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [copySource, setCopySource] = useState("");
 
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
@@ -380,36 +367,15 @@ const App: FunctionComponent<{
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.toBlob(
-      (blob) =>
-        void (async () => {
-          try {
-            if (!blob) {
-              throw new Error("Blob is null");
-            }
-
-            const data = [new ClipboardItem({ [blob.type]: blob })];
-            await navigator.clipboard.write(data);
-
-            setAlertData({
-              isOpen: true,
-              severity: "success",
-              description: "Copied to clipboard.",
-            });
-          } catch (exception: unknown) {
-            setAlertData({
-              isOpen: true,
-              severity: "error",
-              description: "Failed to copy.",
-            });
-
-            throw exception;
-          }
-        })()
-    );
-
+    setCopySource(premyCanvasElement.current.toDataURL("image/png"));
+    setIsCopyDialogOpen(true);
     handleExportMenuClose();
   }, [handleExportMenuClose]);
+
+  const handleCopyDialogClose = useCallback(
+    () => setIsCopyDialogOpen(false),
+    []
+  );
 
   const handlePasteDialogClose = useCallback(
     () => setIsPasteDialogOpen(false),
@@ -434,15 +400,6 @@ const App: FunctionComponent<{
       },
       [applysMibaeFilter]
     );
-
-  const handleAlertClose = useCallback(
-    () =>
-      setAlertData((prevAlertData) => ({
-        ...prevAlertData,
-        isOpen: false,
-      })),
-    []
-  );
 
   return (
     <Container>
@@ -754,22 +711,19 @@ const App: FunctionComponent<{
 
       <Dialog
         className="premy-pointer-listener-ignore"
+        open={isCopyDialogOpen}
+        onClose={handleCopyDialogClose}
+      >
+        <CopyDialogContent src={copySource} />
+      </Dialog>
+
+      <Dialog
+        className="premy-pointer-listener-ignore"
         open={isPasteDialogOpen}
         onClose={handlePasteDialogClose}
       >
         <PasteDialogContent onPaste={handlePaste} />
       </Dialog>
-
-      <Snackbar
-        open={alertData.isOpen}
-        autoHideDuration={6000}
-        onClose={handleAlertClose}
-      >
-        <Alert severity={alertData.severity} onClose={handleAlertClose}>
-          <AlertTitle>{alertData.title}</AlertTitle>
-          {alertData.description}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 });
