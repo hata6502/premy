@@ -10,6 +10,8 @@ import {
   TextField,
   Tooltip,
   makeStyles,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
@@ -197,12 +199,33 @@ const App: FunctionComponent<{
     premyCanvasElement.current.setText({ text: text || "👒" });
   }, [text]);
 
+  const theme = useTheme();
+  const isUpSM = useMediaQuery(theme.breakpoints.up("sm"));
   const classes = useStyles();
 
   const Brush = {
     shape: BrushIcon,
     text: TextFormat,
   }[mode];
+
+  const landscapePaletteMatrix = Object.entries(palettes).map(
+    ([paletteKey, palette]) =>
+      palette.map((paletteColor, colorIndex) => ({
+        paletteKey,
+        paletteColor,
+        colorIndex,
+      }))
+  );
+
+  const portraitPaletteMatrix = palettes.vivid.map((_color, colorIndex) =>
+    Object.entries(palettes).map(([paletteKey, palette]) => ({
+      paletteKey,
+      paletteColor: palette[colorIndex],
+      colorIndex,
+    }))
+  );
+
+  const paletteMatrix = isUpSM ? landscapePaletteMatrix : portraitPaletteMatrix;
 
   const handleColorButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback((event) => setColorPopoverAnchorEl(event.currentTarget), []);
@@ -459,9 +482,9 @@ const App: FunctionComponent<{
               className="premy-pointer-listener-ignore"
               onClose={handleColorPopoverClose}
             >
-              {Object.entries(palettes).map(([paletteKey, palette]) => (
-                <div key={paletteKey}>
-                  {palette.map((paletteColor, colorIndex) => {
+              {paletteMatrix.map((row, rowIndex) => (
+                <div key={rowIndex}>
+                  {row.map(({ paletteKey, paletteColor, colorIndex }) => {
                     // TODO: useCallback
                     const handleClick = () => {
                       setColorKey({
