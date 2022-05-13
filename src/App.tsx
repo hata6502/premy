@@ -87,19 +87,19 @@ const App: FunctionComponent<{
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ src, onCloseButtonClick }) => {
   const [applysMibaeFilter, setApplysMibaeFilter] = useState(false);
-  const [brushType, setBrushType] = useState<BrushType>("medium");
+  const [brushType, setBrushType] = useState<BrushType>("xLarge");
   const [colorKey, setColorKey] = useState<{
     paletteKey: keyof typeof palettes;
     colorIndex: number;
   }>({
-    paletteKey: "vivid",
-    colorIndex: 3,
+    paletteKey: "light",
+    colorIndex: 4,
   });
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
-  const [toneType, setToneType] = useState<ToneType>("dotBold");
+  const [toneType, setToneType] = useState<ToneType>("slashLight");
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);

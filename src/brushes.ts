@@ -9,22 +9,13 @@ const getBitmap = ({ diameter }: { diameter: number }) => {
 };
 
 const brushes = {
-  small: {
-    bitmap: getBitmap({ diameter: 1 }),
+  xLarge: {
+    bitmap: getBitmap({ diameter: 15 }),
     button: {
-      size: 12,
+      size: 24,
     },
     font: {
-      size: 8,
-    },
-  },
-  medium: {
-    bitmap: getBitmap({ diameter: 3 }),
-    button: {
-      size: 16,
-    },
-    font: {
-      size: 20,
+      size: 125,
     },
   },
   large: {
@@ -36,13 +27,22 @@ const brushes = {
       size: 50,
     },
   },
-  xLarge: {
-    bitmap: getBitmap({ diameter: 15 }),
+  medium: {
+    bitmap: getBitmap({ diameter: 3 }),
     button: {
-      size: 24,
+      size: 16,
     },
     font: {
-      size: 125,
+      size: 20,
+    },
+  },
+  small: {
+    bitmap: getBitmap({ diameter: 1 }),
+    button: {
+      size: 12,
+    },
+    font: {
+      size: 8,
     },
   },
 };

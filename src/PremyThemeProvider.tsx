@@ -1,4 +1,5 @@
 import { ThemeProvider, createTheme, useMediaQuery } from "@material-ui/core";
+import { pink } from "@material-ui/core/colors";
 import { memo, useMemo } from "react";
 import type { FunctionComponent } from "react";
 
@@ -11,7 +12,7 @@ const PremyThemeProvider: FunctionComponent = memo(({ children }) => {
         palette: {
           type: prefersDarkMode ? "dark" : "light",
           primary: {
-            main: "#ffc107",
+            main: pink.A100,
           },
         },
       }),
