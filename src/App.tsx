@@ -199,6 +199,8 @@ const App: FunctionComponent<{
     premyCanvasElement.current.setText({ text: text || "👒" });
   }, [text]);
 
+  const saveFileName = "premy.png";
+
   const theme = useTheme();
   const isUpSM = useMediaQuery(theme.breakpoints.up("sm"));
   const classes = useStyles();
@@ -299,7 +301,35 @@ const App: FunctionComponent<{
   );
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback((event) => setExportMenuAnchorEl(event.currentTarget), []);
+    useCallback(async (event) => {
+      const currentTarget = event.currentTarget;
+
+      const blob = await new Promise<Blob | null>((resolve, reject) => {
+        if (!premyCanvasElement.current) {
+          reject(new Error("PremyCanvas element not found"));
+          return;
+        }
+
+        premyCanvasElement.current.toBlob(resolve);
+      });
+
+      if (!blob) {
+        throw new Error("Blob is not found");
+      }
+
+      const shareData = {
+        files: [new File([blob], saveFileName, { type: "image/png" })],
+      };
+
+      if (navigator.canShare?.(shareData)) {
+        try {
+          await navigator.share(shareData);
+          // eslint-disable-next-line no-empty
+        } catch (exception) {}
+      } else {
+        setExportMenuAnchorEl(currentTarget);
+      }
+    }, []);
 
   const handleExportMenuClose = useCallback(
     () => setExportMenuAnchorEl(undefined),
@@ -374,8 +404,8 @@ const App: FunctionComponent<{
     const anchorElement = document.createElement("a");
 
     try {
-      anchorElement.download = "premy.png";
-      anchorElement.href = premyCanvasElement.current.toDataURL("image/png");
+      anchorElement.download = saveFileName;
+      anchorElement.href = premyCanvasElement.current.toDataURL();
       document.body.append(anchorElement);
       anchorElement.click();
     } finally {
@@ -390,7 +420,7 @@ const App: FunctionComponent<{
       throw new Error("PremyCanvas element not found");
     }
 
-    setCopySource(premyCanvasElement.current.toDataURL("image/png"));
+    setCopySource(premyCanvasElement.current.toDataURL());
     setIsCopyDialogOpen(true);
     handleExportMenuClose();
   }, [handleExportMenuClose]);
