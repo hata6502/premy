@@ -25,6 +25,7 @@ import {
   Undo,
 } from "@material-ui/icons";
 import clsx from "clsx";
+import ColorLibrary from "color";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type {
   ChangeEventHandler,
@@ -95,7 +96,6 @@ const App: FunctionComponent<{
     paletteKey: "light",
     colorIndex: 4,
   });
-  const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const [fontType, setFontType] = useState<FontType>("sans-serif");
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
@@ -116,6 +116,10 @@ const App: FunctionComponent<{
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
   const premyCanvasElement = useRef<PremyCanvas>(null);
+
+  const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
+  const foregroundColor =
+    ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color;
 
   useEffect(() => {
     if (!premyCanvasElement.current) {
@@ -601,20 +605,6 @@ const App: FunctionComponent<{
           {mode === "text" && (
             <>
               <Box mr={1}>
-                <TextField
-                  variant="outlined"
-                  className={classes.textInput}
-                  placeholder="👒"
-                  size="small"
-                  value={text}
-                  onChange={handleTextInputChange}
-                  inputProps={{
-                    style: { color, fontFamily: fonts[fontType] },
-                  }}
-                />
-              </Box>
-
-              <Box mr={1}>
                 <Tooltip title="Font">
                   <span>
                     <IconButton
@@ -657,6 +647,23 @@ const App: FunctionComponent<{
                     );
                   })}
                 </Menu>
+              </Box>
+
+              <Box mr={1}>
+                <TextField
+                  variant="outlined"
+                  className={classes.textInput}
+                  placeholder="👒"
+                  size="small"
+                  value={text}
+                  onChange={handleTextInputChange}
+                  inputProps={{
+                    style: {
+                      color: foregroundColor,
+                      fontFamily: fonts[fontType],
+                    },
+                  }}
+                />
               </Box>
             </>
           )}
