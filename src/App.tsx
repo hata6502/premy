@@ -608,6 +608,9 @@ const App: FunctionComponent<{
                   size="small"
                   value={text}
                   onChange={handleTextInputChange}
+                  inputProps={{
+                    style: { color, fontFamily: fonts[fontType] },
+                  }}
                 />
               </Box>
 
