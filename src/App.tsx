@@ -720,12 +720,13 @@ const App: FunctionComponent<{
                   <InputLabel>Filter</InputLabel>
 
                   <Select
+                    native
                     value={loadMode}
                     onChange={handleLoadModeSelectChange}
                   >
-                    <MenuItem value="normal">normal</MenuItem>
-                    <MenuItem value="tracing">Tracing filter (beta)</MenuItem>
-                    <MenuItem value="mibae">Mibae filter (beta)</MenuItem>
+                    <option value="normal">normal</option>
+                    <option value="tracing">Tracing filter (beta)</option>
+                    <option value="mibae">Mibae filter (beta)</option>
                   </Select>
                 </FormControl>
               </MenuItem>
