@@ -28,6 +28,7 @@ type PremyHistoryChangeEvent = CustomEvent<{
 }>;
 
 export type PremyCanvasMode = "shape" | "text";
+export type LoadMode = "normal" | "mibae" | "tracing";
 
 const ditheringRate = 0.5;
 const ditheringPattern = [
@@ -334,13 +335,13 @@ class PremyCanvas extends HTMLElement {
 
   async load({
     src,
-    applysMibaeFilter,
     constrainsAspectRatio,
+    loadMode,
     pushesImageToHistory,
   }: {
     src: string;
-    applysMibaeFilter: boolean;
     constrainsAspectRatio: boolean;
+    loadMode: LoadMode;
     pushesImageToHistory: boolean;
   }): Promise<void> {
     const premyDialogRootElement = document.querySelector(".premy-dialog-root");
@@ -399,8 +400,26 @@ class PremyCanvas extends HTMLElement {
       this.canvas.height
     );
 
-    if (applysMibaeFilter) {
-      await this.applyMibaeFilter();
+    switch (loadMode) {
+      case "normal": {
+        break;
+      }
+
+      case "mibae": {
+        await this.applyMibaeFilter();
+        break;
+      }
+
+      case "tracing": {
+        await this.applyTracingFilter();
+        break;
+      }
+
+      default: {
+        const exhaustiveCheck: never = loadMode;
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Unknown load mode: ${exhaustiveCheck}`);
+      }
     }
 
     if (pushesImageToHistory) {
@@ -643,6 +662,66 @@ class PremyCanvas extends HTMLElement {
     }
   }
 
+  private async applyTracingFilter() {
+    if (!this.canvas || !this.context) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    const originalCanvasElement = document.createElement("canvas");
+
+    originalCanvasElement.width = this.canvas.width;
+    originalCanvasElement.height = this.canvas.height;
+
+    const originalContext = originalCanvasElement.getContext("2d");
+
+    if (!originalContext) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    originalContext.drawImage(this.canvas, 0, 0);
+
+    this.context.fillStyle = "#ffffff";
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    for (let y = 0; y < this.canvas.height; y++) {
+      for (let x = 0; x < this.canvas.width; x++) {
+        const windowImageData = originalContext.getImageData(
+          x - 1,
+          y - 1,
+          3,
+          3
+        ).data;
+
+        // Laplacian filter
+        let opacity = 0;
+
+        [1, 1, 1, 1, -8, 1, 1, 1, 1].forEach((weight, index) => {
+          const lightness = Color({
+            r: windowImageData[index * 4 + 0],
+            g: windowImageData[index * 4 + 1],
+            b: windowImageData[index * 4 + 2],
+          })
+            .grayscale()
+            .red();
+
+          opacity += (lightness / 255) * weight;
+        });
+
+        this.context.fillStyle = Color({
+          r: windowImageData[4 * 4 + 0],
+          g: windowImageData[4 * 4 + 1],
+          b: windowImageData[4 * 4 + 2],
+        })
+          .alpha(opacity)
+          .hexa();
+
+        this.context.fillRect(x, y, 1, 1);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve));
+    }
+  }
+
   private dispatchChangeHistoryEvent() {
     const event: PremyHistoryChangeEvent = new CustomEvent(
       "premyHistoryChange",
@@ -755,8 +834,8 @@ class PremyCanvas extends HTMLElement {
   private putImageFromHistory() {
     void this.load({
       src: this.history[this.historyIndex],
-      applysMibaeFilter: false,
       constrainsAspectRatio: true,
+      loadMode: "normal",
       pushesImageToHistory: false,
     });
   }

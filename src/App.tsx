@@ -1,12 +1,15 @@
 import {
   Box,
-  Checkbox,
   Container,
   Dialog,
+  FormControl,
   IconButton,
+  InputLabel,
   Menu,
   MenuItem,
   Popover,
+  Select,
+  SelectProps,
   TextField,
   Tooltip,
   makeStyles,
@@ -36,6 +39,7 @@ import { Color } from "./Color";
 import { CopyDialogContent } from "./CopyDialogContent";
 import "./PremyCanvas";
 import type {
+  LoadMode,
   PremyCanvas,
   PremyCanvasMode,
   PremyHistoryChangeEvent,
@@ -87,7 +91,6 @@ const App: FunctionComponent<{
   src?: string;
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ src, onCloseButtonClick }) => {
-  const [applysMibaeFilter, setApplysMibaeFilter] = useState(false);
   const [brushType, setBrushType] = useState<BrushType>("xLarge");
   const [colorKey, setColorKey] = useState<{
     paletteKey: keyof typeof palettes;
@@ -97,6 +100,7 @@ const App: FunctionComponent<{
     colorIndex: 4,
   });
   const [fontType, setFontType] = useState<FontType>("sans-serif");
+  const [loadMode, setLoadMode] = useState<LoadMode>("normal");
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
   const [toneType, setToneType] = useState<ToneType>("slashLight");
@@ -142,8 +146,8 @@ const App: FunctionComponent<{
 
     void currentPremyCanvasElement.load({
       src: src ?? blankImageDataURL,
-      applysMibaeFilter: false,
       constrainsAspectRatio: Boolean(src),
+      loadMode: "normal",
       pushesImageToHistory: true,
     });
 
@@ -348,8 +352,8 @@ const App: FunctionComponent<{
     handleImportMenuClose();
     await premyCanvasElement.current.load({
       src: blankImageDataURL,
-      applysMibaeFilter: false,
       constrainsAspectRatio: false,
+      loadMode: "normal",
       pushesImageToHistory: true,
     });
   }, [handleImportMenuClose]);
@@ -380,15 +384,15 @@ const App: FunctionComponent<{
 
           await premyCanvasElement.current.load({
             src,
-            applysMibaeFilter,
             constrainsAspectRatio: true,
+            loadMode,
             pushesImageToHistory: true,
           });
         };
 
         fileReader.readAsDataURL(file);
       },
-      [applysMibaeFilter, handleImportMenuClose]
+      [handleImportMenuClose, loadMode]
     );
 
   const handlePasteButtonClick = useCallback(() => {
@@ -396,8 +400,10 @@ const App: FunctionComponent<{
     handleImportMenuClose();
   }, [handleImportMenuClose]);
 
-  const handleApplyMibaeFilterButtonClick = useCallback(() => {
-    setApplysMibaeFilter((prevApplysMibaeFilter) => !prevApplysMibaeFilter);
+  const handleLoadModeSelectChange = useCallback<
+    NonNullable<SelectProps["onChange"]>
+  >((event) => {
+    setLoadMode(event.target.value as LoadMode);
   }, []);
 
   const handleSaveButtonClick = useCallback(() => {
@@ -448,14 +454,14 @@ const App: FunctionComponent<{
 
         await premyCanvasElement.current.load({
           src: event.src,
-          applysMibaeFilter,
           constrainsAspectRatio: true,
+          loadMode,
           pushesImageToHistory: true,
         });
 
         setIsPasteDialogOpen(false);
       },
-      [applysMibaeFilter]
+      [loadMode]
     );
 
   return (
@@ -709,13 +715,19 @@ const App: FunctionComponent<{
               className="premy-pointer-listener-ignore"
               onClose={handleImportMenuClose}
             >
-              <MenuItem onClick={handleApplyMibaeFilterButtonClick}>
-                <Checkbox
-                  checked={applysMibaeFilter}
-                  color="primary"
-                  edge="start"
-                />
-                Apply Mibae filter (beta)
+              <MenuItem>
+                <FormControl>
+                  <InputLabel>Filter</InputLabel>
+
+                  <Select
+                    value={loadMode}
+                    onChange={handleLoadModeSelectChange}
+                  >
+                    <MenuItem value="normal">normal</MenuItem>
+                    <MenuItem value="tracing">Tracing filter (beta)</MenuItem>
+                    <MenuItem value="mibae">Mibae filter (beta)</MenuItem>
+                  </Select>
+                </FormControl>
               </MenuItem>
 
               <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
