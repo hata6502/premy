@@ -252,9 +252,7 @@ class PremyCanvas extends HTMLElement {
         }
 
         .premy-canvas-container .canvas {
-          border: 1px solid;
-          border-image: linear-gradient(to right bottom, #e0e0e0 0%, #1f1f1f 100%);
-          border-image-slice: 1;
+          border: 1px solid #e0e0e0;
         }
 
         .premy-canvas-container .text-preview-rect {
