@@ -1,5 +1,7 @@
 import {
+  Backdrop,
   Box,
+  CircularProgress,
   Container,
   Dialog,
   FormControl,
@@ -58,12 +60,15 @@ import type { ToneType } from "./tones";
 const blankImageDataURL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ zIndex }) => ({
   actions: {
     display: "flex",
     alignItems: "center",
     marginBottom: 8,
     marginTop: 16,
+  },
+  backdrop: {
+    zIndex: zIndex.drawer + 1,
   },
   closeButton: {
     marginLeft: "auto",
@@ -85,7 +90,7 @@ const useStyles = makeStyles({
   tonePopover: {
     maxWidth: 336,
   },
-});
+}));
 
 const App: FunctionComponent<{
   src?: string;
@@ -104,6 +109,8 @@ const App: FunctionComponent<{
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
   const [toneType, setToneType] = useState<ToneType>("slashLight");
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);
@@ -124,6 +131,40 @@ const App: FunctionComponent<{
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
     ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color;
+
+  useEffect(() => {
+    if (!premyCanvasElement.current) {
+      throw new Error("PremyCanvas element not found");
+    }
+
+    const currentPremyCanvasElement = premyCanvasElement.current;
+
+    const handleCanvasLoadStart = () => setIsLoading(true);
+
+    currentPremyCanvasElement.addEventListener(
+      "premyLoadStart",
+      handleCanvasLoadStart
+    );
+
+    const handleCanvasLoadEnd = () => setIsLoading(false);
+
+    currentPremyCanvasElement.addEventListener(
+      "premyLoadEnd",
+      handleCanvasLoadEnd
+    );
+
+    return () => {
+      currentPremyCanvasElement.removeEventListener(
+        "premyLoadStart",
+        handleCanvasLoadStart
+      );
+
+      currentPremyCanvasElement.removeEventListener(
+        "premyLoadEnd",
+        handleCanvasLoadEnd
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (!premyCanvasElement.current) {
@@ -725,7 +766,7 @@ const App: FunctionComponent<{
                     onChange={handleLoadModeSelectChange}
                   >
                     <option value="normal">normal</option>
-                    <option value="tracing">Tracing filter (beta)</option>
+                    <option value="tracing">Tracing filter</option>
                     <option value="mibae">Mibae filter (beta)</option>
                   </Select>
                 </FormControl>
@@ -800,6 +841,13 @@ const App: FunctionComponent<{
       >
         <PasteDialogContent onPaste={handlePaste} />
       </Dialog>
+
+      <Backdrop
+        className={clsx("premy-pointer-listener-ignore", classes.backdrop)}
+        open={isLoading}
+      >
+        <CircularProgress />
+      </Backdrop>
     </Container>
   );
 });

@@ -19,13 +19,18 @@ const historyMaxLength = 30;
 declare global {
   interface HTMLElementEventMap {
     premyHistoryChange: PremyHistoryChangeEvent;
+    premyLoadStart: PremyLoadStartEvent;
+    premyLoadEnd: PremyLoadEndEvent;
   }
 }
 
-type PremyHistoryChangeEvent = CustomEvent<{
+export type PremyHistoryChangeEvent = CustomEvent<{
   history: string[];
   historyIndex: number;
 }>;
+
+export type PremyLoadStartEvent = CustomEvent<never>;
+export type PremyLoadEndEvent = CustomEvent<never>;
 
 export type PremyCanvasMode = "shape" | "text";
 export type LoadMode = "normal" | "mibae" | "tracing";
@@ -344,86 +349,103 @@ class PremyCanvas extends HTMLElement {
     loadMode: LoadMode;
     pushesImageToHistory: boolean;
   }): Promise<void> {
-    const premyDialogRootElement = document.querySelector(".premy-dialog-root");
-
-    if (!this.canvas || !this.context || !premyDialogRootElement) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    const imageElement = await new Promise<HTMLImageElement>(
-      (resolve, reject) => {
-        const imageElement = new Image();
-
-        imageElement.addEventListener("error", (event) => reject(event));
-        imageElement.addEventListener("load", () => resolve(imageElement));
-        imageElement.src = src;
-      }
+    const premyLoadStartEvent: PremyLoadStartEvent = new CustomEvent(
+      "premyLoadStart",
+      { bubbles: true, composed: true }
     );
 
-    const canvasMaxHeight = premyDialogRootElement.clientHeight - 112;
-    const canvasMaxWidth =
-      Math.min(premyDialogRootElement.clientWidth, 1280) - 64;
+    this.dispatchEvent(premyLoadStartEvent);
 
-    const naturalImageHeight = constrainsAspectRatio
-      ? imageElement.naturalHeight
-      : canvasMaxHeight;
-    const naturalImageWidth = constrainsAspectRatio
-      ? imageElement.naturalWidth
-      : canvasMaxWidth;
+    try {
+      const premyDialogRootElement =
+        document.querySelector(".premy-dialog-root");
 
-    const density = Math.sqrt(
-      (320 * 180) / (naturalImageWidth * naturalImageHeight)
-    );
-
-    const imageHeight = Math.round(naturalImageHeight * density);
-    const imageWidth = Math.round(naturalImageWidth * density);
-
-    const heightZoom = canvasMaxHeight / imageHeight;
-    const widthZoom = canvasMaxWidth / imageWidth;
-
-    this.displayingZoom = Math.min(heightZoom, widthZoom);
-    this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
-    this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
-
-    // For retina display.
-    this.actualZoom = Math.ceil(this.displayingZoom * 2);
-    this.canvas.height = imageHeight * this.actualZoom;
-    this.canvas.width = imageWidth * this.actualZoom;
-
-    this.context.imageSmoothingEnabled = false;
-
-    this.context.drawImage(
-      imageElement,
-      0,
-      0,
-      this.canvas.width,
-      this.canvas.height
-    );
-
-    switch (loadMode) {
-      case "normal": {
-        break;
+      if (!this.canvas || !this.context || !premyDialogRootElement) {
+        throw new Error("Canvas is not a 2D context");
       }
 
-      case "mibae": {
-        await this.applyMibaeFilter();
-        break;
+      const imageElement = await new Promise<HTMLImageElement>(
+        (resolve, reject) => {
+          const imageElement = new Image();
+
+          imageElement.addEventListener("error", (event) => reject(event));
+          imageElement.addEventListener("load", () => resolve(imageElement));
+          imageElement.src = src;
+        }
+      );
+
+      const canvasMaxHeight = premyDialogRootElement.clientHeight - 112;
+      const canvasMaxWidth =
+        Math.min(premyDialogRootElement.clientWidth, 1280) - 64;
+
+      const naturalImageHeight = constrainsAspectRatio
+        ? imageElement.naturalHeight
+        : canvasMaxHeight;
+      const naturalImageWidth = constrainsAspectRatio
+        ? imageElement.naturalWidth
+        : canvasMaxWidth;
+
+      const density = Math.sqrt(
+        (320 * 180) / (naturalImageWidth * naturalImageHeight)
+      );
+
+      const imageHeight = Math.round(naturalImageHeight * density);
+      const imageWidth = Math.round(naturalImageWidth * density);
+
+      const heightZoom = canvasMaxHeight / imageHeight;
+      const widthZoom = canvasMaxWidth / imageWidth;
+
+      this.displayingZoom = Math.min(heightZoom, widthZoom);
+      this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
+      this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
+
+      // For retina display.
+      this.actualZoom = Math.ceil(this.displayingZoom * 2);
+      this.canvas.height = imageHeight * this.actualZoom;
+      this.canvas.width = imageWidth * this.actualZoom;
+
+      this.context.imageSmoothingEnabled = false;
+
+      this.context.drawImage(
+        imageElement,
+        0,
+        0,
+        this.canvas.width,
+        this.canvas.height
+      );
+
+      switch (loadMode) {
+        case "normal": {
+          break;
+        }
+
+        case "mibae": {
+          await this.applyMibaeFilter();
+          break;
+        }
+
+        case "tracing": {
+          await this.applyTracingFilter();
+          break;
+        }
+
+        default: {
+          const exhaustiveCheck: never = loadMode;
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          throw new Error(`Unknown load mode: ${exhaustiveCheck}`);
+        }
       }
 
-      case "tracing": {
-        await this.applyTracingFilter();
-        break;
+      if (pushesImageToHistory) {
+        this.pushImageToHistory();
       }
+    } finally {
+      const premyLoadEndEvent: PremyLoadEndEvent = new CustomEvent(
+        "premyLoadEnd",
+        { bubbles: true, composed: true }
+      );
 
-      default: {
-        const exhaustiveCheck: never = loadMode;
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Unknown load mode: ${exhaustiveCheck}`);
-      }
-    }
-
-    if (pushesImageToHistory) {
-      this.pushImageToHistory();
+      this.dispatchEvent(premyLoadEndEvent);
     }
   }
 
@@ -1005,4 +1027,3 @@ class PremyCanvas extends HTMLElement {
 customElements.define("premy-canvas", PremyCanvas);
 
 export { PremyCanvas };
-export type { PremyHistoryChangeEvent };
