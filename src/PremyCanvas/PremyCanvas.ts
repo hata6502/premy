@@ -29,7 +29,9 @@ export type PremyHistoryChangeEvent = CustomEvent<{
   historyIndex: number;
 }>;
 
-export type PremyLoadStartEvent = CustomEvent<never>;
+export type PremyLoadStartEvent = CustomEvent<{
+  isHeavy: boolean;
+}>;
 export type PremyLoadEndEvent = CustomEvent<never>;
 
 export type PremyCanvasMode = "shape" | "text";
@@ -347,9 +349,18 @@ class PremyCanvas extends HTMLElement {
     loadMode: LoadMode;
     pushesImageToHistory: boolean;
   }): Promise<void> {
+    const isHeavy = {
+      normal: false,
+      mibae: true,
+      tracing: true,
+    }[loadMode];
     const premyLoadStartEvent: PremyLoadStartEvent = new CustomEvent(
       "premyLoadStart",
-      { bubbles: true, composed: true }
+      {
+        bubbles: true,
+        composed: true,
+        detail: { isHeavy },
+      }
     );
 
     this.dispatchEvent(premyLoadStartEvent);

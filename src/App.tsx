@@ -45,6 +45,7 @@ import type {
   PremyCanvas,
   PremyCanvasMode,
   PremyHistoryChangeEvent,
+  PremyLoadStartEvent,
 } from "./PremyCanvas";
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
@@ -139,7 +140,11 @@ const App: FunctionComponent<{
 
     const currentPremyCanvasElement = premyCanvasElement.current;
 
-    const handleCanvasLoadStart = () => setIsLoading(true);
+    const handleCanvasLoadStart = (event: PremyLoadStartEvent) => {
+      if (event.detail.isHeavy) {
+        setIsLoading(true);
+      }
+    };
 
     currentPremyCanvasElement.addEventListener(
       "premyLoadStart",
