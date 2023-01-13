@@ -374,6 +374,7 @@ const App: FunctionComponent<{
 
       const shareData = {
         files: [new File([blob], saveFileName, { type: "image/png" })],
+        text: " #premy ",
       };
 
       if (navigator.canShare?.(shareData)) {
