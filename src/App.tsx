@@ -117,7 +117,6 @@ const App: FunctionComponent<{
   const [isRedoDisabled, setIsRedoDisabled] = useState(true);
 
   const [colorPopoverAnchorEl, setColorPopoverAnchorEl] = useState<Element>();
-  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState<Element>();
   const [fontMenuAnchorEl, setFontMenuAnchorEl] = useState<Element>();
   const [importMenuAnchorEl, setImportMenuAnchorEl] = useState<Element>();
   const [tonePopoverAnchorEl, setTonePopoverAnchorEl] = useState<Element>();
@@ -355,8 +354,10 @@ const App: FunctionComponent<{
   );
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(async (event) => {
-      const currentTarget = event.currentTarget;
+    useCallback(async () => {
+      if (!premyCanvasElement.current) {
+        throw new Error("PremyCanvas element not found");
+      }
 
       const blob = await new Promise<Blob | null>((resolve, reject) => {
         if (!premyCanvasElement.current) {
@@ -381,14 +382,10 @@ const App: FunctionComponent<{
           // eslint-disable-next-line no-empty
         } catch (exception) {}
       } else {
-        setExportMenuAnchorEl(currentTarget);
+        setCopySource(premyCanvasElement.current.toDataURL());
+        setIsCopyDialogOpen(true);
       }
     }, []);
-
-  const handleExportMenuClose = useCallback(
-    () => setExportMenuAnchorEl(undefined),
-    []
-  );
 
   const handleClearButtonClick = useCallback(async () => {
     if (!premyCanvasElement.current) {
@@ -451,35 +448,6 @@ const App: FunctionComponent<{
   >((event) => {
     setLoadMode(event.target.value as LoadMode);
   }, []);
-
-  const handleSaveButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
-      throw new Error("PremyCanvas element not found");
-    }
-
-    const anchorElement = document.createElement("a");
-
-    try {
-      anchorElement.download = saveFileName;
-      anchorElement.href = premyCanvasElement.current.toDataURL();
-      document.body.append(anchorElement);
-      anchorElement.click();
-    } finally {
-      anchorElement.remove();
-    }
-
-    handleExportMenuClose();
-  }, [handleExportMenuClose]);
-
-  const handleCopyButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
-      throw new Error("PremyCanvas element not found");
-    }
-
-    setCopySource(premyCanvasElement.current.toDataURL());
-    setIsCopyDialogOpen(true);
-    handleExportMenuClose();
-  }, [handleExportMenuClose]);
 
   const handleCopyDialogClose = useCallback(
     () => setIsCopyDialogOpen(false),
@@ -803,18 +771,6 @@ const App: FunctionComponent<{
                 </IconButton>
               </span>
             </Tooltip>
-
-            <Menu
-              open={Boolean(exportMenuAnchorEl)}
-              anchorEl={exportMenuAnchorEl}
-              className="premy-pointer-listener-ignore"
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={handleSaveButtonClick}>Save as file</MenuItem>
-              <MenuItem onClick={handleCopyButtonClick}>
-                Copy to clipboard
-              </MenuItem>
-            </Menu>
           </Box>
 
           <div className={classes.closeButton}>
