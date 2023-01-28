@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>premy</title>
+  </head>
+
+  <body>
+    <button id="open-button">Open</button>
+    <premy-dialog id="dialog"></premy-dialog>
+
+    <script type="module">
+      import "./dist/index.js";
+
+      const dialog = document.querySelector("#dialog");
+      const openButton = document.querySelector("#open-button");
+
+      dialog.addEventListener("premyClose", (event) =>
+        dialog.removeAttribute("open")
+      );
+
+      dialog.addEventListener("premyHistoryChange", (event) =>
+        localStorage.setItem(
+          "premy-image",
+          event.detail.history[event.detail.historyIndex]
+        )
+      );
+
+      openButton.addEventListener("click", (event) => {
+        const image = localStorage.getItem("premy-image");
+
+        if (image) {
+          dialog.setAttribute("src", image);
+        } else {
+          dialog.removeAttribute("src");
+        }
+
+        dialog.setAttribute("open", "");
+      });
+    </script>
+  </body>
+</html>

@@ -21,6 +21,7 @@
   "scripts": {
     "build": "webpack",
     "fix": "prettier --write . && eslint --fix --max-warnings 0 .",
+    "start": "http-server -c-1",
     "test": "prettier --check . && eslint --max-warnings 0 . && tsc --noEmit"
   },
   "devDependencies": {
@@ -43,6 +44,7 @@
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "http-server": "^14.1.1",
     "prettier": "^2.3.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
