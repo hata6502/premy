@@ -616,31 +616,6 @@ const App: FunctionComponent<{
                 onClose={handleTonePopoverClose}
               >
                 <Box m={1}>
-                  <InputLabel shrink>Fuzziness</InputLabel>
-                  {fuzzinesses.map((popoverFuzziness) => {
-                    const handleClick = () => {
-                      setFuzziness(popoverFuzziness);
-                      handleTonePopoverClose();
-                    };
-
-                    return (
-                      <IconButton
-                        key={fuzzinessKey + popoverFuzziness}
-                        className={clsx(
-                          popoverFuzziness === fuzziness &&
-                            classes.selectedIconButton
-                        )}
-                        onClick={handleClick}
-                      >
-                        <Tone
-                          color={color}
-                          fuzziness={popoverFuzziness}
-                          toneType="slashLight"
-                        />
-                      </IconButton>
-                    );
-                  })}
-
                   <InputLabel shrink>Tone</InputLabel>
                   {toneGroups.map((toneGroup, toneGroupIndex) => (
                     <div key={toneGroupIndex}>
@@ -669,6 +644,31 @@ const App: FunctionComponent<{
                       })}
                     </div>
                   ))}
+
+                  <InputLabel shrink>Fuzziness</InputLabel>
+                  {fuzzinesses.map((popoverFuzziness) => {
+                    const handleClick = () => {
+                      setFuzziness(popoverFuzziness);
+                      handleTonePopoverClose();
+                    };
+
+                    return (
+                      <IconButton
+                        key={fuzzinessKey + popoverFuzziness}
+                        className={clsx(
+                          popoverFuzziness === fuzziness &&
+                            classes.selectedIconButton
+                        )}
+                        onClick={handleClick}
+                      >
+                        <Tone
+                          color={color}
+                          fuzziness={popoverFuzziness}
+                          toneType="slashLight"
+                        />
+                      </IconButton>
+                    );
+                  })}
                 </Box>
               </Popover>
             </Box>
