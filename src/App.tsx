@@ -54,8 +54,9 @@ import { brushes } from "./brushes";
 import type { BrushType } from "./brushes";
 import { fonts } from "./fonts";
 import type { FontType } from "./fonts";
+import { fuzzinesses } from "./fuzziness";
 import { palettes } from "./palettes";
-import { tones } from "./tones";
+import { toneGroups } from "./tones";
 import type { ToneType } from "./tones";
 
 const blankImageDataURL =
@@ -88,9 +89,6 @@ const useStyles = makeStyles(({ zIndex }) => ({
   textInput: {
     minWidth: 80,
   },
-  tonePopover: {
-    maxWidth: 336,
-  },
 }));
 
 const App: FunctionComponent<{
@@ -109,6 +107,8 @@ const App: FunctionComponent<{
   const [loadMode, setLoadMode] = useState<LoadMode>("normal");
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
+  const [fuzziness, setFuzziness] = useState(fuzzinesses[0]);
+  const [fuzzinessKey, setFuzzinessKey] = useState(0);
   const [toneType, setToneType] = useState<ToneType>("slashLight");
 
   const [isLoading, setIsLoading] = useState(false);
@@ -131,6 +131,16 @@ const App: FunctionComponent<{
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
     ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color;
+
+  useEffect(() => {
+    const intervalID = setInterval(() => {
+      setFuzzinessKey(Math.random());
+    }, 3000);
+
+    return () => {
+      clearInterval(intervalID);
+    };
+  }, []);
 
   useEffect(() => {
     if (!premyCanvasElement.current) {
@@ -235,6 +245,14 @@ const App: FunctionComponent<{
 
     premyCanvasElement.current.setMode({ mode });
   }, [mode]);
+
+  useEffect(() => {
+    if (!premyCanvasElement.current) {
+      throw new Error("PremyCanvas element not found");
+    }
+
+    premyCanvasElement.current.setFuzziness({ fuzziness });
+  }, [fuzziness]);
 
   useEffect(() => {
     if (!premyCanvasElement.current) {
@@ -574,7 +592,11 @@ const App: FunctionComponent<{
               <Tooltip title="Tone">
                 <span>
                   <IconButton onClick={handleToneButtonClick}>
-                    <Tone color={color} toneType={toneType} />
+                    <Tone
+                      color={color}
+                      fuzziness={fuzziness}
+                      toneType={toneType}
+                    />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -592,33 +614,62 @@ const App: FunctionComponent<{
                 }}
                 className="premy-pointer-listener-ignore"
                 onClose={handleTonePopoverClose}
-                PaperProps={{
-                  className: classes.tonePopover,
-                }}
               >
-                {Object.keys(tones).map((popoverToneType) => {
-                  // TODO: useCallback
-                  const handleClick = () => {
-                    setToneType(popoverToneType as ToneType);
-                    handleTonePopoverClose();
-                  };
+                <Box m={1}>
+                  <InputLabel shrink>Fuzziness</InputLabel>
+                  {fuzzinesses.map((popoverFuzziness) => {
+                    const handleClick = () => {
+                      setFuzziness(popoverFuzziness);
+                      handleTonePopoverClose();
+                    };
 
-                  return (
-                    <IconButton
-                      key={popoverToneType}
-                      className={clsx(
-                        popoverToneType === toneType &&
-                          classes.selectedIconButton
-                      )}
-                      onClick={handleClick}
-                    >
-                      <Tone
-                        color={color}
-                        toneType={popoverToneType as ToneType}
-                      />
-                    </IconButton>
-                  );
-                })}
+                    return (
+                      <IconButton
+                        key={fuzzinessKey + popoverFuzziness}
+                        className={clsx(
+                          popoverFuzziness === fuzziness &&
+                            classes.selectedIconButton
+                        )}
+                        onClick={handleClick}
+                      >
+                        <Tone
+                          color={color}
+                          fuzziness={popoverFuzziness}
+                          toneType="slashLight"
+                        />
+                      </IconButton>
+                    );
+                  })}
+
+                  <InputLabel shrink>Tone</InputLabel>
+                  {toneGroups.map((toneGroup, toneGroupIndex) => (
+                    <div key={toneGroupIndex}>
+                      {Object.keys(toneGroup).map((popoverToneType) => {
+                        const handleClick = () => {
+                          setToneType(popoverToneType as ToneType);
+                          handleTonePopoverClose();
+                        };
+
+                        return (
+                          <IconButton
+                            key={popoverToneType}
+                            className={clsx(
+                              popoverToneType === toneType &&
+                                classes.selectedIconButton
+                            )}
+                            onClick={handleClick}
+                          >
+                            <Tone
+                              color={color}
+                              fuzziness={fuzzinesses[0]}
+                              toneType={popoverToneType as ToneType}
+                            />
+                          </IconButton>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </Box>
               </Popover>
             </Box>
           )}

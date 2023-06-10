@@ -4,6 +4,7 @@ import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { fonts } from "../fonts";
 import type { FontType } from "../fonts";
+import { fuzzinesses, noisemap } from "../fuzziness";
 import { palettes } from "../palettes";
 import { ToneType, tonePeriod, tones } from "../tones";
 import { PremyPointerListener } from "./PremyPointerListener";
@@ -214,6 +215,7 @@ class PremyCanvas extends HTMLElement {
   private prevPosition: PremyPosition;
   private text;
   private textPreviewRect?: HTMLDivElement;
+  private fuzziness: number;
   private toneType: ToneType;
   private transactionMode?: PremyCanvasMode;
   private actualZoom: number;
@@ -231,6 +233,7 @@ class PremyCanvas extends HTMLElement {
     this.mode = "shape";
     this.prevPosition = { x: 0, y: 0 };
     this.text = "";
+    this.fuzziness = fuzzinesses[0];
     this.toneType = "fill";
     this.actualZoom = 0;
     this.displayingZoom = 0;
@@ -332,6 +335,10 @@ class PremyCanvas extends HTMLElement {
 
   setText({ text }: { text: string }): void {
     this.text = text;
+  }
+
+  setFuzziness({ fuzziness }: { fuzziness: number }): void {
+    this.fuzziness = fuzziness;
   }
 
   setToneType({ toneType }: { toneType: ToneType }): void {
@@ -822,10 +829,23 @@ class PremyCanvas extends HTMLElement {
 
     for (let y = beginY; y < beginY + brush.bitmap.length; y++) {
       for (let x = beginX; x < beginX + brush.bitmap[0].length; x++) {
-        if (
-          brush.bitmap[Math.abs(y - beginY)][Math.abs(x - beginX)] === 0 ||
-          tone.bitmap[Math.abs(y % tonePeriod)][Math.abs(x % tonePeriod)] === 0
-        ) {
+        const brushBit =
+          brush.bitmap[Math.abs(y - beginY)][Math.abs(x - beginX)];
+
+        const x256 = Math.abs(x % 256);
+        const y256 = Math.abs(y % 256);
+        const modulatedX = Math.floor(
+          x + noisemap[y256][x256] * this.fuzziness
+        );
+        const modulatedY = Math.floor(
+          y + noisemap[x256][y256] * this.fuzziness
+        );
+        const toneBit =
+          tone.bitmap[Math.abs(modulatedY % tonePeriod)][
+            Math.abs(modulatedX % tonePeriod)
+          ];
+
+        if (!brushBit || !toneBit) {
           continue;
         }
 
