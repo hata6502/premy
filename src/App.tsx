@@ -664,7 +664,7 @@ const App: FunctionComponent<{
                         <Tone
                           color={color}
                           fuzziness={popoverFuzziness}
-                          toneType="slashLight"
+                          toneType={toneType}
                         />
                       </IconButton>
                     );
