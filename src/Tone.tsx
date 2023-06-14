@@ -17,7 +17,7 @@ export const Tone: FunctionComponent<{
       [...Array(tonePeriod * 2).keys()].map((x) => {
         const size = 3;
         const toneColor =
-          ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color;
+          ColorLibrary(color).hex() === "#FAFAFA" ? "hsl(0, 0%, 75%)" : color;
 
         const modulatedX = Math.floor(x + Math.random() * fuzziness);
         const modulatedY = Math.floor(y + Math.random() * fuzziness);
@@ -33,7 +33,7 @@ export const Tone: FunctionComponent<{
             y={size * y}
             width={size}
             height={size}
-            fill={toneBit ? toneColor : "#FFFFFF"}
+            fill={toneBit ? toneColor : "#FAFAFA"}
           />
         );
       })

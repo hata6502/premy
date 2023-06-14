@@ -57,7 +57,7 @@ import { PaletteKey, paletteKeys, palettes } from "./palettes";
 import { ToneType, toneGroups, toneTypes } from "./tones";
 
 const blankImageDataURL =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP89R8AAvkB+0p/ESEAAAAASUVORK5CYII=";
 
 const useStyles = makeStyles(({ zIndex }) => ({
   actions: {
@@ -137,7 +137,7 @@ const App: FunctionComponent<{
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
-    ColorLibrary(color).hex() === "#FFFFFF" ? "hsl(0, 0%, 75%)" : color;
+    ColorLibrary(color).hex() === "#FAFAFA" ? "hsl(0, 0%, 75%)" : color;
 
   useEffect(() => {
     const intervalID = setInterval(() => {

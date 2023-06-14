@@ -718,7 +718,7 @@ class PremyCanvas extends HTMLElement {
 
     originalContext.drawImage(this.canvas, 0, 0);
 
-    this.context.fillStyle = "#ffffff";
+    this.context.fillStyle = "#fafafa";
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     for (let y = 0; y < this.canvas.height; y++) {
