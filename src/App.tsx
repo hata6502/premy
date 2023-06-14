@@ -114,12 +114,14 @@ const App: FunctionComponent<{
   const [fuzziness, setFuzziness] = useState(
     fuzzinesses[Math.floor(Math.random() * fuzzinesses.length)]
   );
+  const [mode, setMode] = useState<PremyCanvasMode>(
+    Math.random() < 0.5 ? "text" : "shape"
+  );
   const [toneType, setToneType] = useState<ToneType>(
     toneTypes[Math.floor(Math.random() * toneTypes.length)]
   );
 
   const [loadMode, setLoadMode] = useState<LoadMode>("normal");
-  const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
   const [fuzzinessKey, setFuzzinessKey] = useState(0);
 
@@ -404,7 +406,8 @@ const App: FunctionComponent<{
 
       const shareData = {
         files: [new File([blob], saveFileName, { type: "image/png" })],
-        text: " #premy ",
+        text: "\n#premy",
+        url: "https://premy.hata6502.com/",
       };
 
       if (navigator.canShare?.(shareData)) {
