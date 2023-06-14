@@ -11,10 +11,10 @@ const toneGroup1 = {
   },
   dotBold: {
     bitmap: [
-      [0, 1, 0, 1],
       [1, 1, 1, 1],
       [0, 1, 0, 1],
       [1, 1, 1, 1],
+      [0, 1, 0, 1],
     ],
   },
   dotMedium: {
@@ -45,18 +45,18 @@ const toneGroup2 = {
   },
   slashLight: {
     bitmap: [
+      [1, 0, 0, 0],
       [0, 0, 0, 1],
       [0, 0, 1, 0],
       [0, 1, 0, 0],
-      [1, 0, 0, 0],
     ],
   },
   backslashBold: {
     bitmap: [
+      [1, 1, 1, 0],
       [0, 1, 1, 1],
       [1, 0, 1, 1],
       [1, 1, 0, 1],
-      [1, 1, 1, 0],
     ],
   },
   backslashLight: {
@@ -71,10 +71,10 @@ const toneGroup2 = {
 const toneGroup3 = {
   horizontalBold: {
     bitmap: [
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
       [0, 0, 0, 0],
-      [1, 1, 1, 1],
-      [1, 1, 1, 1],
-      [1, 1, 1, 1],
     ],
   },
   horizontalMedium: {
@@ -97,10 +97,10 @@ const toneGroup3 = {
 const toneGroup4 = {
   verticalBold: {
     bitmap: [
-      [0, 1, 1, 1],
-      [0, 1, 1, 1],
-      [0, 1, 1, 1],
-      [0, 1, 1, 1],
+      [1, 1, 1, 0],
+      [1, 1, 1, 0],
+      [1, 1, 1, 0],
+      [1, 1, 1, 0],
     ],
   },
   verticalMedium: {
