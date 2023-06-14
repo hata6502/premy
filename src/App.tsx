@@ -51,6 +51,7 @@ import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
 import { Tone } from "./Tone";
 import { BrushType, brushTypes, brushes } from "./brushes";
+import { animalsAndNatureEmojis } from "./emoji";
 import { FontType, fontTypes, fonts } from "./fonts";
 import { fuzzinesses } from "./fuzziness";
 import { PaletteKey, paletteKeys, palettes } from "./palettes";
@@ -102,7 +103,11 @@ const App: FunctionComponent<{
     paletteKey: paletteKeys[Math.floor(Math.random() * paletteKeys.length)],
     colorIndex: Math.floor(Math.random() * palettes.light.length),
   });
-  const [defaultText] = useState("👒");
+  const [defaultText] = useState(
+    animalsAndNatureEmojis[
+      Math.floor(Math.random() * animalsAndNatureEmojis.length)
+    ]
+  );
   const [fontType, setFontType] = useState<FontType>(
     fontTypes[Math.floor(Math.random() * fontTypes.length)]
   );
