@@ -50,14 +50,11 @@ import type {
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
 import { Tone } from "./Tone";
-import { brushes } from "./brushes";
-import type { BrushType } from "./brushes";
-import { fonts } from "./fonts";
-import type { FontType } from "./fonts";
+import { BrushType, brushTypes, brushes } from "./brushes";
+import { FontType, fontTypes, fonts } from "./fonts";
 import { fuzzinesses } from "./fuzziness";
-import { palettes } from "./palettes";
-import { toneGroups } from "./tones";
-import type { ToneType } from "./tones";
+import { PaletteKey, paletteKeys, palettes } from "./palettes";
+import { ToneType, toneGroups, toneTypes } from "./tones";
 
 const blankImageDataURL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
@@ -95,21 +92,31 @@ const App: FunctionComponent<{
   src?: string;
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ src, onCloseButtonClick }) => {
-  const [brushType, setBrushType] = useState<BrushType>("xLarge");
+  const [brushType, setBrushType] = useState<BrushType>(
+    brushTypes[Math.floor(Math.random() * brushTypes.length)]
+  );
   const [colorKey, setColorKey] = useState<{
-    paletteKey: keyof typeof palettes;
+    paletteKey: PaletteKey;
     colorIndex: number;
   }>({
-    paletteKey: "light",
-    colorIndex: 4,
+    paletteKey: paletteKeys[Math.floor(Math.random() * paletteKeys.length)],
+    colorIndex: Math.floor(Math.random() * palettes.light.length),
   });
-  const [fontType, setFontType] = useState<FontType>("sans-serif");
+  const [defaultText] = useState("👒");
+  const [fontType, setFontType] = useState<FontType>(
+    fontTypes[Math.floor(Math.random() * fontTypes.length)]
+  );
+  const [fuzziness, setFuzziness] = useState(
+    fuzzinesses[Math.floor(Math.random() * fuzzinesses.length)]
+  );
+  const [toneType, setToneType] = useState<ToneType>(
+    toneTypes[Math.floor(Math.random() * toneTypes.length)]
+  );
+
   const [loadMode, setLoadMode] = useState<LoadMode>("normal");
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
   const [text, setText] = useState("");
-  const [fuzziness, setFuzziness] = useState(fuzzinesses[0]);
   const [fuzzinessKey, setFuzzinessKey] = useState(0);
-  const [toneType, setToneType] = useState<ToneType>("slashLight");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -267,8 +274,8 @@ const App: FunctionComponent<{
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setText({ text: text || "👒" });
-  }, [text]);
+    premyCanvasElement.current.setText({ text: text || defaultText });
+  }, [defaultText, text]);
 
   const saveFileName = "premy.png";
 
@@ -561,7 +568,8 @@ const App: FunctionComponent<{
                     // TODO: useCallback
                     const handleClick = () => {
                       setColorKey({
-                        paletteKey: paletteKey as keyof typeof palettes,
+                        // @ts-expect-error Fix paletteMatrix type.
+                        paletteKey: paletteKey,
                         colorIndex,
                       });
 
@@ -725,7 +733,7 @@ const App: FunctionComponent<{
                 <TextField
                   variant="outlined"
                   className={classes.textInput}
-                  placeholder="👒"
+                  placeholder={defaultText}
                   size="small"
                   value={text}
                   onChange={handleTextInputChange}

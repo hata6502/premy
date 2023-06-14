@@ -1,5 +1,23 @@
 export const tonePeriod = 4;
 
+export const toneTypes = [
+  "verticalBold",
+  "verticalMedium",
+  "verticalLight",
+  "horizontalBold",
+  "horizontalMedium",
+  "horizontalLight",
+  "slashBold",
+  "slashLight",
+  "backslashBold",
+  "backslashLight",
+  "fill",
+  "dotBold",
+  "dotMedium",
+  "dotLight",
+] as const;
+export type ToneType = typeof toneTypes[number];
+
 const toneGroup1 = {
   fill: {
     bitmap: [
@@ -120,14 +138,16 @@ const toneGroup4 = {
     ],
   },
 };
+export const toneGroups = [
+  toneGroup1,
+  toneGroup2,
+  toneGroup3,
+  toneGroup4,
+] as const;
 
-export const toneGroups = [toneGroup1, toneGroup2, toneGroup3, toneGroup4];
-
-export const tones = {
+export const tones: Record<ToneType, typeof toneGroup1["fill"]> = {
   ...toneGroup1,
   ...toneGroup2,
   ...toneGroup3,
   ...toneGroup4,
 };
-
-export type ToneType = keyof typeof tones;

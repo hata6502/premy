@@ -13,7 +13,16 @@ import {
   orange,
 } from "@material-ui/core/colors";
 
-export const palettes = {
+export const paletteKeys = [
+  "light",
+  "bright",
+  "vivid",
+  "deep",
+  "dark",
+] as const;
+export type PaletteKey = typeof paletteKeys[number];
+
+export const palettes: Record<PaletteKey, string[]> = {
   light: [
     "#ffffff",
     blueGrey.A100,

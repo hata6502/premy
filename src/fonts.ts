@@ -1,4 +1,13 @@
-const fonts = {
+export const fontTypes = [
+  "sans-serif",
+  "serif",
+  "monospace",
+  "cursive",
+  "fantasy",
+] as const;
+export type FontType = typeof fontTypes[number];
+
+export const fonts: Record<FontType, string> = {
   "sans-serif":
     '"Noto Color Emoji", "Open Sans", "Fira Sans", "Lucida Sans", "Lucida Sans Unicode", "Trebuchet MS", "Liberation Sans", "Nimbus Sans L", sans-serif',
   serif:
@@ -10,8 +19,3 @@ const fonts = {
   fantasy:
     '"Noto Color Emoji", "Fruktur", "Potta One", Papyrus, Herculanum, Party LET, Curlz MT, Harrington, fantasy',
 };
-
-type FontType = keyof typeof fonts;
-
-export { fonts };
-export type { FontType };
