@@ -262,7 +262,7 @@ class PremyCanvas extends HTMLElement {
 
         .premy-canvas-container .text-preview-rect {
           position: absolute;
-          transform: translateY(-80%);
+          transform: translate(-50%, -54%);
           white-space: nowrap;
         }
       </style>
@@ -781,22 +781,12 @@ class PremyCanvas extends HTMLElement {
       throw new Error("Canvas is not a 2D context");
     }
 
-    const font = `${
+    this.textPreviewRect.style.font = `${
       brushes[this.brushType].font.size * this.displayingZoom
     }px ${fonts[this.fontType]}`;
-
-    this.context.font = font;
-
-    this.textPreviewRect.style.left = `${
-      position.x * this.displayingZoom + 1
-    }px`;
-
-    this.textPreviewRect.style.top = `${
-      position.y * this.displayingZoom + 1
-    }px`;
-
+    this.textPreviewRect.style.left = `${position.x * this.displayingZoom}px`;
+    this.textPreviewRect.style.top = `${position.y * this.displayingZoom}px`;
     this.textPreviewRect.style.color = this.color;
-    this.textPreviewRect.style.font = font;
     this.textPreviewRect.textContent = this.text;
   }
 
@@ -990,10 +980,11 @@ class PremyCanvas extends HTMLElement {
         }
 
         this.context.fillStyle = this.color;
-
         this.context.font = `${
           brushes[this.brushType].font.size * this.actualZoom
         }px ${fonts[this.fontType]}`;
+        this.context.textAlign = "center";
+        this.context.textBaseline = "middle";
 
         this.context.fillText(
           this.text,
