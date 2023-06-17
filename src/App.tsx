@@ -59,10 +59,12 @@ import { ToneType, toneGroups, toneTypes } from "./tones";
 const blankImageDataURL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP89R8AAvkB+0p/ESEAAAAASUVORK5CYII=";
 
-const useStyles = makeStyles(({ zIndex }) => ({
+const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
     display: "flex",
     alignItems: "center",
+    borderBottom: "4px solid",
+    borderImage: `linear-gradient(to right, transparent, ${palette.action.focus}) 1`,
     overflowX: "auto",
   },
   backdrop: {
