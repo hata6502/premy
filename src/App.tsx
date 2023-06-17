@@ -63,6 +63,7 @@ const useStyles = makeStyles(({ zIndex }) => ({
   actions: {
     display: "flex",
     alignItems: "center",
+    overflowX: "auto",
   },
   backdrop: {
     zIndex: zIndex.drawer + 1,
@@ -510,9 +511,12 @@ const App: FunctionComponent<{
     );
 
   return (
-    <Box m={1}>
+    <>
       <Box
+        mt={1}
         mb={1}
+        pl={1}
+        pr={1}
         className={clsx(classes.actions, "premy-pointer-listener-ignore")}
       >
         <Box mr={1}>
@@ -847,7 +851,9 @@ const App: FunctionComponent<{
         </div>
       </Box>
 
-      <premy-canvas ref={premyCanvasElement} />
+      <Box ml={1} mr={1}>
+        <premy-canvas ref={premyCanvasElement} />
+      </Box>
 
       <Dialog
         className="premy-pointer-listener-ignore"
@@ -871,7 +877,7 @@ const App: FunctionComponent<{
       >
         <CircularProgress />
       </Backdrop>
-    </Box>
+    </>
   );
 });
 

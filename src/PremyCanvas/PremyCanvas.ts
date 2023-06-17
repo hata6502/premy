@@ -392,8 +392,7 @@ class PremyCanvas extends HTMLElement {
       );
 
       const canvasMaxHeight = premyDialogRootElement.clientHeight - 80;
-      const canvasMaxWidth =
-        Math.min(premyDialogRootElement.clientWidth, 1280) - 16;
+      const canvasMaxWidth = premyDialogRootElement.clientWidth - 16;
 
       const naturalImageHeight = constrainsAspectRatio
         ? imageElement.naturalHeight
