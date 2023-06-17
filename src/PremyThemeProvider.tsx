@@ -1,25 +1,15 @@
-import { ThemeProvider, createTheme, useMediaQuery } from "@material-ui/core";
+import { ThemeProvider, createTheme } from "@material-ui/core";
 import { pink } from "@material-ui/core/colors";
-import { memo, useMemo } from "react";
-import type { FunctionComponent } from "react";
+import { FunctionComponent, memo } from "react";
 
-const PremyThemeProvider: FunctionComponent = memo(({ children }) => {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          type: prefersDarkMode ? "dark" : "light",
-          primary: {
-            main: pink.A100,
-          },
-        },
-      }),
-    [prefersDarkMode]
-  );
-
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: pink.A100,
+    },
+  },
 });
 
-export { PremyThemeProvider };
+export const PremyThemeProvider: FunctionComponent = memo(({ children }) => (
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
+));
