@@ -2,7 +2,6 @@ import {
   Backdrop,
   Box,
   CircularProgress,
-  Container,
   Dialog,
   FormControl,
   IconButton,
@@ -64,8 +63,6 @@ const useStyles = makeStyles(({ zIndex }) => ({
   actions: {
     display: "flex",
     alignItems: "center",
-    marginBottom: 8,
-    marginTop: 16,
   },
   backdrop: {
     zIndex: zIndex.drawer + 1,
@@ -513,52 +510,111 @@ const App: FunctionComponent<{
     );
 
   return (
-    <Container>
-      <Box ml={1} mr={1}>
-        <div className={clsx(classes.actions, "premy-pointer-listener-ignore")}>
-          <Box mr={1}>
-            <ToggleButtonGroup
-              exclusive
-              value={mode}
-              onChange={handleModeChange}
-            >
-              <ToggleButton value="shape">
-                <BrushIcon />
+    <Box m={1}>
+      <Box
+        mb={1}
+        className={clsx(classes.actions, "premy-pointer-listener-ignore")}
+      >
+        <Box mr={1}>
+          <ToggleButtonGroup exclusive value={mode} onChange={handleModeChange}>
+            <ToggleButton value="shape">
+              <BrushIcon />
+            </ToggleButton>
+
+            <ToggleButton value="text">
+              <TextFormat />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        <Box mr={1}>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={brushType}
+            onChange={handleBrushTypeChange}
+          >
+            {Object.entries(brushes).map(([brushType, brush]) => (
+              <ToggleButton key={brushType} value={brushType}>
+                <Brush style={{ fontSize: brush.button.size }} />
               </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Box>
 
-              <ToggleButton value="text">
-                <TextFormat />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
+        <Box mr={1}>
+          <Tooltip title="Color">
+            <span>
+              <IconButton onClick={handleColorButtonClick}>
+                <Color color={color} />
+              </IconButton>
+            </span>
+          </Tooltip>
 
+          <Popover
+            open={Boolean(colorPopoverAnchorEl)}
+            anchorEl={colorPopoverAnchorEl}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            className="premy-pointer-listener-ignore"
+            onClose={handleColorPopoverClose}
+          >
+            {paletteMatrix.map((row, rowIndex) => (
+              <div key={rowIndex}>
+                {row.map(({ paletteKey, paletteColor, colorIndex }) => {
+                  // TODO: useCallback
+                  const handleClick = () => {
+                    setColorKey({
+                      // @ts-expect-error Fix paletteMatrix type.
+                      paletteKey: paletteKey,
+                      colorIndex,
+                    });
+
+                    handleColorPopoverClose();
+                  };
+
+                  return (
+                    <IconButton
+                      key={paletteColor}
+                      className={clsx(
+                        (paletteKey === colorKey.paletteKey ||
+                          colorIndex === colorKey.colorIndex) &&
+                          classes.selectedIconButton
+                      )}
+                      onClick={handleClick}
+                    >
+                      <Color color={paletteColor} />
+                    </IconButton>
+                  );
+                })}
+              </div>
+            ))}
+          </Popover>
+        </Box>
+
+        {mode === "shape" && (
           <Box mr={1}>
-            <ToggleButtonGroup
-              exclusive
-              size="small"
-              value={brushType}
-              onChange={handleBrushTypeChange}
-            >
-              {Object.entries(brushes).map(([brushType, brush]) => (
-                <ToggleButton key={brushType} value={brushType}>
-                  <Brush style={{ fontSize: brush.button.size }} />
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Box>
-
-          <Box mr={1}>
-            <Tooltip title="Color">
+            <Tooltip title="Tone">
               <span>
-                <IconButton onClick={handleColorButtonClick}>
-                  <Color color={color} />
+                <IconButton onClick={handleToneButtonClick}>
+                  <Tone
+                    color={color}
+                    fuzziness={fuzziness}
+                    toneType={toneType}
+                  />
                 </IconButton>
               </span>
             </Tooltip>
 
             <Popover
-              open={Boolean(colorPopoverAnchorEl)}
-              anchorEl={colorPopoverAnchorEl}
+              open={Boolean(tonePopoverAnchorEl)}
+              anchorEl={tonePopoverAnchorEl}
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "left",
@@ -568,292 +624,230 @@ const App: FunctionComponent<{
                 horizontal: "left",
               }}
               className="premy-pointer-listener-ignore"
-              onClose={handleColorPopoverClose}
+              onClose={handleTonePopoverClose}
             >
-              {paletteMatrix.map((row, rowIndex) => (
-                <div key={rowIndex}>
-                  {row.map(({ paletteKey, paletteColor, colorIndex }) => {
-                    // TODO: useCallback
-                    const handleClick = () => {
-                      setColorKey({
-                        // @ts-expect-error Fix paletteMatrix type.
-                        paletteKey: paletteKey,
-                        colorIndex,
-                      });
+              <Box m={1}>
+                <InputLabel shrink>Tone</InputLabel>
+                {toneGroups.map((toneGroup, toneGroupIndex) => (
+                  <div key={toneGroupIndex}>
+                    {Object.keys(toneGroup).map((popoverToneType) => {
+                      const handleClick = () => {
+                        setToneType(popoverToneType as ToneType);
+                        handleTonePopoverClose();
+                      };
 
-                      handleColorPopoverClose();
-                    };
+                      return (
+                        <IconButton
+                          key={popoverToneType}
+                          className={clsx(
+                            popoverToneType === toneType &&
+                              classes.selectedIconButton
+                          )}
+                          onClick={handleClick}
+                        >
+                          <Tone
+                            color={color}
+                            fuzziness={fuzzinesses[0]}
+                            toneType={popoverToneType as ToneType}
+                          />
+                        </IconButton>
+                      );
+                    })}
+                  </div>
+                ))}
 
-                    return (
-                      <IconButton
-                        key={paletteColor}
-                        className={clsx(
-                          (paletteKey === colorKey.paletteKey ||
-                            colorIndex === colorKey.colorIndex) &&
-                            classes.selectedIconButton
-                        )}
-                        onClick={handleClick}
-                      >
-                        <Color color={paletteColor} />
-                      </IconButton>
-                    );
-                  })}
-                </div>
-              ))}
+                <InputLabel shrink>Fuzziness</InputLabel>
+                {fuzzinesses.map((popoverFuzziness) => {
+                  const handleClick = () => {
+                    setFuzziness(popoverFuzziness);
+                    handleTonePopoverClose();
+                  };
+
+                  return (
+                    <IconButton
+                      key={fuzzinessKey + popoverFuzziness}
+                      className={clsx(
+                        popoverFuzziness === fuzziness &&
+                          classes.selectedIconButton
+                      )}
+                      onClick={handleClick}
+                    >
+                      <Tone
+                        color={color}
+                        fuzziness={popoverFuzziness}
+                        toneType={toneType}
+                      />
+                    </IconButton>
+                  );
+                })}
+              </Box>
             </Popover>
           </Box>
+        )}
 
-          {mode === "shape" && (
+        {mode === "text" && (
+          <>
             <Box mr={1}>
-              <Tooltip title="Tone">
+              <Tooltip title="Font">
                 <span>
-                  <IconButton onClick={handleToneButtonClick}>
-                    <Tone
-                      color={color}
-                      fuzziness={fuzziness}
-                      toneType={toneType}
-                    />
+                  <IconButton
+                    className={classes.fontButton}
+                    onClick={handleFontButtonClick}
+                  >
+                    <span
+                      style={{
+                        fontFamily: fonts[fontType],
+                        fontWeight: "bold",
+                      }}
+                    >
+                      F
+                    </span>
                   </IconButton>
                 </span>
               </Tooltip>
 
-              <Popover
-                open={Boolean(tonePopoverAnchorEl)}
-                anchorEl={tonePopoverAnchorEl}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "left",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "left",
-                }}
+              <Menu
+                open={Boolean(fontMenuAnchorEl)}
+                anchorEl={fontMenuAnchorEl}
                 className="premy-pointer-listener-ignore"
-                onClose={handleTonePopoverClose}
+                onClose={handleFontMenuClose}
               >
-                <Box m={1}>
-                  <InputLabel shrink>Tone</InputLabel>
-                  {toneGroups.map((toneGroup, toneGroupIndex) => (
-                    <div key={toneGroupIndex}>
-                      {Object.keys(toneGroup).map((popoverToneType) => {
-                        const handleClick = () => {
-                          setToneType(popoverToneType as ToneType);
-                          handleTonePopoverClose();
-                        };
+                {Object.keys(fonts).map((menuFontType) => {
+                  // TODO: useCallback
+                  const handleClick = () => {
+                    setFontType(menuFontType as FontType);
+                    handleFontMenuClose();
+                  };
 
-                        return (
-                          <IconButton
-                            key={popoverToneType}
-                            className={clsx(
-                              popoverToneType === toneType &&
-                                classes.selectedIconButton
-                            )}
-                            onClick={handleClick}
-                          >
-                            <Tone
-                              color={color}
-                              fuzziness={fuzzinesses[0]}
-                              toneType={popoverToneType as ToneType}
-                            />
-                          </IconButton>
-                        );
-                      })}
-                    </div>
-                  ))}
-
-                  <InputLabel shrink>Fuzziness</InputLabel>
-                  {fuzzinesses.map((popoverFuzziness) => {
-                    const handleClick = () => {
-                      setFuzziness(popoverFuzziness);
-                      handleTonePopoverClose();
-                    };
-
-                    return (
-                      <IconButton
-                        key={fuzzinessKey + popoverFuzziness}
-                        className={clsx(
-                          popoverFuzziness === fuzziness &&
-                            classes.selectedIconButton
-                        )}
-                        onClick={handleClick}
-                      >
-                        <Tone
-                          color={color}
-                          fuzziness={popoverFuzziness}
-                          toneType={toneType}
-                        />
-                      </IconButton>
-                    );
-                  })}
-                </Box>
-              </Popover>
-            </Box>
-          )}
-
-          {mode === "text" && (
-            <>
-              <Box mr={1}>
-                <Tooltip title="Font">
-                  <span>
-                    <IconButton
-                      className={classes.fontButton}
-                      onClick={handleFontButtonClick}
+                  return (
+                    <MenuItem
+                      key={menuFontType}
+                      selected={fontType === menuFontType}
+                      onClick={handleClick}
                     >
-                      <span
-                        style={{
-                          fontFamily: fonts[fontType],
-                          fontWeight: "bold",
-                        }}
-                      >
-                        F
-                      </span>
-                    </IconButton>
-                  </span>
-                </Tooltip>
+                      {menuFontType}
+                    </MenuItem>
+                  );
+                })}
+              </Menu>
+            </Box>
 
-                <Menu
-                  open={Boolean(fontMenuAnchorEl)}
-                  anchorEl={fontMenuAnchorEl}
-                  className="premy-pointer-listener-ignore"
-                  onClose={handleFontMenuClose}
+            <Box mr={1}>
+              <TextField
+                variant="outlined"
+                className={classes.textInput}
+                placeholder={defaultText}
+                size="small"
+                value={text}
+                onChange={handleTextInputChange}
+                inputProps={{
+                  style: {
+                    color: foregroundColor,
+                    fontFamily: fonts[fontType],
+                  },
+                }}
+              />
+            </Box>
+          </>
+        )}
+
+        <Box mr={1}>
+          <Tooltip title="Undo">
+            <span>
+              <IconButton
+                disabled={isUndoDisabled}
+                onClick={handleUndoButtonClick}
+              >
+                <Undo />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+
+        <Box mr={1}>
+          <Tooltip title="Redo">
+            <span>
+              <IconButton
+                disabled={isRedoDisabled}
+                onClick={handleRedoButtonClick}
+              >
+                <Redo />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+
+        <Box mr={1}>
+          <Tooltip title="Open">
+            <span>
+              <IconButton onClick={handleImportButtonClick}>
+                <FolderOpen />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Menu
+            open={Boolean(importMenuAnchorEl)}
+            anchorEl={importMenuAnchorEl}
+            className="premy-pointer-listener-ignore"
+            onClose={handleImportMenuClose}
+          >
+            <MenuItem>
+              <FormControl>
+                <InputLabel>Filter</InputLabel>
+
+                <Select
+                  native
+                  value={loadMode}
+                  onChange={handleLoadModeSelectChange}
                 >
-                  {Object.keys(fonts).map((menuFontType) => {
-                    // TODO: useCallback
-                    const handleClick = () => {
-                      setFontType(menuFontType as FontType);
-                      handleFontMenuClose();
-                    };
+                  <option value="normal">normal</option>
+                  <option value="tracing">Tracing filter</option>
+                  <option value="mibae">Mibae filter (beta)</option>
+                </Select>
+              </FormControl>
+            </MenuItem>
 
-                    return (
-                      <MenuItem
-                        key={menuFontType}
-                        selected={fontType === menuFontType}
-                        onClick={handleClick}
-                      >
-                        {menuFontType}
-                      </MenuItem>
-                    );
-                  })}
-                </Menu>
-              </Box>
+            <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
 
-              <Box mr={1}>
-                <TextField
-                  variant="outlined"
-                  className={classes.textInput}
-                  placeholder={defaultText}
-                  size="small"
-                  value={text}
-                  onChange={handleTextInputChange}
-                  inputProps={{
-                    style: {
-                      color: foregroundColor,
-                      fontFamily: fonts[fontType],
-                    },
-                  }}
-                />
-              </Box>
-            </>
-          )}
+            <MenuItem component="label">
+              Load from file
+              <input
+                type="file"
+                accept="image/*"
+                className={classes.fileInput}
+                onChange={handleFileInputChange}
+              />
+            </MenuItem>
 
-          <Box mr={1}>
-            <Tooltip title="Undo">
-              <span>
-                <IconButton
-                  disabled={isUndoDisabled}
-                  onClick={handleUndoButtonClick}
-                >
-                  <Undo />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
+            <MenuItem onClick={handlePasteButtonClick}>
+              Paste from clipboard
+            </MenuItem>
+          </Menu>
+        </Box>
 
-          <Box mr={1}>
-            <Tooltip title="Redo">
-              <span>
-                <IconButton
-                  disabled={isRedoDisabled}
-                  onClick={handleRedoButtonClick}
-                >
-                  <Redo />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
+        <Box mr={1}>
+          <Tooltip title="Share">
+            <span>
+              <IconButton onClick={handleExportButtonClick}>
+                <Share />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
 
-          <Box mr={1}>
-            <Tooltip title="Open">
-              <span>
-                <IconButton onClick={handleImportButtonClick}>
-                  <FolderOpen />
-                </IconButton>
-              </span>
-            </Tooltip>
-
-            <Menu
-              open={Boolean(importMenuAnchorEl)}
-              anchorEl={importMenuAnchorEl}
-              className="premy-pointer-listener-ignore"
-              onClose={handleImportMenuClose}
-            >
-              <MenuItem>
-                <FormControl>
-                  <InputLabel>Filter</InputLabel>
-
-                  <Select
-                    native
-                    value={loadMode}
-                    onChange={handleLoadModeSelectChange}
-                  >
-                    <option value="normal">normal</option>
-                    <option value="tracing">Tracing filter</option>
-                    <option value="mibae">Mibae filter (beta)</option>
-                  </Select>
-                </FormControl>
-              </MenuItem>
-
-              <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
-
-              <MenuItem component="label">
-                Load from file
-                <input
-                  type="file"
-                  accept="image/*"
-                  className={classes.fileInput}
-                  onChange={handleFileInputChange}
-                />
-              </MenuItem>
-
-              <MenuItem onClick={handlePasteButtonClick}>
-                Paste from clipboard
-              </MenuItem>
-            </Menu>
-          </Box>
-
-          <Box mr={1}>
-            <Tooltip title="Share">
-              <span>
-                <IconButton onClick={handleExportButtonClick}>
-                  <Share />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-
-          <div className={classes.closeButton}>
-            <Tooltip title="Close">
-              <span>
-                <IconButton onClick={onCloseButtonClick}>
-                  <Close />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </div>
+        <div className={classes.closeButton}>
+          <Tooltip title="Close">
+            <span>
+              <IconButton onClick={onCloseButtonClick}>
+                <Close />
+              </IconButton>
+            </span>
+          </Tooltip>
         </div>
-
-        <premy-canvas ref={premyCanvasElement} />
       </Box>
+
+      <premy-canvas ref={premyCanvasElement} />
 
       <Dialog
         className="premy-pointer-listener-ignore"
@@ -877,7 +871,7 @@ const App: FunctionComponent<{
       >
         <CircularProgress />
       </Backdrop>
-    </Container>
+    </Box>
   );
 });
 

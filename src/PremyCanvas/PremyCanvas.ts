@@ -258,6 +258,7 @@ class PremyCanvas extends HTMLElement {
 
         .premy-canvas-container .canvas {
           border: 1px solid #e0e0e0;
+          vertical-align: bottom;
         }
 
         .premy-canvas-container .text-preview-rect {
@@ -390,9 +391,9 @@ class PremyCanvas extends HTMLElement {
         }
       );
 
-      const canvasMaxHeight = premyDialogRootElement.clientHeight - 112;
+      const canvasMaxHeight = premyDialogRootElement.clientHeight - 80;
       const canvasMaxWidth =
-        Math.min(premyDialogRootElement.clientWidth, 1280) - 64;
+        Math.min(premyDialogRootElement.clientWidth, 1280) - 16;
 
       const naturalImageHeight = constrainsAspectRatio
         ? imageElement.naturalHeight
