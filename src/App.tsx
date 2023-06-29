@@ -56,9 +56,6 @@ import { fuzzinesses } from "./fuzziness";
 import { PaletteKey, paletteKeys, palettes } from "./palettes";
 import { ToneType, toneGroups, toneTypes } from "./tones";
 
-const blankImageDataURL =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP89R8AAvkB+0p/ESEAAAAASUVORK5CYII=";
-
 const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
     display: "flex",
@@ -89,7 +86,7 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
   },
 }));
 
-const App: FunctionComponent<{
+export const App: FunctionComponent<{
   src?: string;
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ src, onCloseButtonClick }) => {
@@ -214,7 +211,7 @@ const App: FunctionComponent<{
     );
 
     void currentPremyCanvasElement.load({
-      src: src ?? blankImageDataURL,
+      src: src ?? getBlankImageDataURL(palettes.light[0]),
       constrainsAspectRatio: Boolean(src),
       loadMode: "normal",
       pushesImageToHistory: true,
@@ -428,12 +425,12 @@ const App: FunctionComponent<{
 
     handleImportMenuClose();
     await premyCanvasElement.current.load({
-      src: blankImageDataURL,
+      src: getBlankImageDataURL(color),
       constrainsAspectRatio: false,
       loadMode: "normal",
       pushesImageToHistory: true,
     });
-  }, [handleImportMenuClose]);
+  }, [color, handleImportMenuClose]);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback(
@@ -883,4 +880,17 @@ const App: FunctionComponent<{
   );
 });
 
-export { App };
+const getBlankImageDataURL = (color: string) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Failed to get canvas context");
+  }
+  context.fillStyle = color;
+  context.fillRect(0, 0, 1, 1);
+
+  return canvas.toDataURL();
+};
