@@ -6,7 +6,7 @@ import { fonts } from "../fonts";
 import type { FontType } from "../fonts";
 import { fuzzinesses, noisemap } from "../fuzziness";
 import { palettes } from "../palettes";
-import { ToneType, tonePeriod, tones } from "../tones";
+import { ToneType, tonePeriod, toneTypes, tones } from "../tones";
 import { PremyPointerListener } from "./PremyPointerListener";
 import type {
   PremyPointerDownEvent,
@@ -541,6 +541,104 @@ class PremyCanvas extends HTMLElement {
       shrinkedCanvasElement.width,
       shrinkedCanvasElement.height
     );
+    const shrinkedImageData = shrinkedContext.getImageData(
+      0,
+      0,
+      shrinkedCanvasElement.width,
+      shrinkedCanvasElement.height
+    );
+
+    let prevRGBPalette = [...colors]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4)
+      .map((color) => Color(color).rgb().array());
+    let rgbPalette = prevRGBPalette;
+    do {
+      const clustors = rgbPalette.map((): [number, number, number][] => []);
+
+      for (
+        let dataIndex = 0;
+        dataIndex < shrinkedImageData.data.length;
+        dataIndex += 4
+      ) {
+        // Out of canvas area.
+        if (shrinkedImageData.data[dataIndex + 3] !== 255) {
+          continue;
+        }
+
+        const pointColor: [number, number, number] = [
+          shrinkedImageData.data[dataIndex + 0],
+          shrinkedImageData.data[dataIndex + 1],
+          shrinkedImageData.data[dataIndex + 2],
+        ];
+        const [nearestColorIndex] = rgbPalette
+          .map(
+            (color, colorIndex) =>
+              [
+                colorIndex,
+                colorDiff.diff(
+                  colorDiff.rgb_to_lab({
+                    R: pointColor[0],
+                    G: pointColor[1],
+                    B: pointColor[2],
+                  }),
+                  colorDiff.rgb_to_lab({
+                    R: color[0],
+                    G: color[1],
+                    B: color[2],
+                  })
+                ),
+              ] as const
+          )
+          .sort(([, diff1], [, diff2]) => diff1 - diff2)[0];
+        clustors[nearestColorIndex].push(pointColor);
+      }
+
+      prevRGBPalette = rgbPalette;
+      rgbPalette = clustors.map((clustor) => {
+        const sumColor = clustor.reduce(
+          (prev, current) => [
+            prev[0] + current[0],
+            prev[1] + current[1],
+            prev[2] + current[2],
+          ],
+          [0, 0, 0]
+        );
+
+        return [
+          Math.round(sumColor[0] / clustor.length),
+          Math.round(sumColor[1] / clustor.length),
+          Math.round(sumColor[2] / clustor.length),
+        ];
+      });
+    } while (
+      rgbPalette.some(
+        (color, colorIndex) =>
+          color[0] !== prevRGBPalette[colorIndex][0] ||
+          color[1] !== prevRGBPalette[colorIndex][1] ||
+          color[2] !== prevRGBPalette[colorIndex][2]
+      )
+    );
+    const palette = rgbPalette.map(
+      ([R, G, B]) =>
+        colors
+          .map((color) => {
+            const paletteColor = Color(color).rgb().array();
+            return [
+              color,
+              colorDiff.diff(
+                colorDiff.rgb_to_lab({ R, G, B }),
+                colorDiff.rgb_to_lab({
+                  R: paletteColor[0],
+                  G: paletteColor[1],
+                  B: paletteColor[2],
+                })
+              ),
+            ] as const;
+          })
+          .sort(([, diff1], [, diff2]) => diff1 - diff2)[0][0]
+    );
+    console.log(palette);
 
     for (let y = 0; y < shrinkedCanvasElement.height; y++) {
       if (y % tonePeriod ** 2 === 0) {
@@ -562,91 +660,24 @@ class PremyCanvas extends HTMLElement {
           tonePeriod
         );
 
-        const normalizedData = Uint8ClampedArray.from(windowImageData.data);
-        const lightnesses = [];
-
-        for (
-          let dataIndex = 0;
-          dataIndex < normalizedData.length;
-          dataIndex += 4
-        ) {
-          // Out of canvas area.
-          if (normalizedData[dataIndex + 3] !== 255) {
-            continue;
-          }
-
-          const average = Color({
-            r: normalizedData[dataIndex + 0],
-            g: normalizedData[dataIndex + 1],
-            b: normalizedData[dataIndex + 2],
-          })
-            .grayscale()
-            .red();
-
-          normalizedData[dataIndex + 0] =
-            normalizedData[dataIndex + 1] =
-            normalizedData[dataIndex + 2] =
-              average;
-
-          lightnesses.push(average);
-        }
-
-        const maxLightness = Math.max(...lightnesses);
-        const minLightness = Math.min(...lightnesses);
-
-        for (
-          let dataIndex = 0;
-          dataIndex < normalizedData.length;
-          dataIndex += 4
-        ) {
-          // Out of canvas area.
-          if (normalizedData[dataIndex + 3] !== 255) {
-            continue;
-          }
-
-          normalizedData[dataIndex + 0] =
-            normalizedData[dataIndex + 1] =
-            normalizedData[dataIndex + 2] =
-              ((normalizedData[dataIndex + 0] - minLightness) * 255) /
-              (maxLightness - minLightness);
-        }
-
         const offsetX = Math.abs(beginX % tonePeriod);
         const offsetY = Math.abs(beginY % tonePeriod);
 
-        const { toneType } = getBestPattern({
-          data: normalizedData,
-          patterns: Object.keys(tones).map((toneType) => ({
-            toneType: toneType as ToneType,
-            backgroundColor: palettes.light[0],
-            foregroundColor: palettes.dark[0],
-            offsetY,
-            offsetX,
-          })),
+        const { backgroundColor, foregroundColor, toneType } = getBestPattern({
+          data: windowImageData.data,
+          patterns: toneTypes.flatMap((toneType) =>
+            palette.flatMap((backgroundColor) =>
+              palette.map((foregroundColor) => ({
+                toneType,
+                backgroundColor,
+                foregroundColor,
+                offsetY,
+                offsetX,
+              }))
+            )
+          ),
         });
         const tone = tones[toneType];
-
-        const { backgroundColor } = getBestPattern({
-          data: windowImageData.data,
-          patterns: colors.map((backgroundColor) => ({
-            toneType,
-            backgroundColor,
-            foregroundColor: palettes.dark[0],
-            offsetY,
-            offsetX,
-          })),
-        });
-
-        const { foregroundColor } = getBestPattern({
-          data: windowImageData.data,
-          patterns: colors.map((foregroundColor) => ({
-            toneType,
-            backgroundColor,
-            foregroundColor,
-            offsetY,
-            offsetX,
-          })),
-        });
 
         const isForeground = tone.bitmap[y % tonePeriod][x % tonePeriod];
 
