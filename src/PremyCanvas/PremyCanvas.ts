@@ -15,7 +15,7 @@ import type {
   PremyPosition,
 } from "./PremyPointerListener";
 
-const historyMaxLength = 30;
+const historyMaxLength = 100;
 
 declare global {
   interface HTMLElementEventMap {
@@ -860,13 +860,10 @@ class PremyCanvas extends HTMLElement {
       return;
     }
 
-    this.history = [
-      ...this.history.slice(
-        Math.max(this.historyIndex - historyMaxLength, 0),
-        this.historyIndex + 1
-      ),
-      dataURL,
-    ];
+    this.history = [...this.history, dataURL];
+    this.history = this.history.slice(
+      Math.max(this.history.length - historyMaxLength, 0)
+    );
 
     this.historyIndex = this.history.length - 1;
     this.dispatchChangeHistoryEvent();

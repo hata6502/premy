@@ -20,6 +20,7 @@ import {
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import {
+  Apps,
   Brush as BrushIcon,
   Close,
   FolderOpen,
@@ -38,6 +39,10 @@ import type {
 } from "react";
 import { Color } from "./Color";
 import { CopyDialogContent } from "./CopyDialogContent";
+import {
+  HistoryDialogContent,
+  HistoryDialogContentProps,
+} from "./HistoryDialogContent";
 import "./PremyCanvas";
 import type {
   LoadMode,
@@ -66,9 +71,6 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
   },
   backdrop: {
     zIndex: zIndex.drawer + 1,
-  },
-  closeButton: {
-    marginLeft: "auto",
   },
   fileInput: {
     display: "none !important",
@@ -124,8 +126,9 @@ export const App: FunctionComponent<{
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [isUndoDisabled, setIsUndoDisabled] = useState(true);
-  const [isRedoDisabled, setIsRedoDisabled] = useState(true);
+  const [{ history, historyIndex }, setHistory] = useState<
+    PremyHistoryChangeEvent["detail"]
+  >({ history: [], historyIndex: -1 });
 
   const [colorPopoverAnchorEl, setColorPopoverAnchorEl] = useState<Element>();
   const [fontMenuAnchorEl, setFontMenuAnchorEl] = useState<Element>();
@@ -136,12 +139,16 @@ export const App: FunctionComponent<{
   const [copySource, setCopySource] = useState("");
 
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
   const premyCanvasElement = useRef<PremyCanvas>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
     ColorLibrary(color).hex() === "#FAFAFA" ? "hsl(0, 0%, 75%)" : color;
+
+  const isUndoDisabled = historyIndex < 1;
+  const isRedoDisabled = historyIndex >= history.length - 1;
 
   useEffect(() => {
     const intervalID = setInterval(() => {
@@ -199,10 +206,7 @@ export const App: FunctionComponent<{
     const currentPremyCanvasElement = premyCanvasElement.current;
 
     const handleCanvasHistoryChange = (event: PremyHistoryChangeEvent) => {
-      setIsUndoDisabled(event.detail.historyIndex < 1);
-      setIsRedoDisabled(
-        event.detail.historyIndex >= event.detail.history.length - 1
-      );
+      setHistory(event.detail);
     };
 
     currentPremyCanvasElement.addEventListener(
@@ -366,6 +370,10 @@ export const App: FunctionComponent<{
     premyCanvasElement.current.undo();
   }, []);
 
+  const handleHistoryButtonClick = useCallback(() => {
+    setIsHistoryDialogOpen(true);
+  }, []);
+
   const handleRedoButtonClick = useCallback(() => {
     if (!premyCanvasElement.current) {
       throw new Error("PremyCanvas element not found");
@@ -480,6 +488,11 @@ export const App: FunctionComponent<{
     setLoadMode(event.target.value as LoadMode);
   }, []);
 
+  const handleHistoryDialogClose = useCallback(
+    () => setIsHistoryDialogOpen(false),
+    []
+  );
+
   const handleCopyDialogClose = useCallback(
     () => setIsCopyDialogOpen(false),
     []
@@ -489,6 +502,21 @@ export const App: FunctionComponent<{
     () => setIsPasteDialogOpen(false),
     []
   );
+
+  const handleSelectHistoryItem: HistoryDialogContentProps["onSelectItem"] =
+    useCallback(async (dataURL) => {
+      setIsHistoryDialogOpen(false);
+
+      if (!premyCanvasElement.current) {
+        throw new Error("PremyCanvas element not found");
+      }
+      await premyCanvasElement.current.load({
+        src: dataURL,
+        constrainsAspectRatio: true,
+        loadMode: "normal",
+        pushesImageToHistory: false,
+      });
+    }, []);
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
     useCallback(
@@ -768,6 +796,16 @@ export const App: FunctionComponent<{
         </Box>
 
         <Box mr={1}>
+          <Tooltip title="History">
+            <span>
+              <IconButton onClick={handleHistoryButtonClick}>
+                <Apps />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+
+        <Box mr={1}>
           <Tooltip title="Redo">
             <span>
               <IconButton
@@ -780,7 +818,7 @@ export const App: FunctionComponent<{
           </Tooltip>
         </Box>
 
-        <Box mr={1}>
+        <Box ml="auto" mr={1}>
           <Tooltip title="Open">
             <span>
               <IconButton onClick={handleImportButtonClick}>
@@ -839,20 +877,31 @@ export const App: FunctionComponent<{
           </Tooltip>
         </Box>
 
-        <div className={classes.closeButton}>
-          <Tooltip title="Close">
-            <span>
-              <IconButton onClick={onCloseButtonClick}>
-                <Close />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </div>
+        <Tooltip title="Close">
+          <span>
+            <IconButton onClick={onCloseButtonClick}>
+              <Close />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
 
       <Box ml={1} mr={1}>
         <premy-canvas ref={premyCanvasElement} />
       </Box>
+
+      <Dialog
+        className="premy-pointer-listener-ignore"
+        fullWidth
+        maxWidth="md"
+        open={isHistoryDialogOpen}
+        onClose={handleHistoryDialogClose}
+      >
+        <HistoryDialogContent
+          history={history}
+          onSelectItem={handleSelectHistoryItem}
+        />
+      </Dialog>
 
       <Dialog
         className="premy-pointer-listener-ignore"
