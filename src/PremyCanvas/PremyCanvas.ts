@@ -853,19 +853,20 @@ class PremyCanvas extends HTMLElement {
     if (!this.canvas) {
       throw new Error("Canvas is not a 2D context");
     }
-
     const dataURL = this.canvas.toDataURL();
-
     if (this.historyIndex >= 0 && this.history[this.historyIndex] === dataURL) {
       return;
     }
 
-    this.history = [...this.history, dataURL];
+    if (this.historyIndex !== this.history.length - 1) {
+      this.history.push(this.history[this.historyIndex]);
+    }
+    this.history.push(dataURL);
     this.history = this.history.slice(
       Math.max(this.history.length - historyMaxLength, 0)
     );
-
     this.historyIndex = this.history.length - 1;
+
     this.dispatchChangeHistoryEvent();
   }
 
