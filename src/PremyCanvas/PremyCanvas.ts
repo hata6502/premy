@@ -15,7 +15,7 @@ import type {
   PremyPosition,
 } from "./PremyPointerListener";
 
-const historyMaxLength = 100;
+const historyMaxLength = 1000;
 
 declare global {
   interface HTMLElementEventMap {

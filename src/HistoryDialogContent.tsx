@@ -55,7 +55,12 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
                       className={classes.button}
                       onClick={handleButtonClick}
                     >
-                      <img className={classes.image} alt="" src={dataURL} />
+                      <img
+                        className={classes.image}
+                        alt=""
+                        src={dataURL}
+                        loading="lazy"
+                      />
                     </button>
                   </Grid>
                 );
