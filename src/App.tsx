@@ -49,6 +49,7 @@ import type {
   PremyCanvas,
   PremyCanvasMode,
   PremyHistoryChangeEvent,
+  PremyHistoryIndexChangeEvent,
   PremyLoadStartEvent,
 } from "./PremyCanvas";
 import { PasteDialogContent } from "./PasteDialogContent";
@@ -131,9 +132,8 @@ export const App: FunctionComponent<{
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [{ history, historyIndex }, setHistory] = useState<
-    PremyHistoryChangeEvent["detail"]
-  >({ history: [], historyIndex: -1 });
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
   const [colorPopoverAnchorEl, setColorPopoverAnchorEl] = useState<Element>();
   const [fontMenuAnchorEl, setFontMenuAnchorEl] = useState<Element>();
@@ -169,7 +169,6 @@ export const App: FunctionComponent<{
     if (!premyCanvasElement.current) {
       throw new Error("PremyCanvas element not found");
     }
-
     const currentPremyCanvasElement = premyCanvasElement.current;
 
     const handleCanvasLoadStart = (event: PremyLoadStartEvent) => {
@@ -177,17 +176,33 @@ export const App: FunctionComponent<{
         setIsLoading(true);
       }
     };
-
     currentPremyCanvasElement.addEventListener(
       "premyLoadStart",
       handleCanvasLoadStart
     );
 
     const handleCanvasLoadEnd = () => setIsLoading(false);
-
     currentPremyCanvasElement.addEventListener(
       "premyLoadEnd",
       handleCanvasLoadEnd
+    );
+
+    const handleCanvasHistoryChange = (event: PremyHistoryChangeEvent) => {
+      setHistory(event.detail.history);
+    };
+    currentPremyCanvasElement.addEventListener(
+      "premyHistoryChange",
+      handleCanvasHistoryChange
+    );
+
+    const handleCanvasHistoryIndexChange = (
+      event: PremyHistoryIndexChangeEvent
+    ) => {
+      setHistoryIndex(event.detail);
+    };
+    currentPremyCanvasElement.addEventListener(
+      "premyHistoryIndexChange",
+      handleCanvasHistoryIndexChange
     );
 
     return () => {
@@ -195,10 +210,18 @@ export const App: FunctionComponent<{
         "premyLoadStart",
         handleCanvasLoadStart
       );
-
       currentPremyCanvasElement.removeEventListener(
         "premyLoadEnd",
         handleCanvasLoadEnd
+      );
+
+      currentPremyCanvasElement.removeEventListener(
+        "premyHistoryChange",
+        handleCanvasHistoryChange
+      );
+      currentPremyCanvasElement.removeEventListener(
+        "premyHistoryIndexChange",
+        handleCanvasHistoryIndexChange
       );
     };
   }, []);
@@ -207,29 +230,24 @@ export const App: FunctionComponent<{
     if (!premyCanvasElement.current) {
       throw new Error("PremyCanvas element not found");
     }
-
     const currentPremyCanvasElement = premyCanvasElement.current;
 
-    const handleCanvasHistoryChange = (event: PremyHistoryChangeEvent) => {
-      setHistory(event.detail);
-    };
-
-    currentPremyCanvasElement.addEventListener(
-      "premyHistoryChange",
-      handleCanvasHistoryChange
-    );
-
-    currentPremyCanvasElement.setHistory({
-      history: historyProp,
-      historyIndex: historyProp.length - 1,
-    });
-
-    return () => {
-      currentPremyCanvasElement.removeEventListener(
-        "premyHistoryChange",
-        handleCanvasHistoryChange
-      );
-    };
+    if (historyProp.length) {
+      const historyIndex = historyProp.length - 1;
+      currentPremyCanvasElement.setHistory({
+        history: historyProp,
+        historyIndex,
+      });
+      setHistory(historyProp);
+      setHistoryIndex(historyIndex);
+    } else {
+      void premyCanvasElement.current.load({
+        src: getBlankImageDataURL(palettes.light[0]),
+        constrainsAspectRatio: false,
+        loadMode: "normal",
+        pushesImageToHistory: true,
+      });
+    }
   }, [historyProp]);
 
   useEffect(() => {

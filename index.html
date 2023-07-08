@@ -16,41 +16,58 @@
       import "./dist/index.js";
 
       const dialog = document.querySelector("#dialog");
-      const openButton = document.querySelector("#open-button");
 
+      const openButton = document.querySelector("#open-button");
       dialog.addEventListener("premyClose", (event) => {
         dialog.removeAttribute("open");
       });
-
       openButton.addEventListener("click", (event) => {
         dialog.setAttribute("open", "");
       });
 
-      const premyDBOpenRequest = indexedDB.open("premy", 1);
+      const premyDBOpenRequest = indexedDB.open("premy", 2);
 
-      premyDBOpenRequest.onsuccess = () => {
+      premyDBOpenRequest.onsuccess = async () => {
         const premyDB = premyDBOpenRequest.result;
 
-        const transaction = premyDB.transaction(["etc"], "readonly");
-        const etcStore = transaction.objectStore("etc");
-        const historyGetRequest = etcStore.get("history");
-        historyGetRequest.onsuccess = () => {
-          const history = historyGetRequest.result;
-          if (!history) {
-            return;
-          }
-          dialog.setAttribute("history", JSON.stringify(history));
-        };
+        const transaction = premyDB.transaction(["history"], "readonly");
+        const historyStore = transaction.objectStore("history");
+        const historyGetAllRequest = historyStore.getAll();
+        await new Promise((resolve, reject) => {
+          historyGetAllRequest.onsuccess = resolve;
+          historyGetAllRequest.onerror = reject;
+        });
+        const history = historyGetAllRequest.result;
+        dialog.setHistory(history);
 
-        dialog.addEventListener("premyHistoryChange", (event) => {
-          const transaction = premyDB.transaction(["etc"], "readwrite");
-          const etcStore = transaction.objectStore("etc");
-          etcStore.put(event.detail.history, "history");
+        dialog.addEventListener("premyHistoryChange", async (event) => {
+          const { historyMaxLength, pushed } = event.detail;
+
+          const transaction = premyDB.transaction(["history"], "readwrite");
+          const historyStore = transaction.objectStore("history");
+          for (const dataURL of pushed) {
+            historyStore.add(dataURL);
+          }
+
+          const historyGetAllKeysRequest = historyStore.getAllKeys();
+          await new Promise((resolve, reject) => {
+            historyGetAllKeysRequest.onsuccess = resolve;
+            historyGetAllKeysRequest.onerror = reject;
+          });
+          const historyKeys = historyGetAllKeysRequest.result;
+          const removedHistoryKeys = historyKeys.slice(
+            0,
+            Math.max(historyKeys.length - historyMaxLength, 0)
+          );
+          for (const historyKey of removedHistoryKeys) {
+            historyStore.delete(historyKey);
+          }
         });
       };
 
-      premyDBOpenRequest.onupgradeneeded = (event) => {
+      premyDBOpenRequest.onupgradeneeded = async (event) => {
         const premyDB = premyDBOpenRequest.result;
+        const transaction = premyDBOpenRequest.transaction;
         let version = event.oldVersion;
 
         if (version === 0) {
@@ -60,7 +77,26 @@
             etcStore.put([image], "history");
           }
           localStorage.removeItem("premy-image");
+          version++;
+        }
 
+        if (version === 1) {
+          const etcStore = transaction.objectStore("etc");
+          const historyGetRequest = etcStore.get("history");
+          await new Promise((resolve, reject) => {
+            historyGetRequest.onsuccess = resolve;
+            historyGetRequest.onerror = reject;
+          });
+          const history = historyGetRequest.result ?? [];
+
+          const historyStore = premyDB.createObjectStore("history", {
+            autoIncrement: true,
+          });
+          for (const dataURL of history) {
+            historyStore.add(dataURL);
+          }
+
+          premyDB.deleteObjectStore("etc");
           version++;
         }
       };

@@ -15,11 +15,12 @@ import type {
   PremyPosition,
 } from "./PremyPointerListener";
 
-const historyMaxLength = 1000;
+const historyMaxLength = 300;
 
 declare global {
   interface HTMLElementEventMap {
     premyHistoryChange: PremyHistoryChangeEvent;
+    premyHistoryIndexChange: PremyHistoryIndexChangeEvent;
     premyLoadStart: PremyLoadStartEvent;
     premyLoadEnd: PremyLoadEndEvent;
   }
@@ -27,8 +28,10 @@ declare global {
 
 export type PremyHistoryChangeEvent = CustomEvent<{
   history: string[];
-  historyIndex: number;
+  historyMaxLength: number;
+  pushed: string[];
 }>;
+export type PremyHistoryIndexChangeEvent = CustomEvent<number>;
 
 export type PremyLoadStartEvent = CustomEvent<{
   isHeavy: boolean;
@@ -220,7 +223,6 @@ class PremyCanvas extends HTMLElement {
   private transactionMode?: PremyCanvasMode;
   private actualZoom: number;
   private displayingZoom: number;
-  private pushingImageToHistoryTimeoutID?: number;
 
   constructor() {
     super();
@@ -472,7 +474,7 @@ class PremyCanvas extends HTMLElement {
 
     this.historyIndex--;
     this.putImageFromHistory();
-    this.dispatchChangeHistoryEvent();
+    this.dispatchHistoryIndexChangeEvent();
   }
 
   redo(): void {
@@ -482,7 +484,7 @@ class PremyCanvas extends HTMLElement {
 
     this.historyIndex++;
     this.putImageFromHistory();
-    this.dispatchChangeHistoryEvent();
+    this.dispatchHistoryIndexChangeEvent();
   }
 
   setHistory({
@@ -495,7 +497,6 @@ class PremyCanvas extends HTMLElement {
     this.history = history;
     this.historyIndex = historyIndex;
     this.putImageFromHistory();
-    this.dispatchChangeHistoryEvent();
   }
 
   toBlob(callback: BlobCallback, type?: string, quality?: unknown): void {
@@ -773,19 +774,15 @@ class PremyCanvas extends HTMLElement {
     }
   }
 
-  private dispatchChangeHistoryEvent() {
-    const event: PremyHistoryChangeEvent = new CustomEvent(
-      "premyHistoryChange",
+  private dispatchHistoryIndexChangeEvent() {
+    const event: PremyHistoryIndexChangeEvent = new CustomEvent(
+      "premyHistoryIndexChange",
       {
         bubbles: true,
         composed: true,
-        detail: {
-          history: this.history,
-          historyIndex: this.historyIndex,
-        },
+        detail: this.historyIndex,
       }
     );
-
     this.dispatchEvent(event);
   }
 
@@ -871,16 +868,32 @@ class PremyCanvas extends HTMLElement {
       return;
     }
 
+    const pushed: string[] = [];
     if (this.historyIndex !== this.history.length - 1) {
-      this.history.push(this.history[this.historyIndex]);
+      pushed.push(this.history[this.historyIndex]);
     }
-    this.history.push(dataURL);
+    pushed.push(dataURL);
+
+    this.history = [...this.history, ...pushed];
     this.history = this.history.slice(
       Math.max(this.history.length - historyMaxLength, 0)
     );
     this.historyIndex = this.history.length - 1;
 
-    this.dispatchChangeHistoryEvent();
+    const event: PremyHistoryChangeEvent = new CustomEvent(
+      "premyHistoryChange",
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          history: this.history,
+          historyMaxLength,
+          pushed,
+        },
+      }
+    );
+    this.dispatchEvent(event);
+    this.dispatchHistoryIndexChangeEvent();
   }
 
   private putImageFromHistory() {
@@ -890,12 +903,6 @@ class PremyCanvas extends HTMLElement {
       loadMode: "normal",
       pushesImageToHistory: false,
     });
-  }
-
-  private setPushingImageToHistoryTimeout() {
-    this.pushingImageToHistoryTimeoutID = window.setTimeout(() => {
-      this.pushImageToHistory();
-    }, 100);
   }
 
   private handleContextmenu = (event: Event) => event.preventDefault();
@@ -931,7 +938,6 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.prevPosition = position;
-    clearTimeout(this.pushingImageToHistoryTimeoutID);
   };
 
   private handlePointerMove = (event: PremyPointerMoveEvent) => {
@@ -1017,7 +1023,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.transactionMode = undefined;
-    this.setPushingImageToHistoryTimeout();
+    this.pushImageToHistory();
   };
 
   private handlePointerCancel = () => {
@@ -1051,7 +1057,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.transactionMode = undefined;
-    this.setPushingImageToHistoryTimeout();
+    this.pushImageToHistory();
   };
 }
 
