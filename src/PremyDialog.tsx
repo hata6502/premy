@@ -3,10 +3,11 @@ import ScopedCssBaseline from "@material-ui/core/ScopedCssBaseline";
 import ReactDOM from "react-dom";
 import { App } from "./App";
 import { PremyThemeProvider } from "./PremyThemeProvider";
+import { getBlankImageDataURL, palettes } from "./palettes";
 
 export class PremyDialog extends HTMLElement {
   static get observedAttributes(): string[] {
-    return ["open", "src"];
+    return ["open", "history"];
   }
 
   private appElement?: HTMLDivElement;
@@ -43,6 +44,11 @@ export class PremyDialog extends HTMLElement {
       );
     }, 10);
 
+    const historyAttribute = this.getAttribute("history");
+    const history = historyAttribute
+      ? (JSON.parse(historyAttribute) as string[])
+      : [getBlankImageDataURL(palettes.light[0])];
+
     ReactDOM.render(
       <StylesProvider>
         <PremyThemeProvider>
@@ -56,10 +62,7 @@ export class PremyDialog extends HTMLElement {
               open={this.isOpen()}
               onClose={this.handleClose}
             >
-              <App
-                src={this.getAttribute("src") ?? undefined}
-                onCloseButtonClick={this.handleClose}
-              />
+              <App history={history} onCloseButtonClick={this.handleClose} />
             </Dialog>
           </ScopedCssBaseline>
         </PremyThemeProvider>

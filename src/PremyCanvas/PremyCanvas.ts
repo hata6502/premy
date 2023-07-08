@@ -465,12 +465,35 @@ class PremyCanvas extends HTMLElement {
     }
   }
 
+  undo(): void {
+    if (this.historyIndex < 1) {
+      return;
+    }
+
+    this.historyIndex--;
+    this.putImageFromHistory();
+    this.dispatchChangeHistoryEvent();
+  }
+
   redo(): void {
     if (this.historyIndex >= this.history.length - 1) {
       return;
     }
 
     this.historyIndex++;
+    this.putImageFromHistory();
+    this.dispatchChangeHistoryEvent();
+  }
+
+  setHistory({
+    history,
+    historyIndex,
+  }: {
+    history: string[];
+    historyIndex: number;
+  }): void {
+    this.history = history;
+    this.historyIndex = historyIndex;
     this.putImageFromHistory();
     this.dispatchChangeHistoryEvent();
   }
@@ -489,16 +512,6 @@ class PremyCanvas extends HTMLElement {
     }
 
     return this.canvas.toDataURL(type, quality);
-  }
-
-  undo(): void {
-    if (this.historyIndex < 1) {
-      return;
-    }
-
-    this.historyIndex--;
-    this.putImageFromHistory();
-    this.dispatchChangeHistoryEvent();
   }
 
   private getCanvasPosition(clientPosition: PremyPosition): PremyPosition {

@@ -96,3 +96,18 @@ export const palettes: Record<PaletteKey, string[]> = {
     ColorLibrary(orange[900]).darken(0.5).hex(),
   ],
 };
+
+export const getBlankImageDataURL = (color: string): string => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Failed to get canvas context");
+  }
+  context.fillStyle = color;
+  context.fillRect(0, 0, 1, 1);
+
+  return canvas.toDataURL();
+};

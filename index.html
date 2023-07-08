@@ -18,28 +18,52 @@
       const dialog = document.querySelector("#dialog");
       const openButton = document.querySelector("#open-button");
 
-      dialog.addEventListener("premyClose", (event) =>
-        dialog.removeAttribute("open")
-      );
-
-      dialog.addEventListener("premyHistoryChange", (event) =>
-        localStorage.setItem(
-          "premy-image",
-          event.detail.history[event.detail.historyIndex]
-        )
-      );
+      dialog.addEventListener("premyClose", (event) => {
+        dialog.removeAttribute("open");
+      });
 
       openButton.addEventListener("click", (event) => {
-        const image = localStorage.getItem("premy-image");
-
-        if (image) {
-          dialog.setAttribute("src", image);
-        } else {
-          dialog.removeAttribute("src");
-        }
-
         dialog.setAttribute("open", "");
       });
+
+      const premyDBOpenRequest = indexedDB.open("premy", 1);
+
+      premyDBOpenRequest.onsuccess = () => {
+        const premyDB = premyDBOpenRequest.result;
+
+        const transaction = premyDB.transaction(["etc"], "readonly");
+        const etcStore = transaction.objectStore("etc");
+        const historyGetRequest = etcStore.get("history");
+        historyGetRequest.onsuccess = () => {
+          const history = historyGetRequest.result;
+          if (!history) {
+            return;
+          }
+          dialog.setAttribute("history", JSON.stringify(history));
+        };
+
+        dialog.addEventListener("premyHistoryChange", (event) => {
+          const transaction = premyDB.transaction(["etc"], "readwrite");
+          const etcStore = transaction.objectStore("etc");
+          etcStore.put(event.detail.history, "history");
+        });
+      };
+
+      premyDBOpenRequest.onupgradeneeded = (event) => {
+        const premyDB = premyDBOpenRequest.result;
+        let version = event.oldVersion;
+
+        if (version === 0) {
+          const etcStore = premyDB.createObjectStore("etc");
+          const image = localStorage.getItem("premy-image");
+          if (image) {
+            etcStore.put([image], "history");
+          }
+          localStorage.removeItem("premy-image");
+
+          version++;
+        }
+      };
     </script>
   </body>
 </html>

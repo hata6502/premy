@@ -58,7 +58,12 @@ import { BrushType, brushTypes, brushes } from "./brushes";
 import { animalsAndNatureEmojis } from "./emoji";
 import { FontType, fontTypes, fonts } from "./fonts";
 import { fuzzinesses } from "./fuzziness";
-import { PaletteKey, paletteKeys, palettes } from "./palettes";
+import {
+  PaletteKey,
+  getBlankImageDataURL,
+  paletteKeys,
+  palettes,
+} from "./palettes";
 import { ToneType, toneGroups, toneTypes } from "./tones";
 
 const useStyles = makeStyles(({ palette, zIndex }) => ({
@@ -89,9 +94,9 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
 }));
 
 export const App: FunctionComponent<{
-  src?: string;
+  history: string[];
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
-}> = memo(({ src, onCloseButtonClick }) => {
+}> = memo(({ history: historyProp, onCloseButtonClick }) => {
   const [brushType, setBrushType] = useState<BrushType>(
     brushTypes[Math.floor(Math.random() * brushTypes.length)]
   );
@@ -214,11 +219,9 @@ export const App: FunctionComponent<{
       handleCanvasHistoryChange
     );
 
-    void currentPremyCanvasElement.load({
-      src: src ?? getBlankImageDataURL(palettes.light[0]),
-      constrainsAspectRatio: Boolean(src),
-      loadMode: "normal",
-      pushesImageToHistory: true,
+    currentPremyCanvasElement.setHistory({
+      history: historyProp,
+      historyIndex: historyProp.length - 1,
     });
 
     return () => {
@@ -227,7 +230,7 @@ export const App: FunctionComponent<{
         handleCanvasHistoryChange
       );
     };
-  }, [src]);
+  }, [historyProp]);
 
   useEffect(() => {
     if (!premyCanvasElement.current) {
@@ -928,18 +931,3 @@ export const App: FunctionComponent<{
     </>
   );
 });
-
-const getBlankImageDataURL = (color: string) => {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1;
-  canvas.height = 1;
-
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Failed to get canvas context");
-  }
-  context.fillStyle = color;
-  context.fillRect(0, 0, 1, 1);
-
-  return canvas.toDataURL();
-};
