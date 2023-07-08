@@ -18,27 +18,29 @@
       const dialog = document.querySelector("#dialog");
 
       const openButton = document.querySelector("#open-button");
-      dialog.addEventListener("premyClose", (event) => {
+      dialog.addEventListener("premyClose", () => {
         dialog.removeAttribute("open");
       });
-      openButton.addEventListener("click", (event) => {
+      openButton.addEventListener("click", () => {
         dialog.setAttribute("open", "");
       });
 
       const premyDBOpenRequest = indexedDB.open("premy", 2);
 
-      premyDBOpenRequest.onsuccess = async () => {
+      premyDBOpenRequest.onsuccess = () => {
         const premyDB = premyDBOpenRequest.result;
 
-        const transaction = premyDB.transaction(["history"], "readonly");
-        const historyStore = transaction.objectStore("history");
-        const historyGetAllRequest = historyStore.getAll();
-        await new Promise((resolve, reject) => {
-          historyGetAllRequest.onsuccess = resolve;
-          historyGetAllRequest.onerror = reject;
+        openButton.addEventListener("click", async () => {
+          const transaction = premyDB.transaction(["history"], "readonly");
+          const historyStore = transaction.objectStore("history");
+          const historyGetAllRequest = historyStore.getAll();
+          await new Promise((resolve, reject) => {
+            historyGetAllRequest.onsuccess = resolve;
+            historyGetAllRequest.onerror = reject;
+          });
+          const history = historyGetAllRequest.result;
+          dialog.setHistory(history);
         });
-        const history = historyGetAllRequest.result;
-        dialog.setHistory(history);
 
         dialog.addEventListener("premyHistoryChange", async (event) => {
           const { historyMaxLength, pushed } = event.detail;
