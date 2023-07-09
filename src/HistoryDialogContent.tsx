@@ -11,16 +11,16 @@ const useStyles = makeStyles(({ palette }) => ({
   button: {
     all: "unset",
     backgroundColor: "#000000",
-    border: "2px solid #ffffff",
     borderRadius: 4,
     cursor: "pointer",
     "&:focus": {
-      borderColor: palette.primary.main,
+      outline: "2px solid",
+      outlineColor: palette.primary.main,
     },
   },
   image: {
     verticalAlign: "bottom",
-    width: 160,
+    width: 168,
     "&:hover": {
       opacity: "0.75",
     },
