@@ -15,7 +15,7 @@ import type {
   PremyPosition,
 } from "./PremyPointerListener";
 
-const historyMaxLength = 300;
+const historyMaxLength = 500;
 
 declare global {
   interface HTMLElementEventMap {
@@ -223,6 +223,7 @@ class PremyCanvas extends HTMLElement {
   private transactionMode?: PremyCanvasMode;
   private actualZoom: number;
   private displayingZoom: number;
+  private pushingImageToHistoryTimeoutID?: number;
 
   constructor() {
     super();
@@ -467,36 +468,29 @@ class PremyCanvas extends HTMLElement {
     }
   }
 
-  undo(): void {
-    if (this.historyIndex < 1) {
-      return;
-    }
-
-    this.historyIndex--;
-    this.putImageFromHistory();
-    this.dispatchHistoryIndexChangeEvent();
-  }
-
-  redo(): void {
-    if (this.historyIndex >= this.history.length - 1) {
-      return;
-    }
-
-    this.historyIndex++;
-    this.putImageFromHistory();
-    this.dispatchHistoryIndexChangeEvent();
-  }
-
-  setHistory({
-    history,
-    historyIndex,
-  }: {
-    history: string[];
-    historyIndex: number;
-  }): void {
+  setHistory(history: string[]): void {
     this.history = history;
+    this.putImageFromHistory();
+
+    const event: PremyHistoryChangeEvent = new CustomEvent(
+      "premyHistoryChange",
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          history: this.history,
+          historyMaxLength,
+          pushed: [],
+        },
+      }
+    );
+    this.dispatchEvent(event);
+  }
+
+  setHistoryIndex(historyIndex: number): void {
     this.historyIndex = historyIndex;
     this.putImageFromHistory();
+    this.dispatchHistoryIndexChangeEvent();
   }
 
   toBlob(callback: BlobCallback, type?: string, quality?: unknown): void {
@@ -897,12 +891,23 @@ class PremyCanvas extends HTMLElement {
   }
 
   private putImageFromHistory() {
+    const src = this.history[this.historyIndex];
+    if (!src) {
+      return;
+    }
+
     void this.load({
-      src: this.history[this.historyIndex],
+      src,
       constrainsAspectRatio: true,
       loadMode: "normal",
       pushesImageToHistory: false,
     });
+  }
+
+  private setPushingImageToHistoryTimeout() {
+    this.pushingImageToHistoryTimeoutID = window.setTimeout(() => {
+      this.pushImageToHistory();
+    }, 100);
   }
 
   private handleContextmenu = (event: Event) => event.preventDefault();
@@ -938,6 +943,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.prevPosition = position;
+    clearTimeout(this.pushingImageToHistoryTimeoutID);
   };
 
   private handlePointerMove = (event: PremyPointerMoveEvent) => {
@@ -1023,7 +1029,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.transactionMode = undefined;
-    this.pushImageToHistory();
+    this.setPushingImageToHistoryTimeout();
   };
 
   private handlePointerCancel = () => {
@@ -1057,7 +1063,7 @@ class PremyCanvas extends HTMLElement {
     }
 
     this.transactionMode = undefined;
-    this.pushImageToHistory();
+    this.setPushingImageToHistoryTimeout();
   };
 }
 

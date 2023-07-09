@@ -233,13 +233,8 @@ export const App: FunctionComponent<{
     const currentPremyCanvasElement = premyCanvasElement.current;
 
     if (historyProp.length) {
-      const historyIndex = historyProp.length - 1;
-      currentPremyCanvasElement.setHistory({
-        history: historyProp,
-        historyIndex,
-      });
-      setHistory(historyProp);
-      setHistoryIndex(historyIndex);
+      currentPremyCanvasElement.setHistory(historyProp);
+      currentPremyCanvasElement.setHistoryIndex(historyProp.length - 1);
     } else {
       void premyCanvasElement.current.load({
         src: getBlankImageDataURL(palettes.light[0]),
@@ -387,9 +382,8 @@ export const App: FunctionComponent<{
     if (!premyCanvasElement.current) {
       throw new Error("PremyCanvas element not found");
     }
-
-    premyCanvasElement.current.undo();
-  }, []);
+    premyCanvasElement.current.setHistoryIndex(historyIndex - 1);
+  }, [historyIndex]);
 
   const handleHistoryButtonClick = useCallback(() => {
     setIsHistoryDialogOpen(true);
@@ -399,9 +393,8 @@ export const App: FunctionComponent<{
     if (!premyCanvasElement.current) {
       throw new Error("PremyCanvas element not found");
     }
-
-    premyCanvasElement.current.redo();
-  }, []);
+    premyCanvasElement.current.setHistoryIndex(historyIndex + 1);
+  }, [historyIndex]);
 
   const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback((event) => setImportMenuAnchorEl(event.currentTarget), []);
@@ -525,18 +518,13 @@ export const App: FunctionComponent<{
   );
 
   const handleSelectHistoryItem: HistoryDialogContentProps["onSelectItem"] =
-    useCallback(async (dataURL) => {
+    useCallback((historyIndex) => {
       setIsHistoryDialogOpen(false);
 
       if (!premyCanvasElement.current) {
         throw new Error("PremyCanvas element not found");
       }
-      await premyCanvasElement.current.load({
-        src: dataURL,
-        constrainsAspectRatio: true,
-        loadMode: "normal",
-        pushesImageToHistory: false,
-      });
+      premyCanvasElement.current.setHistoryIndex(historyIndex);
     }, []);
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =

@@ -29,7 +29,7 @@ const useStyles = makeStyles(({ palette }) => ({
 
 export interface HistoryDialogContentProps {
   history: string[];
-  onSelectItem: (dataURL: string) => void;
+  onSelectItem: (historyIndex: number) => void;
 }
 
 export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> =
@@ -43,28 +43,30 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
         <DialogContent>
           <Box mb={2}>
             <Grid container spacing={2}>
-              {[...history.entries()].reverse().map(([index, dataURL]) => {
-                const handleButtonClick = () => {
-                  onSelectItem(dataURL);
-                };
+              {[...history.entries()]
+                .reverse()
+                .map(([historyIndex, dataURL]) => {
+                  const handleButtonClick = () => {
+                    onSelectItem(historyIndex);
+                  };
 
-                return (
-                  <Grid key={index} item>
-                    <button
-                      type="button"
-                      className={classes.button}
-                      onClick={handleButtonClick}
-                    >
-                      <img
-                        className={classes.image}
-                        alt=""
-                        src={dataURL}
-                        loading="lazy"
-                      />
-                    </button>
-                  </Grid>
-                );
-              })}
+                  return (
+                    <Grid key={historyIndex} item>
+                      <button
+                        type="button"
+                        className={classes.button}
+                        onClick={handleButtonClick}
+                      >
+                        <img
+                          className={classes.image}
+                          alt=""
+                          src={dataURL}
+                          loading="lazy"
+                        />
+                      </button>
+                    </Grid>
+                  );
+                })}
             </Grid>
           </Box>
         </DialogContent>
