@@ -418,7 +418,6 @@ export const App: FunctionComponent<{
 
         premyCanvasElement.current.toBlob(resolve);
       });
-
       if (!blob) {
         throw new Error("Blob is not found");
       }
@@ -426,9 +425,7 @@ export const App: FunctionComponent<{
       const shareData = {
         files: [new File([blob], saveFileName, { type: "image/png" })],
         text: "\n#premy",
-        url: "https://premy.hata6502.com/",
       };
-
       if (navigator.canShare?.(shareData)) {
         try {
           await navigator.share(shareData);

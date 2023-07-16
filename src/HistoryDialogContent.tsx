@@ -20,7 +20,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   image: {
     verticalAlign: "bottom",
-    width: 168,
+    width: 160,
     "&:hover": {
       opacity: "0.75",
     },
