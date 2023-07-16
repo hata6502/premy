@@ -1,5 +1,6 @@
-import type { DetailedHTMLProps, HTMLAttributes } from "react";
-import type { PremyCanvas } from "./PremyCanvas";
+import { DetailedHTMLProps, HTMLAttributes } from "react";
+import { PremyCanvas } from "./PremyCanvas";
+import { PremyDialog } from "./PremyDialog";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -8,6 +9,10 @@ declare global {
       "premy-canvas": DetailedHTMLProps<
         HTMLAttributes<PremyCanvas>,
         PremyCanvas
+      >;
+      "premy-dialog": DetailedHTMLProps<
+        HTMLAttributes<PremyDialog>,
+        PremyDialog
       >;
     }
   }
