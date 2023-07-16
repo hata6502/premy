@@ -206,7 +206,7 @@ const getBestPattern = ({
   return bestPattern;
 };
 
-class PremyCanvas extends HTMLElement {
+export class PremyCanvasElement extends HTMLElement {
   private brushType: BrushType;
   private canvas?: HTMLCanvasElement;
   private color: string;
@@ -1067,6 +1067,6 @@ class PremyCanvas extends HTMLElement {
   };
 }
 
-customElements.define("premy-canvas", PremyCanvas);
-
-export { PremyCanvas };
+if (!customElements.get("premy-canvas")) {
+  customElements.define("premy-canvas", PremyCanvasElement);
+}

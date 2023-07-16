@@ -226,7 +226,9 @@ class PremyPointerListener extends HTMLElement {
   };
 }
 
-customElements.define("premy-pointer-listener", PremyPointerListener);
+if (!customElements.get("premy-pointer-listener")) {
+  customElements.define("premy-pointer-listener", PremyPointerListener);
+}
 
 export { PremyPointerListener };
 export type {

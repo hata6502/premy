@@ -43,15 +43,15 @@ import {
   HistoryDialogContent,
   HistoryDialogContentProps,
 } from "./HistoryDialogContent";
-import "./PremyCanvas";
+import "./PremyCanvasElement";
 import type {
   LoadMode,
-  PremyCanvas,
+  PremyCanvasElement,
   PremyCanvasMode,
   PremyHistoryChangeEvent,
   PremyHistoryIndexChangeEvent,
   PremyLoadStartEvent,
-} from "./PremyCanvas";
+} from "./PremyCanvasElement";
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
 import { Tone } from "./Tone";
@@ -146,7 +146,7 @@ export const App: FunctionComponent<{
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
-  const premyCanvasElement = useRef<PremyCanvas>(null);
+  const premyCanvasElement = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =

@@ -1,21 +1,22 @@
 import { DetailedHTMLProps, HTMLAttributes } from "react";
-import { PremyCanvas } from "./PremyCanvas";
-import { PremyDialog } from "./PremyDialog";
+import { PremyCanvasElement } from "./PremyCanvasElement";
+import { PremyDialogElement } from "./PremyDialogElement";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       "premy-canvas": DetailedHTMLProps<
-        HTMLAttributes<PremyCanvas>,
-        PremyCanvas
+        HTMLAttributes<PremyCanvasElement>,
+        PremyCanvasElement
       >;
       "premy-dialog": DetailedHTMLProps<
-        HTMLAttributes<PremyDialog>,
-        PremyDialog
+        HTMLAttributes<PremyDialogElement>,
+        PremyDialogElement
       >;
     }
   }
 }
 
-export * from "./PremyDialog";
+export * from "./PremyCanvasElement";
+export * from "./PremyDialogElement";

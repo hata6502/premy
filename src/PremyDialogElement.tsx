@@ -4,7 +4,7 @@ import ReactDOM from "react-dom";
 import { App } from "./App";
 import { PremyThemeProvider } from "./PremyThemeProvider";
 
-export class PremyDialog extends HTMLElement {
+export class PremyDialogElement extends HTMLElement {
   static get observedAttributes(): string[] {
     return ["open"];
   }
@@ -88,4 +88,6 @@ export class PremyDialog extends HTMLElement {
   };
 }
 
-customElements.define("premy-dialog", PremyDialog);
+if (!customElements.get("premy-dialog")) {
+  customElements.define("premy-dialog", PremyDialogElement);
+}
