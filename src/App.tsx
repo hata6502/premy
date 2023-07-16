@@ -556,7 +556,12 @@ export const App: FunctionComponent<{
         className={clsx(classes.actions, "premy-pointer-listener-ignore")}
       >
         <Box mr={1}>
-          <ToggleButtonGroup exclusive value={mode} onChange={handleModeChange}>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={mode}
+            onChange={handleModeChange}
+          >
             <ToggleButton value="shape">
               <BrushIcon />
             </ToggleButton>
