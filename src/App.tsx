@@ -31,11 +31,15 @@ import {
 } from "@material-ui/icons";
 import clsx from "clsx";
 import ColorLibrary from "color";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import type {
+import {
   ChangeEventHandler,
   FunctionComponent,
   MouseEventHandler,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 import { Color } from "./Color";
 import { CopyDialogContent } from "./CopyDialogContent";
@@ -69,14 +73,27 @@ import { ToneType, toneGroups, toneTypes } from "./tones";
 
 const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    transformOrigin: "top left",
     display: "flex",
     alignItems: "center",
+    paddingTop: 8,
+    paddingLeft: 8,
+    paddingRight: 8,
+    background: palette.background.paper,
     borderBottom: "4px solid",
     borderImage: `linear-gradient(to right, transparent, ${palette.action.focus}) 1`,
     overflowX: "auto",
+    transition: "opacity 333ms",
   },
   backdrop: {
     zIndex: zIndex.drawer + 1,
+  },
+  container: {
+    position: "relative",
   },
   fileInput: {
     display: "none !important",
@@ -146,7 +163,8 @@ export const App: FunctionComponent<{
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
-  const premyCanvasElement = useRef<PremyCanvasElement>(null);
+  const actionsElementRef = useRef<HTMLDivElement>(null);
+  const premyCanvasElementRef = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
@@ -154,6 +172,35 @@ export const App: FunctionComponent<{
 
   const isUndoDisabled = historyIndex < 1;
   const isRedoDisabled = historyIndex >= history.length - 1;
+
+  useEffect(() => {
+    if (!actionsElementRef.current || !visualViewport) {
+      return;
+    }
+    const actionsElement = actionsElementRef.current;
+    const viewport = visualViewport;
+
+    let timeoutID: number | undefined;
+    const handleVisualViewportChange = () => {
+      actionsElement.style.opacity = "0";
+      actionsElement.style.transform = `
+        translate(${viewport.offsetLeft}px, ${viewport.offsetTop}px)
+        scale(${1 / viewport.scale})
+      `;
+
+      clearTimeout(timeoutID);
+      timeoutID = window.setTimeout(() => {
+        actionsElement.style.opacity = "1";
+      });
+    };
+    viewport.addEventListener("scroll", handleVisualViewportChange);
+    viewport.addEventListener("resize", handleVisualViewportChange);
+
+    return () => {
+      viewport.removeEventListener("scroll", handleVisualViewportChange);
+      viewport.removeEventListener("resize", handleVisualViewportChange);
+    };
+  }, []);
 
   useEffect(() => {
     const intervalID = setInterval(() => {
@@ -166,10 +213,10 @@ export const App: FunctionComponent<{
   }, []);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    const currentPremyCanvasElement = premyCanvasElement.current;
+    const currentPremyCanvasElement = premyCanvasElementRef.current;
 
     const handleCanvasLoadStart = (event: PremyLoadStartEvent) => {
       if (event.detail.isHeavy) {
@@ -227,16 +274,16 @@ export const App: FunctionComponent<{
   }, []);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    const currentPremyCanvasElement = premyCanvasElement.current;
+    const currentPremyCanvasElement = premyCanvasElementRef.current;
 
     if (historyProp.length) {
       currentPremyCanvasElement.setHistory(historyProp);
       currentPremyCanvasElement.setHistoryIndex(historyProp.length - 1);
     } else {
-      void premyCanvasElement.current.load({
+      void premyCanvasElementRef.current.load({
         src: getBlankImageDataURL(palettes.light[0]),
         constrainsAspectRatio: false,
         loadMode: "normal",
@@ -246,59 +293,59 @@ export const App: FunctionComponent<{
   }, [historyProp]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setBrushType({ brushType });
+    premyCanvasElementRef.current.setBrushType({ brushType });
   }, [brushType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setFontType({ fontType });
+    premyCanvasElementRef.current.setFontType({ fontType });
   }, [fontType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setColor({ color });
+    premyCanvasElementRef.current.setColor({ color });
   }, [color]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setMode({ mode });
+    premyCanvasElementRef.current.setMode({ mode });
   }, [mode]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setFuzziness({ fuzziness });
+    premyCanvasElementRef.current.setFuzziness({ fuzziness });
   }, [fuzziness]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setToneType({ toneType });
+    premyCanvasElementRef.current.setToneType({ toneType });
   }, [toneType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setText({ text: text || defaultText });
+    premyCanvasElementRef.current.setText({ text: text || defaultText });
   }, [defaultText, text]);
 
   const saveFileName = "premy.png";
@@ -379,10 +426,10 @@ export const App: FunctionComponent<{
   );
 
   const handleUndoButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    premyCanvasElement.current.setHistoryIndex(historyIndex - 1);
+    premyCanvasElementRef.current.setHistoryIndex(historyIndex - 1);
   }, [historyIndex]);
 
   const handleHistoryButtonClick = useCallback(() => {
@@ -390,10 +437,10 @@ export const App: FunctionComponent<{
   }, []);
 
   const handleRedoButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    premyCanvasElement.current.setHistoryIndex(historyIndex + 1);
+    premyCanvasElementRef.current.setHistoryIndex(historyIndex + 1);
   }, [historyIndex]);
 
   const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> =
@@ -406,17 +453,17 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
-      if (!premyCanvasElement.current) {
+      if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
 
       const blob = await new Promise<Blob | null>((resolve, reject) => {
-        if (!premyCanvasElement.current) {
+        if (!premyCanvasElementRef.current) {
           reject(new Error("PremyCanvas element not found"));
           return;
         }
 
-        premyCanvasElement.current.toBlob(resolve);
+        premyCanvasElementRef.current.toBlob(resolve);
       });
       if (!blob) {
         throw new Error("Blob is not found");
@@ -432,18 +479,18 @@ export const App: FunctionComponent<{
           // eslint-disable-next-line no-empty
         } catch (exception) {}
       } else {
-        setCopySource(premyCanvasElement.current.toDataURL());
+        setCopySource(premyCanvasElementRef.current.toDataURL());
         setIsCopyDialogOpen(true);
       }
     }, []);
 
   const handleClearButtonClick = useCallback(async () => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
     handleImportMenuClose();
-    await premyCanvasElement.current.load({
+    await premyCanvasElementRef.current.load({
       src: getBlankImageDataURL(color),
       constrainsAspectRatio: false,
       loadMode: "normal",
@@ -471,11 +518,11 @@ export const App: FunctionComponent<{
             throw new Error("Source is not a string");
           }
 
-          if (!premyCanvasElement.current) {
+          if (!premyCanvasElementRef.current) {
             throw new Error("PremyCanvas element not found");
           }
 
-          await premyCanvasElement.current.load({
+          await premyCanvasElementRef.current.load({
             src,
             constrainsAspectRatio: true,
             loadMode,
@@ -518,20 +565,20 @@ export const App: FunctionComponent<{
     useCallback((historyIndex) => {
       setIsHistoryDialogOpen(false);
 
-      if (!premyCanvasElement.current) {
+      if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
-      premyCanvasElement.current.setHistoryIndex(historyIndex);
+      premyCanvasElementRef.current.setHistoryIndex(historyIndex);
     }, []);
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
     useCallback(
       async (event) => {
-        if (!premyCanvasElement.current) {
+        if (!premyCanvasElementRef.current) {
           throw new Error("PremyCanvas element not found");
         }
 
-        await premyCanvasElement.current.load({
+        await premyCanvasElementRef.current.load({
           src: event.src,
           constrainsAspectRatio: true,
           loadMode,
@@ -544,13 +591,14 @@ export const App: FunctionComponent<{
     );
 
   return (
-    <>
-      <Box
-        mt={1}
-        mb={1}
-        pl={1}
-        pr={1}
+    <div className={classes.container}>
+      <Box mt={8} ml={1} mr={1}>
+        <premy-canvas ref={premyCanvasElementRef} />
+      </Box>
+
+      <div
         className={clsx(classes.actions, "premy-pointer-listener-ignore")}
+        ref={actionsElementRef}
       >
         <Box mr={1}>
           <ToggleButtonGroup
@@ -895,11 +943,7 @@ export const App: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-      </Box>
-
-      <Box ml={1} mr={1}>
-        <premy-canvas ref={premyCanvasElement} />
-      </Box>
+      </div>
 
       <Dialog
         className="premy-pointer-listener-ignore"
@@ -936,6 +980,6 @@ export const App: FunctionComponent<{
       >
         <CircularProgress />
       </Backdrop>
-    </>
+    </div>
   );
 });
