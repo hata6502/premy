@@ -146,7 +146,7 @@ export const App: FunctionComponent<{
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
-  const premyCanvasElement = useRef<PremyCanvasElement>(null);
+  const premyCanvasElementRef = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
   const foregroundColor =
@@ -166,10 +166,10 @@ export const App: FunctionComponent<{
   }, []);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    const currentPremyCanvasElement = premyCanvasElement.current;
+    const currentPremyCanvasElement = premyCanvasElementRef.current;
 
     const handleCanvasLoadStart = (event: PremyLoadStartEvent) => {
       if (event.detail.isHeavy) {
@@ -227,16 +227,16 @@ export const App: FunctionComponent<{
   }, []);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    const currentPremyCanvasElement = premyCanvasElement.current;
+    const currentPremyCanvasElement = premyCanvasElementRef.current;
 
     if (historyProp.length) {
       currentPremyCanvasElement.setHistory(historyProp);
       currentPremyCanvasElement.setHistoryIndex(historyProp.length - 1);
     } else {
-      void premyCanvasElement.current.load({
+      void premyCanvasElementRef.current.load({
         src: getBlankImageDataURL(palettes.light[0]),
         constrainsAspectRatio: false,
         loadMode: "normal",
@@ -246,59 +246,59 @@ export const App: FunctionComponent<{
   }, [historyProp]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setBrushType({ brushType });
+    premyCanvasElementRef.current.setBrushType({ brushType });
   }, [brushType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setFontType({ fontType });
+    premyCanvasElementRef.current.setFontType({ fontType });
   }, [fontType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setColor({ color });
+    premyCanvasElementRef.current.setColor({ color });
   }, [color]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setMode({ mode });
+    premyCanvasElementRef.current.setMode({ mode });
   }, [mode]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setFuzziness({ fuzziness });
+    premyCanvasElementRef.current.setFuzziness({ fuzziness });
   }, [fuzziness]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setToneType({ toneType });
+    premyCanvasElementRef.current.setToneType({ toneType });
   }, [toneType]);
 
   useEffect(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
-    premyCanvasElement.current.setText({ text: text || defaultText });
+    premyCanvasElementRef.current.setText({ text: text || defaultText });
   }, [defaultText, text]);
 
   const saveFileName = "premy.png";
@@ -379,10 +379,10 @@ export const App: FunctionComponent<{
   );
 
   const handleUndoButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    premyCanvasElement.current.setHistoryIndex(historyIndex - 1);
+    premyCanvasElementRef.current.setHistoryIndex(historyIndex - 1);
   }, [historyIndex]);
 
   const handleHistoryButtonClick = useCallback(() => {
@@ -390,10 +390,10 @@ export const App: FunctionComponent<{
   }, []);
 
   const handleRedoButtonClick = useCallback(() => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
-    premyCanvasElement.current.setHistoryIndex(historyIndex + 1);
+    premyCanvasElementRef.current.setHistoryIndex(historyIndex + 1);
   }, [historyIndex]);
 
   const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> =
@@ -406,17 +406,17 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
-      if (!premyCanvasElement.current) {
+      if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
 
       const blob = await new Promise<Blob | null>((resolve, reject) => {
-        if (!premyCanvasElement.current) {
+        if (!premyCanvasElementRef.current) {
           reject(new Error("PremyCanvas element not found"));
           return;
         }
 
-        premyCanvasElement.current.toBlob(resolve);
+        premyCanvasElementRef.current.toBlob(resolve);
       });
       if (!blob) {
         throw new Error("Blob is not found");
@@ -432,18 +432,18 @@ export const App: FunctionComponent<{
           // eslint-disable-next-line no-empty
         } catch (exception) {}
       } else {
-        setCopySource(premyCanvasElement.current.toDataURL());
+        setCopySource(premyCanvasElementRef.current.toDataURL());
         setIsCopyDialogOpen(true);
       }
     }, []);
 
   const handleClearButtonClick = useCallback(async () => {
-    if (!premyCanvasElement.current) {
+    if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
 
     handleImportMenuClose();
-    await premyCanvasElement.current.load({
+    await premyCanvasElementRef.current.load({
       src: getBlankImageDataURL(color),
       constrainsAspectRatio: false,
       loadMode: "normal",
@@ -471,11 +471,11 @@ export const App: FunctionComponent<{
             throw new Error("Source is not a string");
           }
 
-          if (!premyCanvasElement.current) {
+          if (!premyCanvasElementRef.current) {
             throw new Error("PremyCanvas element not found");
           }
 
-          await premyCanvasElement.current.load({
+          await premyCanvasElementRef.current.load({
             src,
             constrainsAspectRatio: true,
             loadMode,
@@ -518,20 +518,20 @@ export const App: FunctionComponent<{
     useCallback((historyIndex) => {
       setIsHistoryDialogOpen(false);
 
-      if (!premyCanvasElement.current) {
+      if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
-      premyCanvasElement.current.setHistoryIndex(historyIndex);
+      premyCanvasElementRef.current.setHistoryIndex(historyIndex);
     }, []);
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
     useCallback(
       async (event) => {
-        if (!premyCanvasElement.current) {
+        if (!premyCanvasElementRef.current) {
           throw new Error("PremyCanvas element not found");
         }
 
-        await premyCanvasElement.current.load({
+        await premyCanvasElementRef.current.load({
           src: event.src,
           constrainsAspectRatio: true,
           loadMode,
@@ -898,7 +898,7 @@ export const App: FunctionComponent<{
       </Box>
 
       <Box ml={1} mr={1}>
-        <premy-canvas ref={premyCanvasElement} />
+        <premy-canvas ref={premyCanvasElementRef} />
       </Box>
 
       <Dialog
