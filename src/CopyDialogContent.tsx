@@ -1,8 +1,10 @@
 import { DialogContent, DialogTitle, makeStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { FunctionComponent, memo } from "react";
 
 const useStyles = makeStyles({
   image: {
+    border: `1px solid ${grey[500]}`,
     maxWidth: "100%",
   },
 });
