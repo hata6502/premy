@@ -163,6 +163,7 @@ export const App: FunctionComponent<{
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
+  const actionsElementRef = useRef<HTMLDivElement>(null);
   const premyCanvasElementRef = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
