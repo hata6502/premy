@@ -85,9 +85,6 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
   backdrop: {
     zIndex: zIndex.drawer + 1,
   },
-  container: {
-    position: "relative",
-  },
   fileInput: {
     display: "none !important",
   },
@@ -574,7 +571,7 @@ export const App: FunctionComponent<{
     );
 
   return (
-    <div className={classes.container}>
+    <>
       <Box mt={8} ml={1} mr={1}>
         <premy-canvas ref={premyCanvasElementRef} />
       </Box>
@@ -968,6 +965,6 @@ export const App: FunctionComponent<{
       >
         <CircularProgress />
       </Backdrop>
-    </div>
+    </>
   );
 });
