@@ -3,6 +3,10 @@ import { PremyCanvasElement } from "./PremyCanvasElement";
 import { PremyDialogElement } from "./PremyDialogElement";
 
 declare global {
+  interface Window {
+    gtag?: Function;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
