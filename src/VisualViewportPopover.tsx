@@ -80,15 +80,16 @@ export const VisualViewportPopover: FunctionComponent<{
     window.addEventListener("pointerdown", handlePointerdown);
 
     const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose?.();
+      if (onClose && event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
       }
     };
-    window.addEventListener("keydown", handleKeydown);
+    window.addEventListener("keydown", handleKeydown, { capture: true });
 
     return () => {
       window.removeEventListener("pointerdown", handlePointerdown);
-      window.removeEventListener("keydown", handleKeydown);
+      window.removeEventListener("keydown", handleKeydown, { capture: true });
     };
   }, [anchorElement, onClose]);
 
