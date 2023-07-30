@@ -358,8 +358,9 @@ export const App: FunctionComponent<{
     setMode(mode);
   }, []);
 
-  const handleTextInputChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback((event) => setText(event.target.value), []);
+  const handleTextInputClick = useCallback(() => {
+    setText(prompt("Text", text) ?? text);
+  }, [text]);
 
   const handleFontButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(
@@ -812,7 +813,7 @@ export const App: FunctionComponent<{
                   placeholder={defaultText}
                   size="small"
                   value={text}
-                  onChange={handleTextInputChange}
+                  onClick={handleTextInputClick}
                   inputProps={{
                     style: {
                       color: foregroundColor,
