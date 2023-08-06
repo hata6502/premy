@@ -25,7 +25,7 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
             download={`${title}-premy.png`}
             href={src}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
           >
             <img alt={title} src={src} className={classes.image} />
           </a>
