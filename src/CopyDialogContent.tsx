@@ -8,11 +8,12 @@ const useStyles = makeStyles({
 });
 
 export interface CopyDialogContentProps {
+  title: string;
   src: string;
 }
 
 export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
-  memo(({ src }) => {
+  memo(({ title, src }) => {
     const classes = useStyles();
 
     return (
@@ -20,7 +21,9 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
         <DialogTitle>Please copy this image</DialogTitle>
 
         <DialogContent>
-          <img alt="premy" className={classes.image} src={src} />
+          <a download={`${title}-premy.png`} href={src} target="_blank">
+            <img alt={title} src={src} className={classes.image} />
+          </a>
         </DialogContent>
       </>
     );

@@ -158,6 +158,7 @@ export const App: FunctionComponent<{
 
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [copySource, setCopySource] = useState("");
+  const [title, setTitle] = useState("");
 
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
@@ -319,8 +320,6 @@ export const App: FunctionComponent<{
 
   const classes = useStyles();
 
-  const saveFileName = "premy.png";
-
   const Brush = {
     shape: BrushIcon,
     text: TextFormat,
@@ -434,6 +433,9 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
+      const title = prompt("Title") ?? "";
+      setTitle(title);
+
       window.gtag?.("event", "share");
 
       if (!premyCanvasElementRef.current) {
@@ -453,8 +455,9 @@ export const App: FunctionComponent<{
       }
 
       const shareData = {
-        files: [new File([blob], saveFileName, { type: "image/png" })],
-        text: "\n#premy",
+        files: [new File([blob], `${title}-premy.png`, { type: "image/png" })],
+        url: `${title}
+#premy`,
       };
       if (navigator.canShare?.(shareData)) {
         try {
@@ -951,7 +954,7 @@ export const App: FunctionComponent<{
         open={isCopyDialogOpen}
         onClose={handleCopyDialogClose}
       >
-        <CopyDialogContent src={copySource} />
+        <CopyDialogContent title={title} src={copySource} />
       </Dialog>
 
       <Dialog
