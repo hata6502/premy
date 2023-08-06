@@ -455,9 +455,9 @@ export const App: FunctionComponent<{
       }
 
       const shareData = {
+        title,
+        text: "#premy ",
         files: [new File([blob], `${title}-premy.png`, { type: "image/png" })],
-        url: `${title}
-#premy`,
       };
       if (navigator.canShare?.(shareData)) {
         try {
