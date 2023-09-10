@@ -433,7 +433,8 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
-      const title = prompt("Title") ?? "";
+      // const title = prompt("Title") ?? "";
+      const title = new Date().toLocaleString();
       setTitle(title);
 
       window.gtag?.("event", "share");
