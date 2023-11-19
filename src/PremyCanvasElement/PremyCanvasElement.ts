@@ -12,7 +12,7 @@ import type {
   PremyPosition,
 } from "./PremyPointerListener";
 
-const historyMaxLength = 300;
+const historyMaxLength = 500;
 
 declare global {
   interface HTMLElementEventMap {
@@ -281,11 +281,6 @@ export class PremyCanvasElement extends HTMLElement {
     }
 
     return this.canvas.toDataURL(type, quality);
-  }
-
-  captureStream(frameRequestRate?: number): MediaStream {
-    if (!this.canvas) throw new Error("Canvas is not a 2D context");
-    return this.canvas.captureStream(frameRequestRate);
   }
 
   private getCanvasPosition(clientPosition: PremyPosition): PremyPosition {

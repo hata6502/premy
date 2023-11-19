@@ -407,6 +407,7 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
+      // const title = prompt("Title") ?? "";
       const title = new Date().toLocaleString();
       setTitle(title);
 
@@ -436,10 +437,8 @@ export const App: FunctionComponent<{
       if (navigator.canShare?.(shareData)) {
         try {
           await navigator.share(shareData);
-        } catch (exception) {
-          alert(exception);
-          throw exception;
-        }
+          // eslint-disable-next-line no-empty
+        } catch (exception) {}
       } else {
         setCopySource(premyCanvasElementRef.current.toDataURL());
         setIsCopyDialogOpen(true);
@@ -498,21 +497,6 @@ export const App: FunctionComponent<{
   const handlePasteButtonClick = useCallback(() => {
     setIsPasteDialogOpen(true);
     handleImportMenuClose();
-  }, [handleImportMenuClose]);
-
-  const handlePIPButtonClick = useCallback(async () => {
-    handleImportMenuClose();
-
-    try {
-      // @ts-expect-error
-      const pipWindow = await documentPictureInPicture.requestWindow();
-      const imageElement = pipWindow.document.createElement("img");
-      imageElement.src = premyCanvasElementRef.current?.toDataURL() ?? "";
-      pipWindow.document.body.append(imageElement);
-    } catch (exception) {
-      alert(exception);
-      throw exception;
-    }
   }, [handleImportMenuClose]);
 
   const handleHistoryDialogClose = useCallback(
@@ -875,12 +859,6 @@ export const App: FunctionComponent<{
                   <MenuItem onClick={handlePasteButtonClick}>
                     画像をペーストする
                   </MenuItem>
-
-                  {"documentPictureInPicture" in window && (
-                    <MenuItem onClick={handlePIPButtonClick}>
-                      お題を置く
-                    </MenuItem>
-                  )}
                 </Paper>
               </VisualViewportPopover>
             )}
