@@ -498,6 +498,41 @@ export const App: FunctionComponent<{
     handleImportMenuClose();
   }, [handleImportMenuClose]);
 
+  const handlePIPButtonClick = useCallback(async () => {
+    handleImportMenuClose();
+
+    const imageElement = await new Promise<HTMLImageElement>(
+      (resolve, reject) => {
+        if (!premyCanvasElementRef.current)
+          throw new Error("PremyCanvas element not found");
+
+        const imageElement = new Image();
+        imageElement.addEventListener("error", (event) => reject(event));
+        imageElement.addEventListener("load", () => resolve(imageElement));
+        imageElement.src = premyCanvasElementRef.current.toDataURL();
+      }
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = imageElement.naturalWidth;
+    canvas.height = imageElement.naturalHeight;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas context not found");
+    context.drawImage(imageElement, 0, 0);
+
+    const videoElement = document.createElement("video");
+    videoElement.autoplay = true;
+    videoElement.onloadedmetadata = async () => {
+      try {
+        await videoElement.requestPictureInPicture();
+      } catch (exception) {
+        alert(exception);
+        throw exception;
+      }
+    };
+    videoElement.srcObject = canvas.captureStream();
+  }, [handleImportMenuClose]);
+
   const handleHistoryDialogClose = useCallback(
     () => setIsHistoryDialogOpen(false),
     []
@@ -857,6 +892,10 @@ export const App: FunctionComponent<{
 
                   <MenuItem onClick={handlePasteButtonClick}>
                     画像をペーストする
+                  </MenuItem>
+
+                  <MenuItem onClick={handlePIPButtonClick}>
+                    お題を置く (beta)
                   </MenuItem>
                 </Paper>
               </VisualViewportPopover>
