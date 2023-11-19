@@ -618,7 +618,7 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="Color">
+            <Tooltip title="色">
               <span>
                 <IconButton onClick={handleColorButtonClick}>
                   <Color color={color} />
@@ -675,7 +675,7 @@ export const App: FunctionComponent<{
 
           {mode === "shape" && (
             <Box mr={1}>
-              <Tooltip title="Tone">
+              <Tooltip title="トーン">
                 <span>
                   <IconButton onClick={handleToneButtonClick}>
                     <Tone
@@ -700,7 +700,7 @@ export const App: FunctionComponent<{
                     )}
                   >
                     <Box p={1}>
-                      <InputLabel shrink>Tone</InputLabel>
+                      <InputLabel shrink>トーン</InputLabel>
                       {toneGroups.map((toneGroup, toneGroupIndex) => (
                         <div key={toneGroupIndex}>
                           {Object.keys(toneGroup).map((popoverToneType) => {
@@ -729,7 +729,7 @@ export const App: FunctionComponent<{
                         </div>
                       ))}
 
-                      <InputLabel shrink>Fuzziness</InputLabel>
+                      <InputLabel shrink>エントロピー</InputLabel>
                       {fuzzinesses.map((popoverFuzziness) => {
                         const handleClick = () => {
                           setFuzziness(popoverFuzziness);
@@ -763,7 +763,7 @@ export const App: FunctionComponent<{
           {mode === "text" && (
             <>
               <Box mr={1}>
-                <Tooltip title="Font">
+                <Tooltip title="フォント">
                   <span>
                     <IconButton
                       className={classes.fontButton}
@@ -789,7 +789,6 @@ export const App: FunctionComponent<{
                   >
                     <Paper className="premy-pointer-listener-ignore">
                       {Object.keys(fonts).map((menuFontType) => {
-                        // TODO: useCallback
                         const handleClick = () => {
                           setFontType(menuFontType as FontType);
                           handleFontMenuClose();
@@ -830,7 +829,7 @@ export const App: FunctionComponent<{
           )}
 
           <Box mr={1}>
-            <Tooltip title="Undo">
+            <Tooltip title="元に戻す">
               <span>
                 <IconButton
                   disabled={isUndoDisabled}
@@ -843,7 +842,7 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="History">
+            <Tooltip title="履歴">
               <span>
                 <IconButton onClick={handleHistoryButtonClick}>
                   <Apps />
@@ -853,7 +852,7 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="Redo">
+            <Tooltip title="やり直す">
               <span>
                 <IconButton
                   disabled={isRedoDisabled}
@@ -866,7 +865,7 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box ml="auto" mr={1}>
-            <Tooltip title="Open">
+            <Tooltip title="開く">
               <span>
                 <IconButton onClick={handleImportButtonClick}>
                   <FolderOpen />
@@ -883,7 +882,7 @@ export const App: FunctionComponent<{
                 <Paper className="premy-pointer-listener-ignore">
                   <MenuItem>
                     <FormControl>
-                      <InputLabel>Filter</InputLabel>
+                      <InputLabel>加工</InputLabel>
 
                       <Select
                         native
@@ -891,16 +890,18 @@ export const App: FunctionComponent<{
                         onChange={handleLoadModeSelectChange}
                       >
                         <option value="normal">normal</option>
-                        <option value="tracing">Tracing filter</option>
-                        <option value="mibae">Mibae filter (beta)</option>
+                        <option value="tracing">Trace</option>
+                        <option value="mibae">Mibae</option>
                       </Select>
                     </FormControl>
                   </MenuItem>
 
-                  <MenuItem onClick={handleClearButtonClick}>Clear</MenuItem>
+                  <MenuItem onClick={handleClearButtonClick}>
+                    はじめから
+                  </MenuItem>
 
                   <MenuItem component="label">
-                    Load from file
+                    画像ファイルを開く
                     <input
                       type="file"
                       accept="image/*"
@@ -910,7 +911,7 @@ export const App: FunctionComponent<{
                   </MenuItem>
 
                   <MenuItem onClick={handlePasteButtonClick}>
-                    Paste from clipboard
+                    画像をペーストする
                   </MenuItem>
                 </Paper>
               </VisualViewportPopover>
@@ -918,7 +919,7 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="Share">
+            <Tooltip title="共有">
               <span>
                 <IconButton onClick={handleExportButtonClick}>
                   <Share />
@@ -927,7 +928,7 @@ export const App: FunctionComponent<{
             </Tooltip>
           </Box>
 
-          <Tooltip title="Close">
+          <Tooltip title="閉じる">
             <span>
               <IconButton onClick={onCloseButtonClick}>
                 <Close />

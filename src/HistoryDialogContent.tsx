@@ -38,7 +38,7 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
 
     return (
       <>
-        <DialogTitle>History</DialogTitle>
+        <DialogTitle>履歴</DialogTitle>
 
         <DialogContent>
           <Box mb={2}>

@@ -70,7 +70,7 @@ const PasteDialogContent: FunctionComponent<PasteDialogContentProps> = memo(
 
     return (
       <>
-        <DialogTitle>Paste an image here</DialogTitle>
+        <DialogTitle>ここに画像をペーストしてください</DialogTitle>
 
         <DialogContent>
           <div

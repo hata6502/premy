@@ -18,7 +18,7 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
 
     return (
       <>
-        <DialogTitle>Please copy this image</DialogTitle>
+        <DialogTitle>画像をコピーしてください</DialogTitle>
 
         <DialogContent>
           <a
