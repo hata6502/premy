@@ -1,15 +1,10 @@
 import {
-  Backdrop,
   Box,
-  CircularProgress,
   Dialog,
-  FormControl,
   IconButton,
   InputLabel,
   MenuItem,
   Paper,
-  Select,
-  SelectProps,
   TextField,
   Tooltip,
   makeStyles,
@@ -46,12 +41,10 @@ import {
 } from "./HistoryDialogContent";
 import "./PremyCanvasElement";
 import type {
-  LoadMode,
   PremyCanvasElement,
   PremyCanvasMode,
   PremyHistoryChangeEvent,
   PremyHistoryIndexChangeEvent,
-  PremyLoadStartEvent,
 } from "./PremyCanvasElement";
 import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
@@ -81,9 +74,6 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
     borderBottom: "4px solid",
     borderImage: `linear-gradient(to right, transparent, ${palette.action.focus}) 1`,
     overflowX: "auto",
-  },
-  backdrop: {
-    zIndex: zIndex.drawer + 1,
   },
   fileInput: {
     display: "none !important",
@@ -142,11 +132,8 @@ export const App: FunctionComponent<{
     toneTypes[Math.floor(Math.random() * toneTypes.length)]
   );
 
-  const [loadMode, setLoadMode] = useState<LoadMode>("normal");
   const [text, setText] = useState("");
   const [fuzzinessKey, setFuzzinessKey] = useState(0);
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -201,22 +188,6 @@ export const App: FunctionComponent<{
     }
     const currentPremyCanvasElement = premyCanvasElementRef.current;
 
-    const handleCanvasLoadStart = (event: PremyLoadStartEvent) => {
-      if (event.detail.isHeavy) {
-        setIsLoading(true);
-      }
-    };
-    currentPremyCanvasElement.addEventListener(
-      "premyLoadStart",
-      handleCanvasLoadStart
-    );
-
-    const handleCanvasLoadEnd = () => setIsLoading(false);
-    currentPremyCanvasElement.addEventListener(
-      "premyLoadEnd",
-      handleCanvasLoadEnd
-    );
-
     const handleCanvasHistoryChange = (event: PremyHistoryChangeEvent) => {
       setHistory(event.detail.history);
     };
@@ -236,15 +207,6 @@ export const App: FunctionComponent<{
     );
 
     return () => {
-      currentPremyCanvasElement.removeEventListener(
-        "premyLoadStart",
-        handleCanvasLoadStart
-      );
-      currentPremyCanvasElement.removeEventListener(
-        "premyLoadEnd",
-        handleCanvasLoadEnd
-      );
-
       currentPremyCanvasElement.removeEventListener(
         "premyHistoryChange",
         handleCanvasHistoryChange
@@ -269,7 +231,6 @@ export const App: FunctionComponent<{
       void premyCanvasElementRef.current.load({
         src: getBlankImageDataURL(palettes.light[0]),
         constrainsAspectRatio: false,
-        loadMode: "normal",
         pushesImageToHistory: true,
       });
     }
@@ -493,7 +454,6 @@ export const App: FunctionComponent<{
     await premyCanvasElementRef.current.load({
       src: getBlankImageDataURL(color),
       constrainsAspectRatio: false,
-      loadMode: "normal",
       pushesImageToHistory: true,
     });
   }, [color, handleImportMenuClose]);
@@ -525,26 +485,19 @@ export const App: FunctionComponent<{
           await premyCanvasElementRef.current.load({
             src,
             constrainsAspectRatio: true,
-            loadMode,
             pushesImageToHistory: true,
           });
         };
 
         fileReader.readAsDataURL(file);
       },
-      [handleImportMenuClose, loadMode]
+      [handleImportMenuClose]
     );
 
   const handlePasteButtonClick = useCallback(() => {
     setIsPasteDialogOpen(true);
     handleImportMenuClose();
   }, [handleImportMenuClose]);
-
-  const handleLoadModeSelectChange = useCallback<
-    NonNullable<SelectProps["onChange"]>
-  >((event) => {
-    setLoadMode(event.target.value as LoadMode);
-  }, []);
 
   const handleHistoryDialogClose = useCallback(
     () => setIsHistoryDialogOpen(false),
@@ -572,23 +525,19 @@ export const App: FunctionComponent<{
     }, []);
 
   const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
-    useCallback(
-      async (event) => {
-        if (!premyCanvasElementRef.current) {
-          throw new Error("PremyCanvas element not found");
-        }
+    useCallback(async (event) => {
+      if (!premyCanvasElementRef.current) {
+        throw new Error("PremyCanvas element not found");
+      }
 
-        await premyCanvasElementRef.current.load({
-          src: event.src,
-          constrainsAspectRatio: true,
-          loadMode,
-          pushesImageToHistory: true,
-        });
+      await premyCanvasElementRef.current.load({
+        src: event.src,
+        constrainsAspectRatio: true,
+        pushesImageToHistory: true,
+      });
 
-        setIsPasteDialogOpen(false);
-      },
-      [loadMode]
-    );
+      setIsPasteDialogOpen(false);
+    }, []);
 
   return (
     <>
@@ -893,22 +842,6 @@ export const App: FunctionComponent<{
                 onClose={handleImportMenuClose}
               >
                 <Paper className="premy-pointer-listener-ignore">
-                  <MenuItem>
-                    <FormControl>
-                      <InputLabel>加工</InputLabel>
-
-                      <Select
-                        native
-                        value={loadMode}
-                        onChange={handleLoadModeSelectChange}
-                      >
-                        <option value="normal">normal</option>
-                        <option value="tracing">Trace</option>
-                        <option value="mibae">Mibae</option>
-                      </Select>
-                    </FormControl>
-                  </MenuItem>
-
                   <MenuItem onClick={handleClearButtonClick}>
                     はじめから
                   </MenuItem>
@@ -979,13 +912,6 @@ export const App: FunctionComponent<{
       >
         <PasteDialogContent onPaste={handlePaste} />
       </Dialog>
-
-      <Backdrop
-        className={clsx("premy-pointer-listener-ignore", classes.backdrop)}
-        open={isLoading}
-      >
-        <CircularProgress />
-      </Backdrop>
     </>
   );
 });

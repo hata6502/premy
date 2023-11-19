@@ -36,7 +36,6 @@
     "babel-eslint": "^10.1.0",
     "clsx": "^1.1.1",
     "color": "^4.2.3",
-    "color-diff": "^1.2.0",
     "eslint": "^7.31.0",
     "eslint-config-react-app": "^6.0.0",
     "eslint-plugin-flowtype": "^5.7.2",

@@ -1,11 +1,8 @@
-import Color from "color";
-import colorDiff from "color-diff";
 import { brushes } from "../brushes";
 import type { BrushType } from "../brushes";
 import { fonts } from "../fonts";
 import type { FontType } from "../fonts";
 import { fuzzinesses, noisemap } from "../fuzziness";
-import { palettes } from "../palettes";
 import { ToneType, tonePeriod, tones } from "../tones";
 import { PremyPointerListener } from "./PremyPointerListener";
 import type {
@@ -21,8 +18,6 @@ declare global {
   interface HTMLElementEventMap {
     premyHistoryChange: PremyHistoryChangeEvent;
     premyHistoryIndexChange: PremyHistoryIndexChangeEvent;
-    premyLoadStart: PremyLoadStartEvent;
-    premyLoadEnd: PremyLoadEndEvent;
   }
 }
 
@@ -33,178 +28,7 @@ export type PremyHistoryChangeEvent = CustomEvent<{
 }>;
 export type PremyHistoryIndexChangeEvent = CustomEvent<number>;
 
-export type PremyLoadStartEvent = CustomEvent<{
-  isHeavy: boolean;
-}>;
-export type PremyLoadEndEvent = CustomEvent<never>;
-
 export type PremyCanvasMode = "shape" | "text";
-export type LoadMode = "normal" | "mibae" | "tracing";
-
-const ditheringRate = 0.5;
-const ditheringPattern = [
-  {
-    deltaX: 1,
-    deltaY: 0,
-    rate: (7 / 16) * ditheringRate,
-  },
-  {
-    deltaX: -1,
-    deltaY: 1,
-    rate: (3 / 16) * ditheringRate,
-  },
-  {
-    deltaX: 0,
-    deltaY: 1,
-    rate: (5 / 16) * ditheringRate,
-  },
-  {
-    deltaX: 1,
-    deltaY: 1,
-    rate: (1 / 16) * ditheringRate,
-  },
-];
-
-const colors = Object.values(palettes).flat();
-const tonePeriodRange = [...Array(tonePeriod).keys()];
-
-const patternImageDataCache = Object.fromEntries(
-  Object.keys(tones).map((toneType) => {
-    return [
-      toneType,
-      Object.fromEntries(
-        colors.map((backgroundColor) => {
-          return [
-            backgroundColor,
-            Object.fromEntries(
-              colors.map((foregroundColor) => {
-                return [
-                  foregroundColor,
-                  tonePeriodRange.map((_offsetY) => {
-                    return tonePeriodRange.map((_offsetX) => {
-                      return undefined as ImageData | undefined;
-                    });
-                  }),
-                ];
-              })
-            ),
-          ];
-        })
-      ),
-    ];
-  })
-);
-
-interface Pattern {
-  toneType: ToneType;
-  backgroundColor: string;
-  foregroundColor: string;
-  offsetY: number;
-  offsetX: number;
-}
-
-const getPatternImageData = ({
-  toneType,
-  backgroundColor,
-  foregroundColor,
-  offsetY,
-  offsetX,
-}: Pattern) => {
-  const cachedPatternImageData =
-    patternImageDataCache[toneType][backgroundColor][foregroundColor][offsetY][
-      offsetX
-    ];
-
-  if (cachedPatternImageData) {
-    return cachedPatternImageData;
-  }
-
-  const tone = tones[toneType];
-  const data: number[] = [];
-
-  tonePeriodRange.forEach((y) => {
-    tonePeriodRange.forEach((x) => {
-      const isForeground =
-        tone.bitmap[(y + offsetY) % tonePeriod][(x + offsetX) % tonePeriod];
-
-      const color = isForeground ? foregroundColor : backgroundColor;
-
-      data.push(...Color(color).rgb().array(), 255);
-    });
-  });
-
-  const patternImageData = new ImageData(
-    new Uint8ClampedArray(data),
-    tonePeriod,
-    tonePeriod
-  );
-
-  patternImageDataCache[toneType][backgroundColor][foregroundColor][offsetY][
-    offsetX
-  ] = patternImageData;
-
-  return patternImageData;
-};
-
-const colorDiffCache = new Map<string, number>();
-
-const getBestPattern = ({
-  data,
-  patterns,
-}: {
-  data: Uint8ClampedArray;
-  patterns: Pattern[];
-}) => {
-  let bestPattern = patterns[0];
-  let bestPatternDistance = Infinity;
-
-  patterns.forEach((pattern) => {
-    let distance = 0;
-
-    for (let dataIndex = 0; dataIndex < data.length; dataIndex += 4) {
-      // Out of canvas area.
-      if (data[dataIndex + 3] !== 255) {
-        continue;
-      }
-
-      const patternImageData = getPatternImageData(pattern);
-
-      const colorDiffKey = [
-        data[dataIndex + 0],
-        data[dataIndex + 1],
-        data[dataIndex + 2],
-        patternImageData.data[dataIndex + 0],
-        patternImageData.data[dataIndex + 1],
-        patternImageData.data[dataIndex + 2],
-      ].join("-");
-
-      const diff =
-        colorDiffCache.get(colorDiffKey) ??
-        colorDiff.diff(
-          colorDiff.rgb_to_lab({
-            R: data[dataIndex + 0],
-            G: data[dataIndex + 1],
-            B: data[dataIndex + 2],
-          }),
-          colorDiff.rgb_to_lab({
-            R: patternImageData.data[dataIndex + 0],
-            G: patternImageData.data[dataIndex + 1],
-            B: patternImageData.data[dataIndex + 2],
-          })
-        );
-
-      colorDiffCache.set(colorDiffKey, diff);
-      distance += diff;
-    }
-
-    if (distance < bestPatternDistance) {
-      bestPattern = pattern;
-      bestPatternDistance = distance;
-    }
-  });
-
-  return bestPattern;
-};
 
 export class PremyCanvasElement extends HTMLElement {
   private brushType: BrushType;
@@ -352,119 +176,69 @@ export class PremyCanvasElement extends HTMLElement {
   async load({
     src,
     constrainsAspectRatio,
-    loadMode,
     pushesImageToHistory,
   }: {
     src: string;
     constrainsAspectRatio: boolean;
-    loadMode: LoadMode;
     pushesImageToHistory: boolean;
   }): Promise<void> {
-    const isHeavy = {
-      normal: false,
-      mibae: true,
-      tracing: true,
-    }[loadMode];
-    const premyLoadStartEvent: PremyLoadStartEvent = new CustomEvent(
-      "premyLoadStart",
-      {
-        bubbles: true,
-        composed: true,
-        detail: { isHeavy },
+    const premyDialogRootElement = document.querySelector(".premy-dialog-root");
+
+    if (!this.canvas || !this.context || !premyDialogRootElement) {
+      throw new Error("Canvas is not a 2D context");
+    }
+
+    const imageElement = await new Promise<HTMLImageElement>(
+      (resolve, reject) => {
+        const imageElement = new Image();
+
+        imageElement.addEventListener("error", (event) => reject(event));
+        imageElement.addEventListener("load", () => resolve(imageElement));
+        imageElement.src = src;
       }
     );
 
-    this.dispatchEvent(premyLoadStartEvent);
+    const canvasMaxHeight = premyDialogRootElement.clientHeight - 80;
+    const canvasMaxWidth = premyDialogRootElement.clientWidth - 16;
 
-    try {
-      const premyDialogRootElement =
-        document.querySelector(".premy-dialog-root");
+    const naturalImageHeight = constrainsAspectRatio
+      ? imageElement.naturalHeight
+      : canvasMaxHeight;
+    const naturalImageWidth = constrainsAspectRatio
+      ? imageElement.naturalWidth
+      : canvasMaxWidth;
 
-      if (!this.canvas || !this.context || !premyDialogRootElement) {
-        throw new Error("Canvas is not a 2D context");
-      }
+    const density = Math.sqrt(
+      (320 * 180) / (naturalImageWidth * naturalImageHeight)
+    );
 
-      const imageElement = await new Promise<HTMLImageElement>(
-        (resolve, reject) => {
-          const imageElement = new Image();
+    const imageHeight = Math.round(naturalImageHeight * density);
+    const imageWidth = Math.round(naturalImageWidth * density);
 
-          imageElement.addEventListener("error", (event) => reject(event));
-          imageElement.addEventListener("load", () => resolve(imageElement));
-          imageElement.src = src;
-        }
-      );
+    const heightZoom = canvasMaxHeight / imageHeight;
+    const widthZoom = canvasMaxWidth / imageWidth;
 
-      const canvasMaxHeight = premyDialogRootElement.clientHeight - 80;
-      const canvasMaxWidth = premyDialogRootElement.clientWidth - 16;
+    this.displayingZoom = Math.min(heightZoom, widthZoom);
+    this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
+    this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
 
-      const naturalImageHeight = constrainsAspectRatio
-        ? imageElement.naturalHeight
-        : canvasMaxHeight;
-      const naturalImageWidth = constrainsAspectRatio
-        ? imageElement.naturalWidth
-        : canvasMaxWidth;
+    // For retina display.
+    this.actualZoom = Math.ceil(this.displayingZoom * 2);
+    this.canvas.height = imageHeight * this.actualZoom;
+    this.canvas.width = imageWidth * this.actualZoom;
 
-      const density = Math.sqrt(
-        (320 * 180) / (naturalImageWidth * naturalImageHeight)
-      );
+    this.context.imageSmoothingEnabled = false;
 
-      const imageHeight = Math.round(naturalImageHeight * density);
-      const imageWidth = Math.round(naturalImageWidth * density);
+    this.context.drawImage(
+      imageElement,
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    );
 
-      const heightZoom = canvasMaxHeight / imageHeight;
-      const widthZoom = canvasMaxWidth / imageWidth;
-
-      this.displayingZoom = Math.min(heightZoom, widthZoom);
-      this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
-      this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
-
-      // For retina display.
-      this.actualZoom = Math.ceil(this.displayingZoom * 2);
-      this.canvas.height = imageHeight * this.actualZoom;
-      this.canvas.width = imageWidth * this.actualZoom;
-
-      this.context.imageSmoothingEnabled = false;
-
-      this.context.drawImage(
-        imageElement,
-        0,
-        0,
-        this.canvas.width,
-        this.canvas.height
-      );
-
-      switch (loadMode) {
-        case "normal": {
-          break;
-        }
-
-        case "mibae": {
-          await this.applyMibaeFilter();
-          break;
-        }
-
-        case "tracing": {
-          await this.applyTracingFilter();
-          break;
-        }
-
-        default: {
-          const exhaustiveCheck: never = loadMode;
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          throw new Error(`Unknown load mode: ${exhaustiveCheck}`);
-        }
-      }
-
-      if (pushesImageToHistory) {
-        this.pushImageToHistory();
-      }
-    } finally {
-      const premyLoadEndEvent: PremyLoadEndEvent = new CustomEvent(
-        "premyLoadEnd",
-        { bubbles: true, composed: true }
-      );
-
-      this.dispatchEvent(premyLoadEndEvent);
+    if (pushesImageToHistory) {
+      this.pushImageToHistory();
     }
   }
 
@@ -522,250 +296,6 @@ export class PremyCanvasElement extends HTMLElement {
       x: Math.round(pixelX / this.displayingZoom),
       y: Math.round(pixelY / this.displayingZoom),
     };
-  }
-
-  private async applyMibaeFilter() {
-    if (!this.canvas) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    const shrinkedCanvasElement = document.createElement("canvas");
-
-    shrinkedCanvasElement.width = this.canvas.width / this.actualZoom;
-    shrinkedCanvasElement.height = this.canvas.height / this.actualZoom;
-
-    const shrinkedContext = shrinkedCanvasElement.getContext("2d");
-
-    if (!shrinkedContext) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    shrinkedContext.imageSmoothingEnabled = false;
-
-    shrinkedContext.drawImage(
-      this.canvas,
-      0,
-      0,
-      shrinkedCanvasElement.width,
-      shrinkedCanvasElement.height
-    );
-
-    for (let y = 0; y < shrinkedCanvasElement.height; y++) {
-      if (y % tonePeriod ** 2 === 0) {
-        colorDiffCache.clear();
-      }
-
-      [...Array(shrinkedCanvasElement.width).keys()].forEach((x) => {
-        if (!this.context) {
-          throw new Error("Canvas is not a 2D context");
-        }
-
-        const beginX = x - tonePeriod / 2;
-        const beginY = y - tonePeriod / 2;
-
-        const windowImageData = shrinkedContext.getImageData(
-          beginX,
-          beginY,
-          tonePeriod,
-          tonePeriod
-        );
-
-        const normalizedData = Uint8ClampedArray.from(windowImageData.data);
-        const lightnesses = [];
-
-        for (
-          let dataIndex = 0;
-          dataIndex < normalizedData.length;
-          dataIndex += 4
-        ) {
-          // Out of canvas area.
-          if (normalizedData[dataIndex + 3] !== 255) {
-            continue;
-          }
-
-          const average = Color({
-            r: normalizedData[dataIndex + 0],
-            g: normalizedData[dataIndex + 1],
-            b: normalizedData[dataIndex + 2],
-          })
-            .grayscale()
-            .red();
-
-          normalizedData[dataIndex + 0] =
-            normalizedData[dataIndex + 1] =
-            normalizedData[dataIndex + 2] =
-              average;
-
-          lightnesses.push(average);
-        }
-
-        const maxLightness = Math.max(...lightnesses);
-        const minLightness = Math.min(...lightnesses);
-
-        for (
-          let dataIndex = 0;
-          dataIndex < normalizedData.length;
-          dataIndex += 4
-        ) {
-          // Out of canvas area.
-          if (normalizedData[dataIndex + 3] !== 255) {
-            continue;
-          }
-
-          normalizedData[dataIndex + 0] =
-            normalizedData[dataIndex + 1] =
-            normalizedData[dataIndex + 2] =
-              ((normalizedData[dataIndex + 0] - minLightness) * 255) /
-              (maxLightness - minLightness);
-        }
-
-        const offsetX = Math.abs(beginX % tonePeriod);
-        const offsetY = Math.abs(beginY % tonePeriod);
-
-        const { toneType } = getBestPattern({
-          data: normalizedData,
-          patterns: Object.keys(tones).map((toneType) => ({
-            toneType: toneType as ToneType,
-            backgroundColor: palettes.light[0],
-            foregroundColor: palettes.dark[0],
-            offsetY,
-            offsetX,
-          })),
-        });
-        const tone = tones[toneType];
-
-        const { backgroundColor } = getBestPattern({
-          data: windowImageData.data,
-          patterns: colors.map((backgroundColor) => ({
-            toneType,
-            backgroundColor,
-            foregroundColor: palettes.dark[0],
-            offsetY,
-            offsetX,
-          })),
-        });
-
-        const { foregroundColor } = getBestPattern({
-          data: windowImageData.data,
-          patterns: colors.map((foregroundColor) => ({
-            toneType,
-            backgroundColor,
-            foregroundColor,
-            offsetY,
-            offsetX,
-          })),
-        });
-
-        const isForeground = tone.bitmap[y % tonePeriod][x % tonePeriod];
-
-        this.context.fillStyle = isForeground
-          ? foregroundColor
-          : backgroundColor;
-
-        this.context.fillRect(
-          x * this.actualZoom,
-          y * this.actualZoom,
-          this.actualZoom,
-          this.actualZoom
-        );
-
-        // Floyd–Steinberg dithering
-        const [originalR, originalG, originalB] = shrinkedContext.getImageData(
-          x,
-          y,
-          1,
-          1
-        ).data;
-
-        const [putR, putG, putB] = this.context.getImageData(
-          x * this.actualZoom,
-          y * this.actualZoom,
-          1,
-          1
-        ).data;
-
-        ditheringPattern.forEach(({ deltaX, deltaY, rate }) => {
-          const NeighborhoodImageData = shrinkedContext.getImageData(
-            x + deltaX,
-            y + deltaY,
-            1,
-            1
-          );
-
-          NeighborhoodImageData.data[0] += (originalR - putR) * rate;
-          NeighborhoodImageData.data[1] += (originalG - putG) * rate;
-          NeighborhoodImageData.data[2] += (originalB - putB) * rate;
-
-          shrinkedContext.putImageData(
-            NeighborhoodImageData,
-            x + deltaX,
-            y + deltaY
-          );
-        });
-      });
-
-      await new Promise((resolve) => setTimeout(resolve));
-    }
-  }
-
-  private async applyTracingFilter() {
-    if (!this.canvas || !this.context) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    const originalCanvasElement = document.createElement("canvas");
-
-    originalCanvasElement.width = this.canvas.width;
-    originalCanvasElement.height = this.canvas.height;
-
-    const originalContext = originalCanvasElement.getContext("2d");
-
-    if (!originalContext) {
-      throw new Error("Canvas is not a 2D context");
-    }
-
-    originalContext.drawImage(this.canvas, 0, 0);
-
-    this.context.fillStyle = "#fafafa";
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    for (let y = 0; y < this.canvas.height; y++) {
-      for (let x = 0; x < this.canvas.width; x++) {
-        const windowImageData = originalContext.getImageData(
-          x - 1,
-          y - 1,
-          3,
-          3
-        ).data;
-
-        // Laplacian filter
-        let opacity = 0;
-
-        [1, 1, 1, 1, -8, 1, 1, 1, 1].forEach((weight, index) => {
-          const lightness = Color({
-            r: windowImageData[index * 4 + 0],
-            g: windowImageData[index * 4 + 1],
-            b: windowImageData[index * 4 + 2],
-          })
-            .grayscale()
-            .red();
-
-          opacity += (lightness / 255) * weight;
-        });
-
-        this.context.fillStyle = Color({
-          r: windowImageData[4 * 4 + 0],
-          g: windowImageData[4 * 4 + 1],
-          b: windowImageData[4 * 4 + 2],
-        })
-          .alpha(opacity)
-          .hexa();
-
-        this.context.fillRect(x, y, 1, 1);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve));
-    }
   }
 
   private dispatchHistoryIndexChangeEvent() {
@@ -899,7 +429,6 @@ export class PremyCanvasElement extends HTMLElement {
     void this.load({
       src,
       constrainsAspectRatio: true,
-      loadMode: "normal",
       pushesImageToHistory: false,
     });
   }
