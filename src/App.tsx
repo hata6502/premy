@@ -172,6 +172,19 @@ export const App: FunctionComponent<{
   const isUndoDisabled = historyIndex < 1;
   const isRedoDisabled = historyIndex >= history.length - 1;
 
+  // スマホで画面端をお絵かきしているときに、
+  // スワイプと誤判定してアプリが閉じてしまうのを防ぐ。
+  useEffect(() => {
+    const handleBeforeunload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeunload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeunload);
+    };
+  }, []);
+
   useEffect(() => {
     const intervalID = setInterval(() => {
       setFuzzinessKey(Math.random());
