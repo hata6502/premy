@@ -62,6 +62,9 @@ import {
 } from "./palettes";
 import { ToneType, toneGroups, toneTypes } from "./tones";
 
+const scrapboxURL =
+  "https://scrapbox.io/premy/%E6%8A%95%E7%A8%BF%E3%81%99%E3%82%8B";
+
 const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
     display: "flex",
@@ -436,6 +439,7 @@ export const App: FunctionComponent<{
       if (navigator.canShare?.(shareData)) {
         try {
           await navigator.share(shareData);
+          open(scrapboxURL);
           // eslint-disable-next-line no-empty
         } catch (exception) {}
       } else {
@@ -538,10 +542,10 @@ export const App: FunctionComponent<{
     []
   );
 
-  const handleCopyDialogClose = useCallback(
-    () => setIsCopyDialogOpen(false),
-    []
-  );
+  const handleCopyDialogClose = useCallback(() => {
+    setIsCopyDialogOpen(false);
+    open(scrapboxURL);
+  }, []);
 
   const handlePasteDialogClose = useCallback(
     () => setIsPasteDialogOpen(false),
