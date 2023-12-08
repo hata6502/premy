@@ -406,7 +406,7 @@ export const App: FunctionComponent<{
   );
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(async () => {
+    useCallback(() => {
       if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
