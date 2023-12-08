@@ -62,9 +62,6 @@ import {
 } from "./palettes";
 import { ToneType, toneGroups, toneTypes } from "./tones";
 
-const scrapboxURL =
-  "https://scrapbox.io/premy/%E6%8A%95%E7%A8%BF%E3%81%99%E3%82%8B";
-
 const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
     display: "flex",
@@ -410,42 +407,17 @@ export const App: FunctionComponent<{
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
     useCallback(async () => {
+      if (!premyCanvasElementRef.current) {
+        throw new Error("PremyCanvas element not found");
+      }
+
       const title = new Date().toLocaleString();
       setTitle(title);
 
       window.gtag?.("event", "share");
 
-      if (!premyCanvasElementRef.current) {
-        throw new Error("PremyCanvas element not found");
-      }
-
-      const blob = await new Promise<Blob | null>((resolve, reject) => {
-        if (!premyCanvasElementRef.current) {
-          reject(new Error("PremyCanvas element not found"));
-          return;
-        }
-
-        premyCanvasElementRef.current.toBlob(resolve);
-      });
-      if (!blob) {
-        throw new Error("Blob is not found");
-      }
-
-      const shareData = {
-        title,
-        text: "#premy ",
-        files: [new File([blob], `${title}-premy.png`, { type: "image/png" })],
-      };
-      if (navigator.canShare?.(shareData)) {
-        try {
-          await navigator.share(shareData);
-          open(scrapboxURL);
-          // eslint-disable-next-line no-empty
-        } catch (exception) {}
-      } else {
-        setCopySource(premyCanvasElementRef.current.toDataURL());
-        setIsCopyDialogOpen(true);
-      }
+      setCopySource(premyCanvasElementRef.current.toDataURL());
+      setIsCopyDialogOpen(true);
     }, []);
 
   const handleClearButtonClick = useCallback(async () => {
@@ -544,7 +516,6 @@ export const App: FunctionComponent<{
 
   const handleCopyDialogClose = useCallback(() => {
     setIsCopyDialogOpen(false);
-    open(scrapboxURL);
   }, []);
 
   const handlePasteDialogClose = useCallback(
@@ -881,7 +852,7 @@ export const App: FunctionComponent<{
               >
                 <Paper className="premy-pointer-listener-ignore">
                   <MenuItem onClick={handleClearButtonClick}>
-                    はじめから
+                    塗りつぶし
                   </MenuItem>
 
                   <MenuItem component="label">

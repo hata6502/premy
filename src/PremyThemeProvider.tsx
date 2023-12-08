@@ -8,6 +8,11 @@ const theme = createTheme({
       main: pink.A100,
     },
   },
+  typography: {
+    button: {
+      textTransform: "none",
+    },
+  },
 });
 
 export const PremyThemeProvider: FunctionComponent = memo(({ children }) => (
