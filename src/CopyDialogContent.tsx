@@ -38,7 +38,8 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
           </a>
 
           <DialogContentText>
-            Scrapboxにお絵かきを投稿すると、このサイトに掲載されることがあります。
+            #premy
+            タグ付きでXにポストすると、このサイトに掲載されることがあります。
           </DialogContentText>
 
           <DialogActions>
@@ -46,20 +47,10 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
               component="a"
               variant="outlined"
               color="primary"
-              href="https://scrapbox.io/premy/%E6%8A%95%E7%A8%BF%E3%81%99%E3%82%8B"
-              target="_blank"
-            >
-              Scrapboxに投稿
-            </Button>
-
-            <Button
-              component="a"
-              variant="outlined"
-              color="primary"
               href="https://twitter.com/intent/tweet?hashtags=premy"
               target="_blank"
             >
-              Xに投稿
+              Xにポスト
             </Button>
           </DialogActions>
         </DialogContent>
