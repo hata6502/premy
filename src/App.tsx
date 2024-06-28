@@ -50,17 +50,12 @@ import { PasteDialogContent } from "./PasteDialogContent";
 import type { PasteDialogContentProps } from "./PasteDialogContent";
 import { Tone } from "./Tone";
 import { VisualViewportPopover } from "./VisualViewportPopover";
-import { BrushType, brushTypes, brushes } from "./brushes";
+import { BrushType, brushes } from "./brushes";
 import { animalsAndNatureEmojis } from "./emoji";
-import { FontType, fontTypes, fonts } from "./fonts";
+import { FontType, fonts } from "./fonts";
 import { fuzzinesses } from "./fuzziness";
-import {
-  PaletteKey,
-  getBlankImageDataURL,
-  paletteKeys,
-  palettes,
-} from "./palettes";
-import { ToneType, toneGroups, toneTypes } from "./tones";
+import { PaletteKey, getBlankImageDataURL, palettes } from "./palettes";
+import { ToneType, toneGroups } from "./tones";
 
 const useStyles = makeStyles(({ palette, zIndex }) => ({
   actions: {
@@ -104,33 +99,23 @@ export const App: FunctionComponent<{
   history: string[];
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = memo(({ history: historyProp, onCloseButtonClick }) => {
-  const [brushType, setBrushType] = useState<BrushType>(
-    brushTypes[Math.floor(Math.random() * brushTypes.length)]
-  );
+  const [brushType, setBrushType] = useState<BrushType>("medium");
   const [colorKey, setColorKey] = useState<{
     paletteKey: PaletteKey;
     colorIndex: number;
   }>({
-    paletteKey: paletteKeys[Math.floor(Math.random() * paletteKeys.length)],
-    colorIndex: Math.floor(Math.random() * palettes.light.length),
+    paletteKey: "bright",
+    colorIndex: 4,
   });
   const [defaultText] = useState(
     animalsAndNatureEmojis[
       Math.floor(Math.random() * animalsAndNatureEmojis.length)
     ]
   );
-  const [fontType, setFontType] = useState<FontType>(
-    fontTypes[Math.floor(Math.random() * fontTypes.length)]
-  );
-  const [fuzziness, setFuzziness] = useState(
-    fuzzinesses[Math.floor(Math.random() * fuzzinesses.length)]
-  );
-  const [mode, setMode] = useState<PremyCanvasMode>(
-    Math.random() < 0.5 ? "text" : "shape"
-  );
-  const [toneType, setToneType] = useState<ToneType>(
-    toneTypes[Math.floor(Math.random() * toneTypes.length)]
-  );
+  const [fontType, setFontType] = useState<FontType>("sans-serif");
+  const [fuzziness, setFuzziness] = useState(fuzzinesses[2]);
+  const [mode, setMode] = useState<PremyCanvasMode>("shape");
+  const [toneType, setToneType] = useState<ToneType>("slashBold");
 
   const [text, setText] = useState("");
   const [fuzzinessKey, setFuzzinessKey] = useState(0);
@@ -427,11 +412,11 @@ export const App: FunctionComponent<{
 
     handleImportMenuClose();
     await premyCanvasElementRef.current.load({
-      src: getBlankImageDataURL(color),
+      src: getBlankImageDataURL(palettes.light[0]),
       constrainsAspectRatio: false,
       pushesImageToHistory: true,
     });
-  }, [color, handleImportMenuClose]);
+  }, [handleImportMenuClose]);
 
   const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
     useCallback(
