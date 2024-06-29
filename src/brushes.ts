@@ -11,25 +11,27 @@ const getBitmap = ({ diameter }: { diameter: number }) => {
 export const brushTypes = ["xLarge", "large", "medium", "small"] as const;
 export type BrushType = typeof brushTypes[number];
 
+const zoom = 1;
+
 const xLarge = {
-  bitmap: getBitmap({ diameter: 15 }),
+  bitmap: getBitmap({ diameter: 16 * zoom - 1 }),
   button: { size: 24 },
-  font: { size: 125 },
+  font: { size: 125 * zoom },
 };
 const large = {
-  bitmap: getBitmap({ diameter: 7 }),
+  bitmap: getBitmap({ diameter: 8 * zoom - 1 }),
   button: { size: 20 },
-  font: { size: 50 },
+  font: { size: 50 * zoom },
 };
 const medium = {
-  bitmap: getBitmap({ diameter: 3 }),
+  bitmap: getBitmap({ diameter: 4 * zoom - 1 }),
   button: { size: 16 },
-  font: { size: 20 },
+  font: { size: 20 * zoom },
 };
 const small = {
-  bitmap: getBitmap({ diameter: 1 }),
+  bitmap: getBitmap({ diameter: 2 * zoom - 1 }),
   button: { size: 12 },
-  font: { size: 8 },
+  font: { size: 8 * zoom },
 };
 export const brushes: Record<BrushType, typeof xLarge> = {
   xLarge,

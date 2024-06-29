@@ -535,9 +535,7 @@ export const App: FunctionComponent<{
 
   return (
     <>
-      <Box mt={8} ml={1} mr={1}>
-        <premy-canvas ref={premyCanvasElementRef} />
-      </Box>
+      <premy-canvas ref={premyCanvasElementRef} />
 
       <VisualViewportPopover className={classes.popover}>
         <div className={clsx(classes.actions, "premy-pointer-listener-ignore")}>
@@ -837,7 +835,7 @@ export const App: FunctionComponent<{
               >
                 <Paper className="premy-pointer-listener-ignore">
                   <MenuItem onClick={handleClearButtonClick}>
-                    塗りつぶし
+                    白紙に戻す
                   </MenuItem>
 
                   <MenuItem component="label">

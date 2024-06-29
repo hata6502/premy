@@ -11,6 +11,9 @@ const config = {
       {
         test: /\.tsx?$/,
         loader: "ts-loader",
+        options: {
+          transpileOnly: true,
+        },
       },
     ],
   },
