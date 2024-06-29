@@ -535,7 +535,9 @@ export const App: FunctionComponent<{
 
   return (
     <>
-      <premy-canvas ref={premyCanvasElementRef} />
+      <Box mt={8} ml={1} mr={1}>
+        <premy-canvas ref={premyCanvasElementRef} />
+      </Box>
 
       <VisualViewportPopover className={classes.popover}>
         <div className={clsx(classes.actions, "premy-pointer-listener-ignore")}>

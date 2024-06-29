@@ -30,8 +30,6 @@ export type PremyHistoryIndexChangeEvent = CustomEvent<number>;
 
 export type PremyCanvasMode = "shape" | "text";
 
-const density = 2;
-
 export class PremyCanvasElement extends HTMLElement {
   private brushType: BrushType;
   private canvas?: HTMLCanvasElement;
@@ -47,6 +45,8 @@ export class PremyCanvasElement extends HTMLElement {
   private fuzziness: number;
   private toneType: ToneType;
   private transactionMode?: PremyCanvasMode;
+  private actualZoom: number;
+  private displayingZoom: number;
   private pushingImageToHistoryTimeoutID?: number;
   private randomX256 = 0;
   private randomY256 = 0;
@@ -64,14 +64,17 @@ export class PremyCanvasElement extends HTMLElement {
     this.text = "";
     this.fuzziness = fuzzinesses[0];
     this.toneType = "fill";
+    this.actualZoom = 0;
+    this.displayingZoom = 0;
   }
 
   connectedCallback(): void {
     this.innerHTML = `
       <style>
         .premy-canvas-container {
-          overflow: hidden;
+          display: inline-block;
           position: relative;
+          overflow: hidden;
         }
 
         .premy-canvas-container * {
@@ -82,9 +85,9 @@ export class PremyCanvasElement extends HTMLElement {
           user-select: none;
         }
 
-        .premy-canvas-container canvas {
-          width: 100%;
-          height: 100%;
+        .premy-canvas-container .canvas {
+          border: 1px solid #e0e0e0;
+          vertical-align: bottom;
         }
 
         .premy-canvas-container .text-preview-rect {
@@ -181,12 +184,9 @@ export class PremyCanvasElement extends HTMLElement {
     constrainsAspectRatio: boolean;
     pushesImageToHistory: boolean;
   }): Promise<void> {
-    const containerElement = this.querySelector(".premy-canvas-container");
-    if (
-      !this.canvas ||
-      !this.context ||
-      !(containerElement instanceof HTMLElement)
-    ) {
+    const premyDialogRootElement = document.querySelector(".premy-dialog-root");
+
+    if (!this.canvas || !this.context || !premyDialogRootElement) {
       throw new Error("Canvas is not a 2D context");
     }
 
@@ -200,19 +200,34 @@ export class PremyCanvasElement extends HTMLElement {
       }
     );
 
-    const imageHeight = constrainsAspectRatio
-      ? imageElement.naturalHeight / devicePixelRatio
-      : window.innerHeight;
-    const imageWidth = constrainsAspectRatio
-      ? imageElement.naturalWidth / devicePixelRatio
-      : window.innerWidth;
+    const canvasMaxHeight = premyDialogRootElement.clientHeight - 80;
+    const canvasMaxWidth = premyDialogRootElement.clientWidth - 16;
 
-    containerElement.style.height = `${imageHeight}px`;
-    containerElement.style.width = `${imageWidth}px`;
+    const naturalImageHeight = constrainsAspectRatio
+      ? imageElement.naturalHeight
+      : canvasMaxHeight;
+    const naturalImageWidth = constrainsAspectRatio
+      ? imageElement.naturalWidth
+      : canvasMaxWidth;
+
+    const density = Math.sqrt(
+      (320 * 180) / (naturalImageWidth * naturalImageHeight)
+    );
+
+    const imageHeight = Math.round(naturalImageHeight * density);
+    const imageWidth = Math.round(naturalImageWidth * density);
+
+    const heightZoom = canvasMaxHeight / imageHeight;
+    const widthZoom = canvasMaxWidth / imageWidth;
+
+    this.displayingZoom = Math.min(heightZoom, widthZoom);
+    this.canvas.style.height = `${imageHeight * this.displayingZoom}px`;
+    this.canvas.style.width = `${imageWidth * this.displayingZoom}px`;
 
     // For retina display.
-    this.canvas.height = imageHeight * devicePixelRatio;
-    this.canvas.width = imageWidth * devicePixelRatio;
+    this.actualZoom = Math.ceil(this.displayingZoom * 2);
+    this.canvas.height = imageHeight * this.actualZoom;
+    this.canvas.width = imageWidth * this.actualZoom;
 
     this.context.imageSmoothingEnabled = false;
 
@@ -280,8 +295,8 @@ export class PremyCanvasElement extends HTMLElement {
     const pixelY = clientPosition.y - (domRect.top + 1);
 
     return {
-      x: Math.round(pixelX / density),
-      y: Math.round(pixelY / density),
+      x: Math.round(pixelX / this.displayingZoom),
+      y: Math.round(pixelY / this.displayingZoom),
     };
   }
 
@@ -303,10 +318,10 @@ export class PremyCanvasElement extends HTMLElement {
     }
 
     this.textPreviewRect.style.font = `${
-      brushes[this.brushType].font.size * density
+      brushes[this.brushType].font.size * this.displayingZoom
     }px ${fonts[this.fontType]}`;
-    this.textPreviewRect.style.left = `${position.x * density}px`;
-    this.textPreviewRect.style.top = `${position.y * density}px`;
+    this.textPreviewRect.style.left = `${position.x * this.displayingZoom}px`;
+    this.textPreviewRect.style.top = `${position.y * this.displayingZoom}px`;
     this.textPreviewRect.style.color = this.color;
     this.textPreviewRect.textContent = this.text;
   }
@@ -361,10 +376,10 @@ export class PremyCanvasElement extends HTMLElement {
         }
 
         this.context.fillRect(
-          x * density * devicePixelRatio,
-          y * density * devicePixelRatio,
-          density * devicePixelRatio,
-          density * devicePixelRatio
+          x * this.actualZoom,
+          y * this.actualZoom,
+          this.actualZoom,
+          this.actualZoom
         );
       }
     }
@@ -441,21 +456,18 @@ export class PremyCanvasElement extends HTMLElement {
         this.randomX256 = Math.floor(Math.random() * 256);
         this.randomY256 = Math.floor(Math.random() * 256);
         this.drawPoint(position);
-
         break;
       }
 
       case "text": {
         this.transactionMode = "text";
         this.displayTextPreviewRect(position);
-
         break;
       }
 
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const exhaustiveCheck: never = this.mode;
-
         throw new Error("Unknown mode");
       }
     }
@@ -522,15 +534,15 @@ export class PremyCanvasElement extends HTMLElement {
 
         this.context.fillStyle = this.color;
         this.context.font = `${
-          brushes[this.brushType].font.size * density * devicePixelRatio
+          brushes[this.brushType].font.size * this.actualZoom
         }px ${fonts[this.fontType]}`;
         this.context.textAlign = "center";
         this.context.textBaseline = "middle";
 
         this.context.fillText(
           this.text,
-          canvasPosition.x * density * devicePixelRatio,
-          canvasPosition.y * density * devicePixelRatio
+          canvasPosition.x * this.actualZoom,
+          canvasPosition.y * this.actualZoom
         );
 
         this.textPreviewRect.textContent = "";
