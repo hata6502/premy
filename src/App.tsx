@@ -391,7 +391,7 @@ export const App: FunctionComponent<{
   );
 
   const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(() => {
+    useCallback(async () => {
       if (!premyCanvasElementRef.current) {
         throw new Error("PremyCanvas element not found");
       }
@@ -401,9 +401,14 @@ export const App: FunctionComponent<{
 
       window.gtag?.("event", "share");
 
-      setCopySource(premyCanvasElementRef.current.toDataURL());
+      URL.revokeObjectURL(copySource);
+      const copySourceResponse = await fetch(
+        premyCanvasElementRef.current.toDataURL()
+      );
+      setCopySource(URL.createObjectURL(await copySourceResponse.blob()));
+
       setIsCopyDialogOpen(true);
-    }, []);
+    }, [copySource]);
 
   const handleClearButtonClick = useCallback(async () => {
     if (!premyCanvasElementRef.current) {
