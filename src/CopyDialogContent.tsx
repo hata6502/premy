@@ -47,7 +47,10 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
               component="a"
               variant="outlined"
               color="primary"
-              href="https://twitter.com/intent/tweet?hashtags=premy"
+              href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+                hashtags: "premy",
+                url: "https://premy.hata6502.com/",
+              })}`}
               target="_blank"
             >
               Xにポスト
