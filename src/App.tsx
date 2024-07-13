@@ -6,16 +6,15 @@ import {
   MenuItem,
   Paper,
   TextField,
-  Tooltip,
   makeStyles,
 } from "@material-ui/core";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import {
-  Apps,
   Brush as BrushIcon,
   Close,
   FolderOpen,
+  History,
   Redo,
   Share,
   TextFormat,
@@ -579,13 +578,9 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="色">
-              <span>
-                <IconButton onClick={handleColorButtonClick}>
-                  <Color color={color} />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton onClick={handleColorButtonClick}>
+              <Color color={color} />
+            </IconButton>
 
             {colorPopoverAnchorEl && (
               <VisualViewportPopover
@@ -636,17 +631,9 @@ export const App: FunctionComponent<{
 
           {mode === "shape" && (
             <Box mr={1}>
-              <Tooltip title="トーン">
-                <span>
-                  <IconButton onClick={handleToneButtonClick}>
-                    <Tone
-                      color={color}
-                      fuzziness={fuzziness}
-                      toneType={toneType}
-                    />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              <IconButton onClick={handleToneButtonClick}>
+                <Tone color={color} fuzziness={fuzziness} toneType={toneType} />
+              </IconButton>
 
               {tonePopoverAnchorEl && (
                 <VisualViewportPopover
@@ -724,23 +711,19 @@ export const App: FunctionComponent<{
           {mode === "text" && (
             <>
               <Box mr={1}>
-                <Tooltip title="フォント">
-                  <span>
-                    <IconButton
-                      className={classes.fontButton}
-                      onClick={handleFontButtonClick}
-                    >
-                      <span
-                        style={{
-                          fontFamily: fonts[fontType],
-                          fontWeight: "bold",
-                        }}
-                      >
-                        F
-                      </span>
-                    </IconButton>
+                <IconButton
+                  className={classes.fontButton}
+                  onClick={handleFontButtonClick}
+                >
+                  <span
+                    style={{
+                      fontFamily: fonts[fontType],
+                      fontWeight: "bold",
+                    }}
+                  >
+                    F
                   </span>
-                </Tooltip>
+                </IconButton>
 
                 {fontMenuAnchorEl && (
                   <VisualViewportPopover
@@ -790,49 +773,33 @@ export const App: FunctionComponent<{
           )}
 
           <Box mr={1}>
-            <Tooltip title="元に戻す">
-              <span>
-                <IconButton
-                  disabled={isUndoDisabled}
-                  onClick={handleUndoButtonClick}
-                >
-                  <Undo />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton
+              disabled={isUndoDisabled}
+              onClick={handleUndoButtonClick}
+            >
+              <Undo />
+            </IconButton>
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="履歴">
-              <span>
-                <IconButton onClick={handleHistoryButtonClick}>
-                  <Apps />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton onClick={handleHistoryButtonClick}>
+              <History />
+            </IconButton>
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="やり直す">
-              <span>
-                <IconButton
-                  disabled={isRedoDisabled}
-                  onClick={handleRedoButtonClick}
-                >
-                  <Redo />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton
+              disabled={isRedoDisabled}
+              onClick={handleRedoButtonClick}
+            >
+              <Redo />
+            </IconButton>
           </Box>
 
           <Box ml="auto" mr={1}>
-            <Tooltip title="開く">
-              <span>
-                <IconButton onClick={handleImportButtonClick}>
-                  <FolderOpen />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton onClick={handleImportButtonClick}>
+              <FolderOpen />
+            </IconButton>
 
             {importMenuAnchorEl && (
               <VisualViewportPopover
@@ -868,22 +835,14 @@ export const App: FunctionComponent<{
           </Box>
 
           <Box mr={1}>
-            <Tooltip title="共有">
-              <span>
-                <IconButton onClick={handleExportButtonClick}>
-                  <Share />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <IconButton onClick={handleExportButtonClick}>
+              <Share />
+            </IconButton>
           </Box>
 
-          <Tooltip title="閉じる">
-            <span>
-              <IconButton onClick={onCloseButtonClick}>
-                <Close />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <IconButton onClick={onCloseButtonClick}>
+            <Close />
+          </IconButton>
         </div>
       </VisualViewportPopover>
 
