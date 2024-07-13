@@ -5,7 +5,7 @@ import {
   Grid,
   makeStyles,
 } from "@material-ui/core";
-import { FunctionComponent, memo } from "react";
+import { FunctionComponent, memo, useEffect, useState } from "react";
 
 const useStyles = makeStyles(({ palette }) => ({
   button: {
@@ -34,8 +34,42 @@ export interface HistoryDialogContentProps {
 
 export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> =
   memo(({ history, onSelectItem }) => {
-    const classes = useStyles();
+    const [objectURLHistory, setObjectURLHistory] = useState<string[]>();
 
+    useEffect(() => {
+      const objectURLHistory: string[] = [];
+      const abortController = new AbortController();
+
+      (async () => {
+        for (const dataURL of history) {
+          const response = await fetch(dataURL);
+          const blob = await response.blob();
+
+          if (abortController.signal.aborted) {
+            throw new DOMException(
+              String(abortController.signal.reason),
+              "AbortError"
+            );
+          }
+          objectURLHistory.push(URL.createObjectURL(blob));
+        }
+
+        setObjectURLHistory(objectURLHistory);
+      })();
+
+      return () => {
+        setObjectURLHistory(undefined);
+        abortController.abort();
+        for (const objectURL of objectURLHistory) {
+          URL.revokeObjectURL(objectURL);
+        }
+      };
+    }, [history]);
+
+    const classes = useStyles();
+    if (!objectURLHistory) {
+      return null;
+    }
     return (
       <>
         <DialogTitle>履歴</DialogTitle>
@@ -43,9 +77,9 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
         <DialogContent>
           <Box mb={2}>
             <Grid container spacing={2}>
-              {[...history.entries()]
+              {[...objectURLHistory.entries()]
                 .reverse()
-                .map(([historyIndex, dataURL]) => {
+                .map(([historyIndex, objectURL]) => {
                   const handleButtonClick = () => {
                     onSelectItem(historyIndex);
                   };
@@ -57,12 +91,7 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
                         className={classes.button}
                         onClick={handleButtonClick}
                       >
-                        <img
-                          className={classes.image}
-                          alt=""
-                          src={dataURL}
-                          loading="lazy"
-                        />
+                        <img className={classes.image} alt="" src={objectURL} />
                       </button>
                     </Grid>
                   );
