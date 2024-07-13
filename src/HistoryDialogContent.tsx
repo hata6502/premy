@@ -40,16 +40,13 @@ export const HistoryDialogContent: FunctionComponent<HistoryDialogContentProps> 
       const objectURLHistory: string[] = [];
       const abortController = new AbortController();
 
-      (async () => {
+      void (async () => {
         for (const dataURL of history) {
           const response = await fetch(dataURL);
           const blob = await response.blob();
 
           if (abortController.signal.aborted) {
-            throw new DOMException(
-              String(abortController.signal.reason),
-              "AbortError"
-            );
+            throw abortController.signal.reason;
           }
           objectURLHistory.push(URL.createObjectURL(blob));
         }
