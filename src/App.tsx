@@ -12,6 +12,7 @@ import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import type { ToggleButtonGroupProps } from "@material-ui/lab";
 import {
   Brush as BrushIcon,
+  ChevronRight,
   Close,
   FolderOpen,
   History,
@@ -65,9 +66,20 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
     paddingLeft: 8,
     paddingRight: 8,
     background: palette.background.paper,
-    borderBottom: "4px solid",
-    borderImage: `linear-gradient(to right, transparent, ${palette.action.focus}) 1`,
     overflowX: "auto",
+    position: "relative",
+  },
+  scrollIndicator: {
+    position: "absolute",
+    right: 12,
+    top: "calc(50% + 4px)",
+    transform: "translateY(-50%)",
+    backgroundColor: palette.background.paper,
+    borderRadius: "50%",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+    zIndex: 1,
+    animation: "$pulse 2s infinite",
+    pointerEvents: "none",
   },
   fileInput: {
     display: "none !important",
@@ -91,6 +103,11 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
   },
   toneContainer: {
     width: 208,
+  },
+  "@keyframes pulse": {
+    "0%": { transform: "translateY(-50%) translateX(0)" },
+    "50%": { transform: "translateY(-50%) translateX(4px)" },
+    "100%": { transform: "translateY(-50%) translateX(0)" },
   },
 }));
 
@@ -133,7 +150,9 @@ export const App: FunctionComponent<{
 
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
+  const actionsElementRef = useRef<HTMLDivElement>(null);
   const premyCanvasElementRef = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
@@ -153,6 +172,27 @@ export const App: FunctionComponent<{
     window.addEventListener("beforeunload", handleBeforeunload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeunload);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!actionsElementRef.current) {
+      throw new Error("Actions element not found");
+    }
+    const actionsElement = actionsElementRef.current;
+
+    const handleScroll = () => {
+      const atStart = actionsElement.scrollLeft === 0;
+      const overflowed =
+        actionsElement.scrollWidth > actionsElement.clientWidth;
+      setShowScrollIndicator((prev) => prev && atStart && overflowed);
+    };
+
+    actionsElement.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      actionsElement.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -544,7 +584,16 @@ export const App: FunctionComponent<{
       </Box>
 
       <VisualViewportPopover className={classes.popover}>
-        <div className={clsx(classes.actions, "premy-pointer-listener-ignore")}>
+        <div
+          ref={actionsElementRef}
+          className={clsx(classes.actions, "premy-pointer-listener-ignore")}
+        >
+          {showScrollIndicator && (
+            <IconButton className={classes.scrollIndicator} size="small">
+              <ChevronRight />
+            </IconButton>
+          )}
+
           <Box mr={1}>
             <ToggleButtonGroup
               exclusive
