@@ -71,7 +71,7 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
   },
   scrollIndicator: {
     position: "absolute",
-    right: 12,
+    right: -4,
     top: "calc(50% + 4px)",
     transform: "translateY(-50%)",
     backgroundColor: palette.background.paper,
