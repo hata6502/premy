@@ -22,3 +22,5 @@ jobs:
 
       # https://semantic-release.gitbook.io/semantic-release/recipes/ci-configurations/github-actions
       - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
