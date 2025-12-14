@@ -27,8 +27,6 @@ import {
   ChangeEventHandler,
   FunctionComponent,
   MouseEventHandler,
-  memo,
-  useCallback,
   useEffect,
   useRef,
   useState,
@@ -79,7 +77,6 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
     zIndex: 1,
     animation: "$pulse 2s infinite",
-    pointerEvents: "none",
   },
   fileInput: {
     display: "none !important",
@@ -114,7 +111,7 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
 export const App: FunctionComponent<{
   history: string[];
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
-}> = memo(({ history: historyProp, onCloseButtonClick }) => {
+}> = ({ history: historyProp, onCloseButtonClick }) => {
   const [brushType, setBrushType] = useState<BrushType>("medium");
   const [colorKey, setColorKey] = useState<{
     paletteKey: PaletteKey;
@@ -331,125 +328,104 @@ export const App: FunctionComponent<{
     }))
   );
 
-  const handleColorButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(
-      (event) =>
-        setColorPopoverAnchorEl((prevColorPopoverAnchorEl) =>
-          prevColorPopoverAnchorEl ? undefined : event.currentTarget
-        ),
-      []
+  const handleColorButtonClick: MouseEventHandler<HTMLButtonElement> = (
+    event
+  ) =>
+    setColorPopoverAnchorEl((prevColorPopoverAnchorEl) =>
+      prevColorPopoverAnchorEl ? undefined : event.currentTarget
     );
 
-  const handleColorPopoverClose = useCallback(
-    () => setColorPopoverAnchorEl(undefined),
-    []
-  );
+  const handleColorPopoverClose = () => setColorPopoverAnchorEl(undefined);
 
-  const handleModeChange = useCallback<
-    NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, mode) => {
+  const handleModeChange: ToggleButtonGroupProps["onChange"] = (
+    _event,
+    mode
+  ) => {
     if (mode === null) {
       return;
     }
 
     setMode(mode);
-  }, []);
+  };
 
-  const handleTextInputClick = useCallback(() => {
+  const handleTextInputClick = () => {
     setText(prompt("Text", text) ?? text);
-  }, [text]);
+  };
 
-  const handleFontButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(
-      (event) =>
-        setFontMenuAnchorEl((prevFontMenuAnchorEl) =>
-          prevFontMenuAnchorEl ? undefined : event.currentTarget
-        ),
-      []
+  const handleFontButtonClick: MouseEventHandler<HTMLButtonElement> = (event) =>
+    setFontMenuAnchorEl((prevFontMenuAnchorEl) =>
+      prevFontMenuAnchorEl ? undefined : event.currentTarget
     );
 
-  const handleFontMenuClose = useCallback(
-    () => setFontMenuAnchorEl(undefined),
-    []
-  );
+  const handleFontMenuClose = () => setFontMenuAnchorEl(undefined);
 
-  const handleBrushTypeChange = useCallback<
-    NonNullable<ToggleButtonGroupProps["onChange"]>
-  >((_event, brushType) => {
+  const handleBrushTypeChange: ToggleButtonGroupProps["onChange"] = (
+    _event,
+    brushType
+  ) => {
     if (brushType === null) {
       return;
     }
 
     setBrushType(brushType);
-  }, []);
+  };
 
-  const handleToneButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(
-      (event) =>
-        setTonePopoverAnchorEl((prevTonePopoverAnchorEl) =>
-          prevTonePopoverAnchorEl ? undefined : event.currentTarget
-        ),
-      []
+  const handleToneButtonClick: MouseEventHandler<HTMLButtonElement> = (event) =>
+    setTonePopoverAnchorEl((prevTonePopoverAnchorEl) =>
+      prevTonePopoverAnchorEl ? undefined : event.currentTarget
     );
 
-  const handleTonePopoverClose = useCallback(
-    () => setTonePopoverAnchorEl(undefined),
-    []
-  );
+  const handleTonePopoverClose = () => setTonePopoverAnchorEl(undefined);
 
-  const handleUndoButtonClick = useCallback(() => {
+  const handleUndoButtonClick = () => {
     if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
     premyCanvasElementRef.current.setHistoryIndex(historyIndex - 1);
-  }, [historyIndex]);
+  };
 
-  const handleHistoryButtonClick = useCallback(() => {
+  const handleHistoryButtonClick = () => {
     setIsHistoryDialogOpen(true);
-  }, []);
+  };
 
-  const handleRedoButtonClick = useCallback(() => {
+  const handleRedoButtonClick = () => {
     if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
     premyCanvasElementRef.current.setHistoryIndex(historyIndex + 1);
-  }, [historyIndex]);
+  };
 
-  const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(
-      (event) =>
-        setImportMenuAnchorEl((prevImportMenuAnchorEl) =>
-          prevImportMenuAnchorEl ? undefined : event.currentTarget
-        ),
-      []
+  const handleImportButtonClick: MouseEventHandler<HTMLButtonElement> = (
+    event
+  ) =>
+    setImportMenuAnchorEl((prevImportMenuAnchorEl) =>
+      prevImportMenuAnchorEl ? undefined : event.currentTarget
     );
 
-  const handleImportMenuClose = useCallback(
-    () => setImportMenuAnchorEl(undefined),
-    []
-  );
+  const handleImportMenuClose = () => setImportMenuAnchorEl(undefined);
 
-  const handleExportButtonClick: MouseEventHandler<HTMLButtonElement> =
-    useCallback(async () => {
-      if (!premyCanvasElementRef.current) {
-        throw new Error("PremyCanvas element not found");
-      }
+  const handleExportButtonClick: MouseEventHandler<
+    HTMLButtonElement
+  > = async () => {
+    if (!premyCanvasElementRef.current) {
+      throw new Error("PremyCanvas element not found");
+    }
 
-      const title = new Date().toLocaleString();
-      setTitle(title);
+    const title = new Date().toLocaleString();
+    setTitle(title);
 
-      window.gtag?.("event", "share");
+    window.gtag?.("event", "share");
 
-      URL.revokeObjectURL(copySource);
-      const copySourceResponse = await fetch(
-        premyCanvasElementRef.current.toDataURL()
-      );
-      setCopySource(URL.createObjectURL(await copySourceResponse.blob()));
+    URL.revokeObjectURL(copySource);
+    const copySourceResponse = await fetch(
+      premyCanvasElementRef.current.toDataURL()
+    );
+    setCopySource(URL.createObjectURL(await copySourceResponse.blob()));
 
-      setIsCopyDialogOpen(true);
-    }, [copySource]);
+    setIsCopyDialogOpen(true);
+  };
 
-  const handleClearButtonClick = useCallback(async () => {
+  const handleClearButtonClick = async () => {
     if (!premyCanvasElementRef.current) {
       throw new Error("PremyCanvas element not found");
     }
@@ -460,50 +436,48 @@ export const App: FunctionComponent<{
       constrainsAspectRatio: false,
       pushesImageToHistory: true,
     });
-  }, [handleImportMenuClose]);
+  };
 
-  const handleFileInputChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback(
-      (event) => {
-        handleImportMenuClose();
+  const handleFileInputChange: ChangeEventHandler<HTMLInputElement> = (
+    event
+  ) => {
+    handleImportMenuClose();
 
-        const file = event.target.files?.[0];
+    const file = event.target.files?.[0];
 
-        if (!file) {
-          return;
-        }
+    if (!file) {
+      return;
+    }
 
-        const fileReader = new FileReader();
+    const fileReader = new FileReader();
 
-        fileReader.onload = async () => {
-          const src = fileReader.result;
+    fileReader.onload = async () => {
+      const src = fileReader.result;
 
-          if (typeof src !== "string") {
-            throw new Error("Source is not a string");
-          }
+      if (typeof src !== "string") {
+        throw new Error("Source is not a string");
+      }
 
-          if (!premyCanvasElementRef.current) {
-            throw new Error("PremyCanvas element not found");
-          }
+      if (!premyCanvasElementRef.current) {
+        throw new Error("PremyCanvas element not found");
+      }
 
-          await premyCanvasElementRef.current.load({
-            src,
-            constrainsAspectRatio: true,
-            pushesImageToHistory: true,
-          });
-        };
+      await premyCanvasElementRef.current.load({
+        src,
+        constrainsAspectRatio: true,
+        pushesImageToHistory: true,
+      });
+    };
 
-        fileReader.readAsDataURL(file);
-      },
-      [handleImportMenuClose]
-    );
+    fileReader.readAsDataURL(file);
+  };
 
-  const handlePasteButtonClick = useCallback(() => {
+  const handlePasteButtonClick = () => {
     setIsPasteDialogOpen(true);
     handleImportMenuClose();
-  }, [handleImportMenuClose]);
+  };
 
-  const handlePIPButtonClick = useCallback(async () => {
+  const handlePIPButtonClick = async () => {
     handleImportMenuClose();
 
     const imageElement = await new Promise<HTMLImageElement>(
@@ -536,46 +510,54 @@ export const App: FunctionComponent<{
       }
     };
     videoElement.srcObject = canvas.captureStream();
-  }, [handleImportMenuClose]);
+  };
 
-  const handleHistoryDialogClose = useCallback(
-    () => setIsHistoryDialogOpen(false),
-    []
-  );
+  const handleScrollIndicatorClick = () => {
+    if (!actionsElementRef.current) {
+      throw new Error("Actions element not found");
+    }
+    const actionsElement = actionsElementRef.current;
 
-  const handleCopyDialogClose = useCallback(() => {
+    actionsElement.scrollTo({
+      left: actionsElement.scrollWidth,
+      behavior: "smooth",
+    });
+  };
+
+  const handleHistoryDialogClose = () => setIsHistoryDialogOpen(false);
+
+  const handleCopyDialogClose = () => {
     setIsCopyDialogOpen(false);
-  }, []);
+  };
 
-  const handlePasteDialogClose = useCallback(
-    () => setIsPasteDialogOpen(false),
-    []
-  );
+  const handlePasteDialogClose = () => setIsPasteDialogOpen(false);
 
-  const handleSelectHistoryItem: HistoryDialogContentProps["onSelectItem"] =
-    useCallback((historyIndex) => {
-      setIsHistoryDialogOpen(false);
+  const handleSelectHistoryItem: HistoryDialogContentProps["onSelectItem"] = (
+    historyIndex
+  ) => {
+    setIsHistoryDialogOpen(false);
 
-      if (!premyCanvasElementRef.current) {
-        throw new Error("PremyCanvas element not found");
-      }
-      premyCanvasElementRef.current.setHistoryIndex(historyIndex);
-    }, []);
+    if (!premyCanvasElementRef.current) {
+      throw new Error("PremyCanvas element not found");
+    }
+    premyCanvasElementRef.current.setHistoryIndex(historyIndex);
+  };
 
-  const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> =
-    useCallback(async (event) => {
-      if (!premyCanvasElementRef.current) {
-        throw new Error("PremyCanvas element not found");
-      }
+  const handlePaste: NonNullable<PasteDialogContentProps["onPaste"]> = async (
+    event
+  ) => {
+    if (!premyCanvasElementRef.current) {
+      throw new Error("PremyCanvas element not found");
+    }
 
-      await premyCanvasElementRef.current.load({
-        src: event.src,
-        constrainsAspectRatio: true,
-        pushesImageToHistory: true,
-      });
+    await premyCanvasElementRef.current.load({
+      src: event.src,
+      constrainsAspectRatio: true,
+      pushesImageToHistory: true,
+    });
 
-      setIsPasteDialogOpen(false);
-    }, []);
+    setIsPasteDialogOpen(false);
+  };
 
   return (
     <>
@@ -589,7 +571,11 @@ export const App: FunctionComponent<{
           className={clsx(classes.actions, "premy-pointer-listener-ignore")}
         >
           {showScrollIndicator && (
-            <IconButton className={classes.scrollIndicator} size="small">
+            <IconButton
+              className={classes.scrollIndicator}
+              size="small"
+              onClick={handleScrollIndicatorClick}
+            >
               <ChevronRight />
             </IconButton>
           )}
@@ -925,4 +911,4 @@ export const App: FunctionComponent<{
       </Dialog>
     </>
   );
-});
+};
