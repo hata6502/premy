@@ -15,9 +15,9 @@ import {
   ChevronRight,
   Close,
   FolderOpen,
+  GetApp,
   History,
   Redo,
-  Share,
   TextFormat,
   Undo,
 } from "@material-ui/icons";
@@ -871,7 +871,7 @@ export const App: FunctionComponent<{
 
           <Box mr={1}>
             <IconButton onClick={handleExportButtonClick}>
-              <Share />
+              <GetApp />
             </IconButton>
           </Box>
 
