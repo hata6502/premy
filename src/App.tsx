@@ -112,13 +112,13 @@ export const App: FunctionComponent<{
   history: string[];
   onCloseButtonClick?: MouseEventHandler<HTMLButtonElement>;
 }> = ({ history: historyProp, onCloseButtonClick }) => {
-  const [brushType, setBrushType] = useState<BrushType>("medium");
+  const [brushType, setBrushType] = useState<BrushType>("xLarge");
   const [colorKey, setColorKey] = useState<{
     paletteKey: PaletteKey;
     colorIndex: number;
   }>({
-    paletteKey: "bright",
-    colorIndex: 4,
+    paletteKey: "light",
+    colorIndex: Math.floor(Math.random() * 12),
   });
   const [defaultText] = useState(
     animalsAndNatureEmojis[
@@ -126,9 +126,9 @@ export const App: FunctionComponent<{
     ]
   );
   const [fontType, setFontType] = useState<FontType>("sans-serif");
-  const [fuzziness, setFuzziness] = useState(fuzzinesses[2]);
+  const [fuzziness, setFuzziness] = useState(fuzzinesses[0]);
   const [mode, setMode] = useState<PremyCanvasMode>("shape");
-  const [toneType, setToneType] = useState<ToneType>("slashBold");
+  const [toneType, setToneType] = useState<ToneType>("fill");
 
   const [text, setText] = useState("");
   const [fuzzinessKey, setFuzzinessKey] = useState(0);
