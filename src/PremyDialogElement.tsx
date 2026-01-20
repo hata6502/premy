@@ -54,9 +54,10 @@ export class PremyDialogElement extends HTMLElement {
         <PremyThemeProvider>
           <ScopedCssBaseline>
             <Dialog
-              // canvasのサイズを計算するために必要。
+              // canvasのサイズを計算するため
               className="premy-dialog-root"
-              // To bubble events.
+              disableEnforceFocus
+              // custom element内に閉じるため
               disablePortal
               fullScreen
               open={this.isOpen()}
