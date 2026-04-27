@@ -19,7 +19,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "webpack",
+    "build": "tsc --emitDeclarationOnly && webpack",
     "fix": "prettier --write . && eslint --fix --max-warnings 0 .",
     "start": "http-server -c-1",
     "test": "prettier --check . && eslint --max-warnings 0 . && tsc --noEmit"
