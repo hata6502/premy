@@ -1,11 +1,12 @@
 import { ThemeProvider, createTheme } from "@material-ui/core";
-import { pink } from "@material-ui/core/colors";
 import { FunctionComponent, memo } from "react";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: pink.A100,
+      // https://tailwindcss.com/docs/colors
+      // pink-500
+      main: "#f6339a",
     },
   },
   typography: {

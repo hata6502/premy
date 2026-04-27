@@ -1,9 +1,7 @@
 import {
   Button,
-  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   makeStyles,
 } from "@material-ui/core";
 import { FunctionComponent, memo } from "react";
@@ -11,6 +9,10 @@ import { FunctionComponent, memo } from "react";
 const useStyles = makeStyles({
   image: {
     maxWidth: "100%",
+  },
+  shareButton: {
+    display: "flex",
+    margin: "0 auto",
   },
 });
 
@@ -23,41 +25,38 @@ export const CopyDialogContent: FunctionComponent<CopyDialogContentProps> =
   memo(({ title, src }) => {
     const classes = useStyles();
 
+    const handleShareButtonClick = async () => {
+      const imageResponse = await fetch(src);
+      const imageBlob = await imageResponse.blob();
+
+      await navigator.share({
+        files: [
+          new File([imageBlob], `${title}-premy.png`, {
+            type: imageBlob.type,
+          }),
+        ],
+        text: "#premy https://premy.hata6502.com/\n",
+      });
+    };
+
     return (
       <>
-        <DialogTitle>画像を押してダウンロード</DialogTitle>
-
         <DialogContent>
-          <a
-            download={`${title}-premy.png`}
-            href={src}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img alt={title} src={src} className={classes.image} />
-          </a>
+          <img alt={title} src={src} className={classes.image} />
 
           <DialogContentText>
             #premy
             タグ付きでXにポストすると、このサイトに掲載されることがあります。
           </DialogContentText>
 
-          <DialogActions>
-            <Button
-              component="a"
-              variant="outlined"
-              color="primary"
-              href={`https://twitter.com/intent/tweet?${String(
-                new URLSearchParams({
-                  hashtags: "premy",
-                  url: "https://premy.hata6502.com/",
-                })
-              )}`}
-              target="_blank"
-            >
-              Xにポスト
-            </Button>
-          </DialogActions>
+          <Button
+            className={classes.shareButton}
+            variant="outlined"
+            color="primary"
+            onClick={handleShareButtonClick}
+          >
+            共有する
+          </Button>
         </DialogContent>
       </>
     );
