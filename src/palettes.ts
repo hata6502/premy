@@ -1,5 +1,6 @@
 import ColorLibrary from "color";
 import {
+  common,
   grey,
   brown,
   blueGrey,
@@ -15,6 +16,7 @@ import {
 } from "@material-ui/core/colors";
 
 export const paletteKeys = [
+  "pale",
   "light",
   "bright",
   "vivid",
@@ -24,8 +26,22 @@ export const paletteKeys = [
 export type PaletteKey = typeof paletteKeys[number];
 
 export const palettes: Record<PaletteKey, string[]> = {
+  pale: [
+    common.white,
+    blueGrey[50],
+    brown[50],
+    red[50],
+    pink[50],
+    purple[50],
+    blue[50],
+    cyan[50],
+    green[50],
+    lime[50],
+    yellow[50],
+    orange[50],
+  ],
   light: [
-    grey[50],
+    grey[100],
     blueGrey[100],
     brown[100],
     red[100],
@@ -82,7 +98,7 @@ export const palettes: Record<PaletteKey, string[]> = {
     orange[800],
   ],
   dark: [
-    ColorLibrary(grey[900]).darken(0.5).hex(),
+    common.black,
     ColorLibrary(blueGrey[900]).darken(0.5).hex(),
     ColorLibrary(brown[900]).darken(0.5).hex(),
     ColorLibrary(red[900]).darken(0.5).hex(),

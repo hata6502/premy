@@ -22,7 +22,6 @@ import {
   Undo,
 } from "@material-ui/icons";
 import clsx from "clsx";
-import ColorLibrary from "color";
 import {
   ChangeEventHandler,
   FunctionComponent,
@@ -52,7 +51,12 @@ import { BrushType, brushes } from "./brushes";
 import { animalsAndNatureEmojis } from "./emoji";
 import { FontType, fonts } from "./fonts";
 import { fuzzinesses } from "./fuzziness";
-import { PaletteKey, getBlankImageDataURL, palettes } from "./palettes";
+import {
+  PaletteKey,
+  getBlankImageDataURL,
+  paletteKeys,
+  palettes,
+} from "./palettes";
 import { ToneType, toneGroups } from "./tones";
 
 const useStyles = makeStyles(({ palette, zIndex }) => ({
@@ -90,7 +94,7 @@ const useStyles = makeStyles(({ palette, zIndex }) => ({
     borderRadius: "unset",
   },
   paletteContainer: {
-    width: 240,
+    width: paletteKeys.length * 48,
   },
   popover: {
     zIndex: zIndex.modal,
@@ -118,7 +122,7 @@ export const App: FunctionComponent<{
     colorIndex: number;
   }>({
     paletteKey: "light",
-    colorIndex: Math.floor(Math.random() * 12),
+    colorIndex: Math.floor(Math.random() * palettes.vivid.length),
   });
   const [defaultText] = useState(
     animalsAndNatureEmojis[
@@ -153,8 +157,6 @@ export const App: FunctionComponent<{
   const premyCanvasElementRef = useRef<PremyCanvasElement>(null);
 
   const color = palettes[colorKey.paletteKey][colorKey.colorIndex];
-  const foregroundColor =
-    ColorLibrary(color).hex() === "#FAFAFA" ? "hsl(0, 0%, 75%)" : color;
 
   const isUndoDisabled = historyIndex < 1;
   const isRedoDisabled = historyIndex >= history.length - 1;
@@ -321,9 +323,9 @@ export const App: FunctionComponent<{
   }[mode];
 
   const paletteMatrix = palettes.vivid.map((_color, colorIndex) =>
-    Object.entries(palettes).map(([paletteKey, palette]) => ({
+    paletteKeys.map((paletteKey) => ({
       paletteKey,
-      paletteColor: palette[colorIndex],
+      paletteColor: palettes[paletteKey][colorIndex],
       colorIndex,
     }))
   );
@@ -637,8 +639,7 @@ export const App: FunctionComponent<{
                         // TODO: useCallback
                         const handleClick = () => {
                           setColorKey({
-                            // @ts-expect-error Fix paletteMatrix type.
-                            paletteKey: paletteKey,
+                            paletteKey,
                             colorIndex,
                           });
 
@@ -800,7 +801,7 @@ export const App: FunctionComponent<{
                   onChange={handleTextInputChange}
                   inputProps={{
                     style: {
-                      color: foregroundColor,
+                      color,
                       fontFamily: fonts[fontType],
                     },
                   }}
