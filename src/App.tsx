@@ -252,7 +252,7 @@ export const App: FunctionComponent<{
       currentPremyCanvasElement.setHistoryIndex(historyProp.length - 1);
     } else {
       void premyCanvasElementRef.current.load({
-        src: getBlankImageDataURL(palettes.light[0]),
+        src: getBlankImageDataURL(palettes.pale[0]),
         constrainsAspectRatio: false,
         pushesImageToHistory: true,
       });
@@ -436,7 +436,7 @@ export const App: FunctionComponent<{
 
     handleImportMenuClose();
     await premyCanvasElementRef.current.load({
-      src: getBlankImageDataURL(palettes.light[0]),
+      src: getBlankImageDataURL(palettes.pale[0]),
       constrainsAspectRatio: false,
       pushesImageToHistory: true,
     });
